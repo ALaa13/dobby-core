@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class DobbyApplication
 
 fun main(args: Array<String>) {
-	runApplication<DobbyApplication>(*args)
+    runApplication<DobbyApplication>(*args)
 }

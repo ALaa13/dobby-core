@@ -4,7 +4,6 @@ import com.example.dobby.model.RoastRequest
 import com.example.dobby.service.GeminiService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import kotlin.math.log
 
 @RequestMapping("/api/v1/roasts")
 @RestController
@@ -21,6 +20,6 @@ class UserController(
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     suspend fun dobby(@RequestBody request: RoastRequest) {
-       geminiService.processRoastAsync(request)
+        geminiService.processRoastAsync(request)
     }
 }
