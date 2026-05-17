@@ -1,7 +1,8 @@
 package com.example.dobby.controller
 
-import com.example.dobby.model.RoastRequest
+import com.example.dobby.dto.RoastRequest
 import com.example.dobby.service.GeminiService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -19,7 +20,7 @@ class UserController(
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    suspend fun dobby(@RequestBody request: RoastRequest) {
+    suspend fun dobby(@Valid @RequestBody request: RoastRequest) {
         geminiService.processRoastAsync(request)
     }
 }

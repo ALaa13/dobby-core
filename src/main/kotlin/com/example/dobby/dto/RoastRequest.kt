@@ -1,10 +1,9 @@
-package com.example.dobby.model
+package com.example.dobby.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class RoastRequest(
     val channelId: String,
-    val messageId: String,
-    val messages: List<ChatDiscordMessage>
+    val messages: List<DiscordChatMessage>
 )

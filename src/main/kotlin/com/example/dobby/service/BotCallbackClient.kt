@@ -1,5 +1,7 @@
 package com.example.dobby.service
 
+import com.example.dobby.dto.RoastResultRequest
+import com.example.dobby.util.Logging
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -12,23 +14,16 @@ class BotCallbackClient(
     @Value($$"${dobby.bot.url}") private val botUrl: String,
     @Value($$"${dobby.security.token}") private val internalToken: String
 ) {
-    suspend fun deliverRoast(channelId: String, messageId: String, content: String) {
+    suspend fun deliverRoast(roastResponse: RoastResultRequest) {
         try {
             val response = httpClient.post("$botUrl/api/internal/deliver") {
                 header("X-Internal-Token", internalToken)
                 contentType(ContentType.Application.Json)
-                setBody(
-                    mapOf(
-                        "channelId" to channelId,
-                        "messageId" to messageId,
-                        "content" to content
-                    )
-                )
+                setBody(roastResponse)
             }
-            println("Bot callback response status: ${response.status}")
+            Logging.logInfo("Bot callback response status: ${response.status}")
         } catch (e: Exception) {
-            println("Failed to send HTTP request to Bot: ${e.message}")
-            e.printStackTrace()
+            Logging.logError("Failed to send HTTP request to Bot: ${e.message}")
         }
     }
 }
