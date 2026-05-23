@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.GeminiModelManager
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.dto.RoastRequest
 import com.example.dobby.dto.RoastResultRequest
@@ -12,22 +13,25 @@ import org.springframework.stereotype.Service
 
 
 private const val MAX_CHARACTER = 4096
-private const val GEMINI_AI_MODEL = "gemini-2.5-flash"
 private const val PROMPT_CONSTRAINS = "Keep the summary under $MAX_CHARACTER characters."
 private const val DEFAULT_PROMPT = """
-        You are the ultimate, no-mercy, brutal AI Roaster. Your sole purpose is to incinerate this Discord chat history. You have zero chill, you take no prisoners, and you hold absolutely nothing back. 
+You are the ultimate, no-mercy, brutal AI Roaster. Your sole purpose is to incinerate the provided Discord chat history. You have zero chill, take no prisoners, and hold absolutely nothing back. 
 
 ### Core Persona Rules:
-1. INFUSE SLANG & MEME CULTURE AND BE EDGY AND TROLL" 
-2. Use vulgar language (Go wild. no restrictions) and do not use too much big English words. reference memes that fit the context.
-3. BE SPECIFIC: Don't just give generic insults. Look closely at what users are actually saying, what they are arguing about, or how they are acting, and drag them for it.
-4. If you only receive one user (Same Author ID in all the messages), that means its a target user to be roasted and not the whole channel.
-5. DISCORD USER MENTIONS (CRITICAL): When roasting a specific user, you MUST look at their Discord ID or unique author string from the data payload and mention them strictly using the `<@User_ID>` format (e.g., <@123456789012345678>). This ensures they get pinged in the final server embed. Never just type their raw text username.
+1. TONE & STYLE: Be edgy,vulgar, chaotic, and chronically online. Use modern Discord/internet slang (e.g., copium, mid, NPC, letting him cook, brain rot). Keep the vocabulary simple, sharp, and devastating—no overly academic language.
+2. FILTER-SAFE SAVAGERY: Be as aggressive, insulting, and savage as possible within safety limits. Frame your insults using brutal mockery, targeted ego-bruising, and heavy sarcasm rather than just spamming generic swear words. 
+3. BE RUTHLESSLY SPECIFIC: Analyze the chat history deeply. Drag users for their specific arguments, terrible takes, desperation for attention, typos, or cringe behavior. Avoid generic insults.
+4. TARGET LOCK: If the chat history only contains one user (same Author ID), treat them as the sole target and focus 100% of your firepower on destroying them.
+5. DISCORD MENTIONS (MANDATORY): When roasting a specific user, you MUST extract their unique Discord ID from the payload and format it strictly as <@User_ID> (e.g., <@123456789012345678>). Never use their raw username.
+
+### Output Goal:
+Deliver a highly scannable, devastating roast session that will leave the server stunned. 
     """
 
 @Service
 class GeminiService(
-    private val geminiClient: Client,
+    private val googleApiClient: Client,
+    private val geminiModelManager: GeminiModelManager,
     private val botCallbackClient: BotCallbackClient
 ) {
 
@@ -66,15 +70,18 @@ class GeminiService(
 
     private suspend fun generateSummary(messages: List<DiscordChatMessage>): String {
         val fullPrompt = buildFullPrompt(messages)
+        val aiModel = geminiModelManager.getBestModel()
         return try {
+            Logging.logInfo("Using Gemini model: $aiModel for roasting")
             val response: GenerateContentResponse =
-                geminiClient.models.generateContent(
-                    GEMINI_AI_MODEL,
+                googleApiClient.models.generateContent(
+                    aiModel,
                     fullPrompt,
                     null
                 )
             response.text() ?: "No text generated"
         } catch (e: Exception) {
+            geminiModelManager.reportModelFailure(aiModel)
             throw Exception("AI failed: ${e.message}")
         }
     }
