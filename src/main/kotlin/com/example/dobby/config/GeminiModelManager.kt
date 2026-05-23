@@ -1,0 +1,77 @@
+package com.example.dobby.config
+
+import com.example.dobby.util.Logging
+import com.google.genai.Client
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.EventListener
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+
+@Configuration
+class GeminiModelManager(private val aiClient: Client) {
+
+    // Cache of valid model identifier strings (e.g., "gemini-2.5-flash")
+    private var availableModels = listOf<String>()
+
+    // Tracking map for models that failed and their respective cooldown expiration times
+    private val modelCooldowns = ConcurrentHashMap<String, Instant>()
+
+    /**
+     * Call this during your bot's startup sequence.
+     * Compatible with com.google.genai:google-genai:1.51.0
+     */
+    @EventListener(ApplicationReadyEvent::class)
+    fun initialize() {
+        runCatching {
+            // 1. Fetch available models from Google's endpoint
+            val responseList = aiClient.models.list(null)
+
+            // 2. Safely unpack the Optional<String> and filter
+            availableModels = responseList
+                .mapNotNull { model ->
+                    // 1. Get the list of supported actions for this model safely
+                    val actions: List<String> = model.supportedActions().orElse(null) ?: emptyList()
+                    // 2. Only proceed if the model is capable of generating content
+                    if (actions.contains("generateContent")) {
+                        model.name().orElse(null)?.removePrefix("models/")
+                    } else {
+                        null
+                    }
+                }
+                .filter { name ->
+                    // Keeps names valid and ignores specialized non-text elements
+                    name.isNotBlank() &&
+                            name.contains("gemini", ignoreCase = true) &&
+                            !name.contains("vision", ignoreCase = true)
+                }
+                // Sort so "flash" variants appear at index 0 (fast/cheap default options)
+                .sortedByDescending { it.contains("flash", ignoreCase = true) }
+            Logging.logInfo("Dynamically discovered Gemini models count: ${availableModels.size}")
+        }.onFailure { error ->
+            // Fallback gracefully to stable defaults if network or initialization crashes
+            Logging.logInfo("Failed to dynamically discover Gemini models: ${error.message}")
+            availableModels = listOf("gemini-2.5-flash", "gemini-2.5-pro")
+        }
+    }
+
+    /**
+     * Pulls the best available model from the cache that isn't currently undergoing a timeout.
+     */
+    fun getBestModel(): String {
+        val now = Instant.now()
+
+        return availableModels.firstOrNull { model ->
+            val cooldownEnd = modelCooldowns[model]
+            cooldownEnd == null || now.isAfter(cooldownEnd)
+        } ?: "gemini-2.5-flash"
+    }
+
+    /**
+     * Registers a model failure to temporarily isolate it from selection.
+     */
+    fun reportModelFailure(modelName: String) {
+        // Enforce a 15-minute cooldown for the broken/rate-limited model
+        modelCooldowns[modelName] = Instant.now().plusSeconds(900)
+    }
+}
