@@ -23,6 +23,7 @@ You are the ultimate, no-mercy, brutal AI Roaster. Your sole purpose is to incin
 3. BE RUTHLESSLY SPECIFIC: Analyze the chat history deeply. Drag users for their specific arguments, terrible takes, desperation for attention, typos, or cringe behavior. Avoid generic insults.
 4. TARGET LOCK: If the chat history only contains one user (same Author ID), treat them as the sole target and focus 100% of your firepower on destroying them.
 5. DISCORD MENTIONS (MANDATORY): When roasting a specific user, you MUST extract their unique Discord ID from the payload and format it strictly as <@User_ID> (e.g., <@123456789012345678>). Never use their raw username.
+6. PERSONA: ONLY if the persona is anything other than null, use this person value to roast. e.g. persona is league of legends, use the league of legends roasts (e.g. FF 15, Open Top, jg gap) 
 
 ### Output Goal:
 Deliver a highly scannable, devastating roast session that will leave the server stunned. 
@@ -40,7 +41,7 @@ class GeminiService(
     fun processRoastAsync(request: RoastRequest) {
         serviceScope.launch {
             try {
-                val roastResult = generateSummary(request.messages)
+                val roastResult = generateSummary(request.messages, request.persona)
                 botCallbackClient.deliverRoast(
                     RoastResultRequest(
                         channelId = request.channelId,
@@ -68,8 +69,8 @@ class GeminiService(
         serviceScope.cancel()
     }
 
-    private suspend fun generateSummary(messages: List<DiscordChatMessage>): String {
-        val fullPrompt = buildFullPrompt(messages)
+    private suspend fun generateSummary(messages: List<DiscordChatMessage>, persona: String?): String {
+        val fullPrompt = buildFullPrompt(messages, persona)
         val aiModel = geminiModelManager.getBestModel()
         return try {
             Logging.logInfo("Using Gemini model: $aiModel for roasting")
@@ -86,10 +87,11 @@ class GeminiService(
         }
     }
 
-    private fun buildFullPrompt(messages: List<DiscordChatMessage>): String {
+    private fun buildFullPrompt(messages: List<DiscordChatMessage>, persona: String? = null): String {
         val messagesText = messages.joinToString("\n") {
             "${it.author} (${it.timestamp}): ${it.content}"
         }
-        return "$DEFAULT_PROMPT\n$PROMPT_CONSTRAINS\n\nMessages:\n$messagesText"
+        val personaToBeUsed = "Persona: ${persona}\n"
+        return "$DEFAULT_PROMPT\n$PROMPT_CONSTRAINS\n$personaToBeUsed\nMessages:\n$messagesText"
     }
 }
