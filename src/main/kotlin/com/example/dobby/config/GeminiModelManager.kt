@@ -11,10 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Configuration
 class GeminiModelManager(private val aiClient: Client) {
 
-    // Cache of valid model identifier strings (e.g., "gemini-2.5-flash")
     private var availableModels = listOf<String>()
-
-    // Tracking map for models that failed and their respective cooldown expiration times
     private val modelCooldowns = ConcurrentHashMap<String, Instant>()
 
     /**
@@ -24,15 +21,13 @@ class GeminiModelManager(private val aiClient: Client) {
     @EventListener(ApplicationReadyEvent::class)
     fun initialize() {
         runCatching {
-            // 1. Fetch available models from Google's endpoint
             val responseList = aiClient.models.list(null)
 
-            // 2. Safely unpack the Optional<String> and filter
+            // Safely unpack the Optional<String> and filter
             availableModels = responseList
                 .mapNotNull { model ->
-                    // 1. Get the list of supported actions for this model safely
+                    // Get the list of supported actions for this model safely
                     val actions: List<String> = model.supportedActions().orElse(null) ?: emptyList()
-                    // 2. Only proceed if the model is capable of generating content
                     if (actions.contains("generateContent")) {
                         model.name().orElse(null)?.removePrefix("models/")
                     } else {
@@ -40,7 +35,6 @@ class GeminiModelManager(private val aiClient: Client) {
                     }
                 }
                 .filter { name ->
-                    // Keeps names valid and ignores specialized non-text elements
                     name.isNotBlank() &&
                             name.contains("gemini", ignoreCase = true) &&
                             !name.contains("vision", ignoreCase = true)
@@ -49,7 +43,6 @@ class GeminiModelManager(private val aiClient: Client) {
                 .sortedByDescending { it.contains("flash", ignoreCase = true) }
             Logging.logInfo("Dynamically discovered Gemini models count: ${availableModels.size}")
         }.onFailure { error ->
-            // Fallback gracefully to stable defaults if network or initialization crashes
             Logging.logInfo("Failed to dynamically discover Gemini models: ${error.message}")
             availableModels = listOf("gemini-2.5-flash", "gemini-2.5-pro")
         }

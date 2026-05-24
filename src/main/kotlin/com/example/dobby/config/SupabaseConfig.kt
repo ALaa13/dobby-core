@@ -3,6 +3,8 @@ package com.example.dobby.config
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.serializer.KotlinXSerializer
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -23,6 +25,11 @@ class SupabaseConfig(
         )
         {
             install(Postgrest)
+            defaultSerializer = KotlinXSerializer(Json {
+                encodeDefaults = true
+                ignoreUnknownKeys = true
+                isLenient = true
+            })
         }
     }
 }
