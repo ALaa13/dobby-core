@@ -5,6 +5,7 @@ import com.example.dobby.dto.UserProfileResponse
 import com.example.dobby.util.Logging
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import org.springframework.stereotype.Component
 
 
@@ -18,7 +19,9 @@ class SupabaseUserProfileClient(
     suspend fun findByDiscordIdAndGuildId(discordUserId: String, guildId: String): UserProfileResponse? {
         return try {
             supabaseClient.from(USER_PROFILE_TABLE)
-                .select {
+                .select(
+                    columns = Columns.raw("*, user_facts(*)")
+                ) {
                     filter {
                         eq("discord_user_id", discordUserId)
                         eq("guild_id", guildId)

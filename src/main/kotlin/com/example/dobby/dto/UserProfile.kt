@@ -28,6 +28,8 @@ data class UserProfileResponse(
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: String?
+    val updatedAt: String?,
+    @SerialName("user_facts")
+    val facts: List<UserFactResponse>?
 )
 

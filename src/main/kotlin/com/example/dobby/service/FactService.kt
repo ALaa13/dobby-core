@@ -7,7 +7,7 @@ import com.example.dobby.util.Logging
 import org.springframework.stereotype.Service
 
 @Service
-class MemoryService(
+class FactService(
     private val userProfileRepository: UserProfileRepository,
     private val userFactRepository: UserFactRepository
 ) {
