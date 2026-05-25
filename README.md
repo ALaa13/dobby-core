@@ -1,4 +1,4 @@
-# dobby-core
+# Dobby Discord Bot Backend
 
 `dobby-core` is a Kotlin/Spring Boot backend service for a Discord roast bot. It accepts Discord chat history, enriches
 the roast request with stored user facts from Supabase, generates a roast through Google Gemini, and sends the result
