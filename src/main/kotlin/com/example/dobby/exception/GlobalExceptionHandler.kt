@@ -1,4 +1,4 @@
-package com.example.dobby.util
+package com.example.dobby.exception
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException

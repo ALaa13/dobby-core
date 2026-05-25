@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
-class BotCallbackClient(
+class DiscordCallbackClient(
     private val httpClient: HttpClient,
     @Value($$"${dobby.bot.url}") private val botUrl: String,
     @Value($$"${dobby.security.token}") private val internalToken: String

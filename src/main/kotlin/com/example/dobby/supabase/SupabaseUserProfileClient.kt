@@ -1,4 +1,4 @@
-package com.example.dobby.db
+package com.example.dobby.supabase
 
 import com.example.dobby.dto.UserProfileCreateRequest
 import com.example.dobby.dto.UserProfileResponse

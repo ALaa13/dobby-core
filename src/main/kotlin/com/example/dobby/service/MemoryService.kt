@@ -3,20 +3,22 @@ package com.example.dobby.service
 import com.example.dobby.dto.*
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
+import com.example.dobby.util.Logging
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(
+class MemoryService(
     private val userProfileRepository: UserProfileRepository,
     private val userFactRepository: UserFactRepository
 ) {
-    private suspend fun getUserProfile(profile: UserProfileCreateRequest): UserProfileResponse {
-        val existingProfile = userProfileRepository.findByDiscordIdAndGuildId(profile.discordUserId, profile.guildId)
-        return existingProfile ?: userProfileRepository.insertNewProfile(profile)
+    private suspend fun getOrCreateProfile(profile: UserProfileCreateRequest): UserProfileResponse {
+        val existingProfile = userProfileRepository.findProfile(profile.discordUserId, profile.guildId)
+        return existingProfile ?: userProfileRepository.saveProfile(profile)
     }
 
     suspend fun saveFact(request: DiscordFactRequest) {
-        val profile = getUserProfile(
+        Logging.logInfo("Received remember request for user $request")
+        val profile = getOrCreateProfile(
             UserProfileCreateRequest(
                 discordUserId = request.discordUserId,
                 guildId = request.guildId,

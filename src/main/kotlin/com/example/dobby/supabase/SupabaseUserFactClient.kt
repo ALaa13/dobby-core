@@ -1,4 +1,4 @@
-package com.example.dobby.db
+package com.example.dobby.supabase
 
 import com.example.dobby.dto.UserFactCreateRequest
 import com.example.dobby.dto.UserFactResponse

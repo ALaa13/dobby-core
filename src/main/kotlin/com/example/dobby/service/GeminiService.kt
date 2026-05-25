@@ -33,7 +33,7 @@ Deliver a highly scannable, devastating roast session that will leave the server
 class GeminiService(
     private val googleApiClient: Client,
     private val geminiModelManager: GeminiModelManager,
-    private val botCallbackClient: BotCallbackClient
+    private val discordCallbackClient: DiscordCallbackClient
 ) {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -42,7 +42,7 @@ class GeminiService(
         serviceScope.launch {
             try {
                 val roastResult = generateSummary(request.messages, request.persona)
-                botCallbackClient.deliverRoast(
+                discordCallbackClient.deliverRoast(
                     RoastResultRequest(
                         channelId = request.channelId,
                         content = roastResult,
@@ -52,7 +52,7 @@ class GeminiService(
             } catch (e: Exception) {
                 Logging.logError("Background roast processing failed: ${e.message}")
                 runCatching {
-                    botCallbackClient.deliverRoast(
+                    discordCallbackClient.deliverRoast(
                         RoastResultRequest(
                             channelId = request.channelId,
                             content = "",
