@@ -1,20 +1,40 @@
 package com.example.dobby.controller
 
 import com.example.dobby.dto.DiscordFactRequest
+import com.example.dobby.dto.UserFactResponse
 import com.example.dobby.service.FactService
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
 
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/fact")
 @RestController
 class FactController(
     private val factService: FactService
 ) {
-    @PostMapping("/fact")
-    suspend fun remember(@Valid @RequestBody request: DiscordFactRequest) {
+    @GetMapping
+    suspend fun getFacts(
+        @RequestParam("discord_user_id") discordUserId: String,
+        @RequestParam("guild_id") guildId: String
+    ): List<UserFactResponse> {
+        return factService.getFacts(discordUserId, guildId)
+    }
+
+    @PostMapping
+    suspend fun saveFact(@Valid @RequestBody request: DiscordFactRequest) {
         return factService.saveFact(request)
+    }
+
+    @DeleteMapping
+    suspend fun resetFacts(
+        @RequestParam("discord_user_id") discordUserId: String,
+        @RequestParam("guild_id") guildId: String
+    ): ResponseEntity<Void> {
+        val isReset = factService.resetFacts(discordUserId, guildId)
+        return if (isReset) {
+            ResponseEntity.noContent().build()
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 }

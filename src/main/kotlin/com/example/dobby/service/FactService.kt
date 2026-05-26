@@ -34,4 +34,15 @@ class FactService(
         )
         userFactRepository.saveFact(fact)
     }
+
+    suspend fun getFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
+        return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
+    }
+
+    suspend fun resetFacts(discordUserId: String, guildId: String): Boolean {
+        val profile = userProfileRepository.findProfile(discordUserId, guildId) ?: return false
+        userFactRepository.deleteFactsByProfileId(profile.id)
+        Logging.logInfo("Deleted all facts for user $discordUserId")
+        return true
+    }
 }

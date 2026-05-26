@@ -6,12 +6,12 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/roast")
 @RestController
 class RoastController(
     private val roastService: RoastService,
 ) {
-    @PostMapping("/roast")
+    @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun roast(@Valid @RequestBody request: RoastRequest) {
         roastService.processRoastAsync(request)

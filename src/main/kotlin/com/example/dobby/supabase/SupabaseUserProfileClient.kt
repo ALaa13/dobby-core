@@ -30,7 +30,7 @@ class SupabaseUserProfileClient(
                 .decodeSingleOrNull<UserProfileResponse>()
         } catch (e: Exception) {
             Logging.logError("Error fetching user profile: ${e.message}")
-            null
+            throw e
         }
     }
 

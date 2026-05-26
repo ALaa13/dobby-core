@@ -5,8 +5,7 @@ import kotlinx.serialization.Serializable
 
 
 enum class FactSource {
-    USER_SUBMISSION,
-    EXTERNAL_API
+    USER_SUBMISSION
 }
 
 
