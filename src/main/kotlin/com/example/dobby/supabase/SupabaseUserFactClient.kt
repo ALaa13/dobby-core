@@ -25,4 +25,18 @@ class SupabaseUserFactClient(
             throw e
         }
     }
+
+    suspend fun deleteFactsByProfileId(profileId: String) {
+        try {
+            supabaseClient.from(USER_FACTS_TABLE)
+                .delete {
+                    filter {
+                        eq("profile_id", profileId)
+                    }
+                }
+        } catch (e: Exception) {
+            Logging.logError("Error deleting user facts for profile $profileId: ${e.message}")
+            throw e
+        }
+    }
 }
