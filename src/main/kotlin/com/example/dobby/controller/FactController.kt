@@ -4,7 +4,7 @@ import com.example.dobby.dto.DiscordFactRequest
 import com.example.dobby.dto.UserFactResponse
 import com.example.dobby.service.FactService
 import jakarta.validation.Valid
-import org.springframework.http.ResponseEntity
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/api/v1/fact")
@@ -13,6 +13,7 @@ class FactController(
     private val factService: FactService
 ) {
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     suspend fun getFacts(
         @RequestParam("discord_user_id") discordUserId: String,
         @RequestParam("guild_id") guildId: String
@@ -21,20 +22,17 @@ class FactController(
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     suspend fun saveFact(@Valid @RequestBody request: DiscordFactRequest) {
         return factService.saveFact(request)
     }
 
     @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     suspend fun resetFacts(
         @RequestParam("discord_user_id") discordUserId: String,
         @RequestParam("guild_id") guildId: String
-    ): ResponseEntity<Void> {
-        val isReset = factService.resetFacts(discordUserId, guildId)
-        return if (isReset) {
-            ResponseEntity.noContent().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
+    ) {
+        factService.resetFacts(discordUserId, guildId)
     }
 }

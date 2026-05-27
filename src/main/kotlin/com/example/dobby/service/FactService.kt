@@ -1,6 +1,7 @@
 package com.example.dobby.service
 
 import com.example.dobby.dto.*
+import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
 import com.example.dobby.util.Logging
@@ -39,10 +40,13 @@ class FactService(
         return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
     }
 
-    suspend fun resetFacts(discordUserId: String, guildId: String): Boolean {
-        val profile = userProfileRepository.findProfile(discordUserId, guildId) ?: return false
+    suspend fun resetFacts(discordUserId: String, guildId: String) {
+        val profile =
+            userProfileRepository.findProfile(discordUserId, guildId) ?: throw DobbyException.ProfileNotFoundException(
+                discordUserId,
+                guildId
+            )
         userFactRepository.deleteFactsByProfileId(profile.id)
         Logging.logInfo("Deleted all facts for user $discordUserId")
-        return true
     }
 }
