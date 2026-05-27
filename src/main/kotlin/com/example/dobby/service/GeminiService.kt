@@ -2,6 +2,7 @@ package com.example.dobby.service
 
 import com.example.dobby.config.GeminiModelManager
 import com.example.dobby.dto.DiscordChatMessage
+import com.example.dobby.exception.DobbyException
 import com.example.dobby.util.Logging
 import com.google.genai.Client
 import com.google.genai.types.GenerateContentResponse
@@ -33,8 +34,8 @@ class GeminiService(
                 Logging.logInfo("Loading Gemini prompt from $path")
                 Files.readString(path)
             }
-        } catch (ex: Exception) {
-            Logging.logError("Failed to load Gemini prompt from $promptFilePath: ${ex.message}; using default.")
+        } catch (e: Exception) {
+            Logging.logError("Failed to load Gemini prompt from $promptFilePath: ${e.message}; using default.")
             defaultPrompt
         }
     }
@@ -50,10 +51,10 @@ class GeminiService(
                     fullPrompt,
                     null
                 )
-            response.text() ?: "No text generated"
-        } catch (e: Exception) {
+            response.text() ?: throw DobbyException.DataMappingException("AI returned an empty response body.")
+        } catch (e: DobbyException) {
             geminiModelManager.reportModelFailure(aiModel)
-            throw Exception("AI failed: ${e.message}")
+            throw DobbyException.AiModelException("AI failed: ${e.message}", "Gemini Service", e)
         }
     }
 

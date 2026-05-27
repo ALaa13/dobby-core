@@ -2,7 +2,6 @@ package com.example.dobby.supabase
 
 import com.example.dobby.dto.UserProfileCreateRequest
 import com.example.dobby.dto.UserProfileResponse
-import com.example.dobby.util.Logging
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
@@ -17,7 +16,7 @@ class SupabaseUserProfileClient(
     private val supabaseClient: SupabaseClient
 ) {
     suspend fun findByDiscordIdAndGuildId(discordUserId: String, guildId: String): UserProfileResponse? {
-        return try {
+        return safeDbCall("find user by $discordUserId and guild") {
             supabaseClient.from(USER_PROFILE_TABLE)
                 .select(
                     columns = Columns.raw("*, user_facts(*)")
@@ -28,23 +27,19 @@ class SupabaseUserProfileClient(
                     }
                 }
                 .decodeSingleOrNull<UserProfileResponse>()
-        } catch (e: Exception) {
-            Logging.logError("Error fetching user profile: ${e.message}")
-            throw e
         }
+
     }
 
 
     suspend fun insertNewProfile(profile: UserProfileCreateRequest): UserProfileResponse {
-        try {
-            return supabaseClient.from(USER_PROFILE_TABLE)
+        return safeDbCall("insert new user profile") {
+            supabaseClient.from(USER_PROFILE_TABLE)
                 .insert(profile) {
                     select()
                 }
                 .decodeSingle<UserProfileResponse>()
-        } catch (e: Exception) {
-            Logging.logError("Error inserting user profile: ${e.message}")
-            throw e
         }
+
     }
 }
