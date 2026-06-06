@@ -15,6 +15,22 @@ private const val USER_PROFILE_TABLE = "user_profiles"
 class SupabaseUserProfileClient(
     private val supabaseClient: SupabaseClient
 ) {
+
+    suspend fun findByDiscordId(discordUserId: String): UserProfileResponse? {
+        return safeDbCall("find user by $discordUserId and guild") {
+            supabaseClient.from(USER_PROFILE_TABLE)
+                .select(
+                    columns = Columns.raw("*, user_facts(*)")
+                ) {
+                    filter {
+                        eq("discord_user_id", discordUserId)
+                    }
+                }
+                .decodeSingleOrNull<UserProfileResponse>()
+        }
+    }
+
+
     suspend fun findByDiscordIdAndGuildId(discordUserId: String, guildId: String): UserProfileResponse? {
         return safeDbCall("find user by $discordUserId and guild") {
             supabaseClient.from(USER_PROFILE_TABLE)
@@ -28,7 +44,6 @@ class SupabaseUserProfileClient(
                 }
                 .decodeSingleOrNull<UserProfileResponse>()
         }
-
     }
 
 
@@ -40,6 +55,5 @@ class SupabaseUserProfileClient(
                 }
                 .decodeSingle<UserProfileResponse>()
         }
-
     }
 }

@@ -43,6 +43,18 @@ class GlobalExceptionHandler {
                     .body("User profile not found.")
             }
 
+            is DobbyException.AuthorizationException -> {
+                ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED) // 401
+                    .body("You are not authorized to perform this action.")
+            }
+
+            is DobbyException.JWTException -> {
+                ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED) // 401
+                    .body("Invalid or expired JWT token.")
+            }
+
             is DobbyException.DataMappingException,
             is DobbyException.GeneralException -> {
                 ResponseEntity
