@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class GeminiProvider(
+class GeminiClientConfig(
     @Value($$"${gemini.api.key}") private val apiKey: String,
 ) {
     @Bean

@@ -1,4 +1,4 @@
-package com.example.dobby.config
+package com.example.dobby.llm
 
 import com.example.dobby.util.Logging
 import com.google.genai.Client

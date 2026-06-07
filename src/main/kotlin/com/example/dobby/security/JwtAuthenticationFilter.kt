@@ -23,15 +23,12 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         val authHeader = request.getHeader("Authorization")
-
         // Check if the header has a valid Bearer token format
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
             return
         }
-
         val token = authHeader.substring(7)
-
         try {
             val discordUserId = jwtService.validateTokenAndGetSubject(token)
             if (SecurityContextHolder.getContext().authentication == null) {
@@ -42,14 +39,12 @@ class JwtAuthenticationFilter(
                     listOf(SimpleGrantedAuthority("ROLE_USER"))
                 )
                 authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-
                 // Inject it into the Security Context!
                 SecurityContextHolder.getContext().authentication = authToken
             }
         } catch (e: Exception) {
             Logging.logError("Failed to set user authentication from JWT", e)
         }
-
         filterChain.doFilter(request, response)
     }
 }

@@ -1,4 +1,4 @@
-package com.example.dobby.service
+package com.example.dobby.client
 
 import com.example.dobby.dto.RoastResultRequest
 import com.example.dobby.util.Logging

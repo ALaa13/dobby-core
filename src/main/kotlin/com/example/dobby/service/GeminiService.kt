@@ -1,8 +1,8 @@
 package com.example.dobby.service
 
-import com.example.dobby.config.GeminiModelManager
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.exception.DobbyException
+import com.example.dobby.llm.GeminiModelManager
 import com.example.dobby.util.Logging
 import com.google.genai.Client
 import com.google.genai.types.GenerateContentResponse
