@@ -1,0 +1,15 @@
+spring.profiles.active: dev
+
+server:
+  servlet:
+    context-path: /api/v1
+
+logging:
+  file:
+    name: logs/dobby.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
+      total-size-cap: 100MB
+      clean-history-on-start: true

@@ -55,6 +55,12 @@ class GlobalExceptionHandler {
                     .body("Invalid or expired JWT token.")
             }
 
+            is DobbyException.LogStreamException -> {
+                ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
+                    .body("Failed to stream logs: ${e.message}")
+            }
+
             is DobbyException.DataMappingException,
             is DobbyException.GeneralException -> {
                 ResponseEntity

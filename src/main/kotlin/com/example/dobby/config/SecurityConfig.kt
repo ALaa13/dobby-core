@@ -34,7 +34,9 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/api/v1/auth/**").permitAll()
+                auth.requestMatchers("/auth/**").permitAll()
+                auth.requestMatchers("/dev/token").permitAll()
+                auth.requestMatchers("/logs/**").permitAll()
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 auth.requestMatchers("/error").permitAll()
                 // Allow Spring's internal async dispatching requests to pass unblocked

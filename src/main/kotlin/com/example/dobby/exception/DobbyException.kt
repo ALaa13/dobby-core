@@ -26,6 +26,7 @@ sealed class DobbyException(
         cause: Throwable? = null
     ) : DobbyException("AI model error from $targetService: $message", cause)
 
+    // profile failures (Missing profiles, invalid profile data)
     class ProfileNotFoundException(
         discordUserId: String?,
         guildId: String?,
@@ -43,10 +44,17 @@ sealed class DobbyException(
         cause: Throwable? = null
     ) : DobbyException("Authorization failed: $message", cause)
 
+    // JWT failures (Malformed tokens, signature verification failures)
     class JWTException(
         message: String,
         cause: Throwable? = null
     ) : DobbyException("JWT processing error: $message", cause)
+
+    // Log failures (Failed to write to log stream)
+    class LogStreamException(
+        message: String,
+        cause: Throwable? = null
+    ) : DobbyException("Log stream error: $message", cause)
 
     // General Unmanaged error
     class GeneralException(

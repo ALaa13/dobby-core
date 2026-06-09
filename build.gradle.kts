@@ -29,6 +29,7 @@ dependencies {
     implementation("org.reactivestreams:reactive-streams")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
 
     implementation("com.google.genai:google-genai:1.51.0")
     implementation("com.auth0:java-jwt:4.4.0")

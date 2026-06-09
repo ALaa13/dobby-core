@@ -6,12 +6,13 @@ import com.example.dobby.exception.DobbyException
 import com.example.dobby.util.Logging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.util.*
 
 @Service
 class JWTService(
     @Value($$"${jwt.secret}") private val jwtSecret: String,
-    @Value($$"${jwt.expiration}") private val jwtExpiration: Long,
+    @Value($$"${jwt.expiration}") private val jwtExpiration: Duration,
 ) {
 
     fun generateJWTToken(subject: String, claim: String): String {
@@ -21,7 +22,7 @@ class JWTService(
                 .withIssuer("dobby-core")
                 .withSubject(subject)
                 .withClaim("username", claim)
-                .withExpiresAt(Date(System.currentTimeMillis() + jwtExpiration)) // expiration based on property
+                .withExpiresAt(Date(System.currentTimeMillis() + jwtExpiration.toMillis()))
                 .sign(algorithm)
         } catch (e: Exception) {
             Logging.logError("Failed to generate JWT token", e)

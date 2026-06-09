@@ -7,7 +7,7 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@RequestMapping("/api/v1/fact")
+@RequestMapping("/fact")
 @RestController
 class FactController(
     private val factService: FactService

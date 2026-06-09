@@ -1,14 +1,16 @@
 package com.example.dobby.util
 
+import org.slf4j.LoggerFactory
+
 object Logging {
+
+    private val logger = LoggerFactory.getLogger(Logging::class.java)
+
     fun logInfo(message: String) {
-        val timestamp = java.time.LocalDateTime.now()
-        println("[$timestamp] [INFO] $message")
+        logger.info(message)
     }
 
     fun logError(message: String, error: Throwable? = null) {
-        val timestamp = java.time.LocalDateTime.now()
-        println("[$timestamp] [ERROR] $message")
-        error?.printStackTrace()
+        logger.error(message, error)
     }
 }
