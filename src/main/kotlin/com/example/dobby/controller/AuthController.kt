@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/auth")
@@ -14,19 +15,16 @@ class AuthController(
     private val authService: AuthService
 ) {
 
-    // Send the user to Discord's authorization screen
     @GetMapping("/login")
     fun redirectToDiscord(): ResponseEntity<Void> {
         val loginUri = authService.getDiscordLoginUri()
         return ResponseEntity.status(HttpStatus.FOUND).location(loginUri).build()
     }
 
-    // Catch the code from Discord and issue our own JWT
     @GetMapping("/callback")
-    suspend fun discordCallback(@RequestParam("code") code: String?): ResponseEntity<Any> {
+    suspend fun discordCallback(@RequestParam("code") code: String?): ResponseEntity<Void> {
         if (code == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(mapOf("error" to "No authorization code provided"))
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No authorization code provided")
         }
         val redirectDashboardUri = authService.handleCallbackAndGenerateRedirect(code)
         return ResponseEntity.status(HttpStatus.FOUND).location(redirectDashboardUri).build()

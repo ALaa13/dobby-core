@@ -36,7 +36,6 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/auth/**").permitAll()
                 auth.requestMatchers("/dev/token").permitAll()
-                auth.requestMatchers("/logs/**").permitAll()
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 auth.requestMatchers("/error").permitAll()
                 // Allow Spring's internal async dispatching requests to pass unblocked
