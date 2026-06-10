@@ -1,5 +1,6 @@
 package com.example.dobby.config
 
+import com.example.dobby.security.ApiKeyFilter
 import com.example.dobby.security.JwtAuthenticationFilter
 import jakarta.servlet.DispatcherType
 import org.springframework.beans.factory.annotation.Value
@@ -19,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val apiKeyFilter: ApiKeyFilter,
     @Value($$"${frontend.url}") private val frontendUrl: String
 ) {
     @Bean
@@ -32,6 +34,7 @@ class SecurityConfig(
             .securityContext { it.requireExplicitSave(false) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .cors { it.configurationSource(corsConfigurationSource()) }
+            .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/auth/**").permitAll()
