@@ -37,6 +37,7 @@ class SecurityConfig(
             .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
+                auth.requestMatchers("/").permitAll()
                 auth.requestMatchers("/auth/**").permitAll()
                 auth.requestMatchers("/dev/token").permitAll()
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

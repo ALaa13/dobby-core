@@ -1,11 +1,13 @@
 # Dobby Backend
 
-A Kotlin/Spring Boot backend service that generates AI-powered roasts for Discord. It accepts chat history, enriches
-requests with stored user facts from Supabase, generates roasts via Google Gemini, and returns results to your Discord
-bot or to the Web Dashboard.
+A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**.
+It accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini,
+and returns results to your Discord bot or to the Web Dashboard.
 
-See the [Dobby web README](https://github.com/ALaa13/dobby-web) for dashboard integration and
-See the [Dobby Bot README](https://github.com/ALaa13/dobby-core) for Discord bot integration.
+### Integrations
+- **[Discord Bot](https://github.com/ALaa13/dobby-bot)** — Real-time roasts in your server
+- **[Web Dashboard](https://github.com/ALaa13/dobby-web)** — View and manage roasts via browser
+
 
 ## 🎯 What It Does
 
