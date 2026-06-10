@@ -5,7 +5,7 @@ It accepts chat history, enriches requests with stored user facts from Supabase,
 and returns results to your Discord bot or to the Web Dashboard.
 
 ### Integrations
-- **[Discord Bot](https://github.com/ALaa13/dobby-bot)** — Real-time roasts in your server
+- **[Discord Bot](https://github.com/ALaa13/dobby)** — Real-time roasts in your server
 - **[Web Dashboard](https://github.com/ALaa13/dobby-web)** — View and manage roasts via browser
 
 
