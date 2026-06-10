@@ -4,8 +4,8 @@ A Kotlin/Spring Boot backend service that generates AI-powered roasts for Discor
 requests with stored user facts from Supabase, generates roasts via Google Gemini, and returns results to your Discord
 bot or to the Web Dashboard.
 
-See the [Dobby web README](../dobby-web/README.md) for dashboard integration and
-See the [Dobby Bot README](../dobby-bot/README.md) for Discord bot integration.
+See the [Dobby web README](https://github.com/ALaa13/dobby-web) for dashboard integration and
+See the [Dobby Bot README](https://github.com/ALaa13/dobby-core) for Discord bot integration.
 
 ## 🎯 What It Does
 
