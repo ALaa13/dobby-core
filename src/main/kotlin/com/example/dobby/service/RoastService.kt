@@ -1,12 +1,13 @@
 package com.example.dobby.service
 
-import com.example.dobby.client.DiscordCallbackClient
+import com.example.dobby.config.RedisChannels
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.dto.RoastRequest
 import com.example.dobby.dto.toResult
 import com.example.dobby.exception.DobbyException
+import com.example.dobby.queue.RedisPublisher
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
 import org.springframework.stereotype.Service
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service
 class RoastService(
     private val userRepository: UserProfileRepository,
     private val geminiService: GeminiService,
-    private val discordCallbackClient: DiscordCallbackClient
+    private val redisPublisher: RedisPublisher
 ) {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -29,7 +30,10 @@ class RoastService(
             try {
                 val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
                 val roastResult = geminiService.generateRoast(request.messages, request.persona, memoryContext)
-                discordCallbackClient.deliverRoast(request.toResult(roastResult, true))
+                redisPublisher.publishRoastDelivery(
+                    RedisChannels.ROAST_DELIVERY,
+                    request.toResult(roastResult, true)
+                )
             } catch (e: DobbyException) {
                 // Determine the message reply to be sent to the Client (Messages fit the UI theme)
                 val friendlyBotErrorMessage = when (e) {
@@ -41,8 +45,11 @@ class RoastService(
 
                     else -> "⚠️ System encountered an unexpected glitch while processing your roast."
                 }
-                Logging.logError("Managed Dobby Exception caught: ${e.message}")
-                discordCallbackClient.deliverRoast(request.toResult(friendlyBotErrorMessage, false))
+                logger.error("Managed Dobby Exception caught: ${e.message}")
+                redisPublisher.publishRoastDelivery(
+                    RedisChannels.ROAST_DELIVERY,
+                    request.toResult(friendlyBotErrorMessage, false)
+                )
             }
         }
     }

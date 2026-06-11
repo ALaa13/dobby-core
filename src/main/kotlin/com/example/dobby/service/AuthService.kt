@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.example.dobby.dto.DiscordTokenResponse
 import com.example.dobby.dto.DiscordUser
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -40,7 +40,7 @@ class AuthService(
                 "&response_type=code" +
                 "&scope=identify"
         val uri = URI.create(url)
-        Logging.logInfo("Generated Discord login URI: $uri")
+        logger.info("Generated Discord login URI: $uri")
         return uri
     }
 
@@ -64,8 +64,8 @@ class AuthService(
 
     private suspend fun getToken(code: String): DiscordTokenResponse {
         return try {
-            Logging.logInfo("Exchanging authorization code for access token with Discord")
-            Logging.logInfo("Requesting token with code: $code, clientId: $clientId, redirectUri: $redirectUri")
+            logger.info("Exchanging authorization code for access token with Discord")
+            logger.info("Requesting token with code: $code, clientId: $clientId, redirectUri: $redirectUri")
             httpClient.post(DISCORD_TOKEN_URL) {
                 contentType(ContentType.Application.FormUrlEncoded)
                 setBody(FormDataContent(Parameters.build {
@@ -79,7 +79,7 @@ class AuthService(
         } catch (e: CancellationException) {
             throw e // Let coroutine cancellation structure pass through unhindered!
         } catch (e: Exception) {
-            Logging.logError("Failed to exchange authorization code with Discord", e)
+            logger.error("Failed to exchange authorization code with Discord", e)
             throw DobbyException.AuthorizationException("Failed to exchange authorization code with Discord", e)
         }
     }
@@ -94,7 +94,7 @@ class AuthService(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Logging.logError("Failed to exchange authorization code with Discord", e)
+            logger.error("Failed to exchange authorization code with Discord", e)
             throw DobbyException.AuthorizationException("Failed to fetch user profile data from Discord", e)
         }
     }
@@ -102,7 +102,7 @@ class AuthService(
     private fun buildRedirectUri(baseUrl: String, token: String): URI {
         val delimiter = if (baseUrl.contains("?")) "&" else "?"
         val uri = URI.create("$baseUrl${delimiter}token=$token")
-        Logging.logInfo("Generated redirect: $uri")
+        logger.info("Generated redirect: $uri")
         return uri
     }
 }

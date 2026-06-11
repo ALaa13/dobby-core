@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.llm.GeminiModelManager
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import com.google.genai.Client
 import com.google.genai.types.GenerateContentResponse
 import org.springframework.beans.factory.annotation.Value
@@ -28,14 +28,14 @@ class GeminiService(
         return try {
             val path = Paths.get(promptFilePath).toAbsolutePath()
             if (!Files.exists(path)) {
-                Logging.logError("Gemini prompt file not found at $path; using default prompt.")
+                logger.error("Gemini prompt file not found at $path; using default prompt.")
                 defaultPrompt
             } else {
-                Logging.logInfo("Loading Gemini prompt from $path")
+                logger.info("Loading Gemini prompt from $path")
                 Files.readString(path)
             }
         } catch (e: Exception) {
-            Logging.logError("Failed to load Gemini prompt from $promptFilePath: ${e.message}; using default.")
+            logger.error("Failed to load Gemini prompt from $promptFilePath: ${e.message}; using default.")
             defaultPrompt
         }
     }
@@ -44,7 +44,7 @@ class GeminiService(
         val fullPrompt = buildFullPrompt(messages, persona, memoryContext)
         val aiModel = geminiModelManager.getBestModel()
         return try {
-            Logging.logInfo("Using Gemini model: $aiModel for roasting")
+            logger.info("Using Gemini model: $aiModel for roasting")
             val response: GenerateContentResponse =
                 googleApiClient.models.generateContent(
                     aiModel,
@@ -52,9 +52,9 @@ class GeminiService(
                     null
                 )
             response.text() ?: throw DobbyException.DataMappingException("AI returned an empty response body.")
-        } catch (e: DobbyException) {
+        } catch (e: Exception) {
             geminiModelManager.reportModelFailure(aiModel)
-            throw DobbyException.AiModelException("AI failed: ${e.message}", "Gemini Service", e)
+            throw DobbyException.AiModelException("AI model $aiModel failed: ${e.message}", "Gemini Service", e)
         }
     }
 

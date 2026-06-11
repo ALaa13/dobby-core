@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -25,7 +25,7 @@ class JWTService(
                 .withExpiresAt(Date(System.currentTimeMillis() + jwtExpiration.toMillis()))
                 .sign(algorithm)
         } catch (e: Exception) {
-            Logging.logError("Failed to generate JWT token", e)
+            logger.error("Failed to generate JWT token", e)
             throw DobbyException.JWTException("Failed to generate JWT token: ${e.message}", e)
         }
     }
@@ -39,7 +39,7 @@ class JWTService(
             val decodedJWT = verifier.verify(token)
             decodedJWT.subject
         } catch (e: Exception) {
-            Logging.logError("Failed to validate JWT token", e)
+            logger.error("Failed to validate JWT token", e)
             throw DobbyException.JWTException("Failed to validate JWT token: ${e.message}", e)
         }
     }
