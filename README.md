@@ -5,15 +5,16 @@ It accepts chat history, enriches requests with stored user facts from Supabase,
 and returns results to your Discord bot or to the Web Dashboard via **Redis Pub/Sub** for real-time delivery.
 
 ### Integrations
+
 - **[Discord Bot](https://github.com/ALaa13/dobby)** — Real-time roasts in your server
 - **[Web Dashboard](https://github.com/ALaa13/dobby-web)** — View and manage roasts via browser
-
 
 ## 🎯 What It Does
 
 - **Generate Roasts**: Accepts chat history from Discord and generates contextual roasts using Google Gemini AI
 - **Store Facts**: Saves user-specific facts that are used as context for more personalized roasts
-- **Async Processing**: Handles roast generation asynchronously with coroutines and delivers results via **Redis Pub/Sub**
+- **Async Processing**: Handles roast generation asynchronously with coroutines and delivers results via **Redis Pub/Sub
+  **
 - **Real-time Delivery**: Uses Redis channels to publish roast results in real-time
 
 ## 📋 Prerequisites
@@ -63,9 +64,8 @@ BACKEND_API_KEY=your-backend-api-key
 # Frontend Integration
 FRONTEND_URL=http://localhost:4200
 # Redis Configuration
-SPRING_REDIS_HOST=localhost
-SPRING_REDIS_PORT=6379
-SPRING_REDIS_PASSWORD=
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 ### 3. Run
@@ -90,7 +90,6 @@ curl http://localhost:8080/api/v1/
 - **Google Gemini API** for AI roast generation
 - **Supabase PostgREST** for data persistence
 - **Redis** for async message publishing and real-time delivery
-- **Ktor CIO** HTTP client for Discord bot callbacks
 - **Gradle** for build management
 
 ## 🔌 API Endpoints
@@ -177,31 +176,27 @@ Facts linked to user profiles.
 
 ### Environment Variables Reference
 
-| Variable                | Required | Purpose                              |
-|-------------------------|----------|--------------------------------------|
-| `SUPABASE_URL`          | Yes      | Your Supabase project URL            |
-| `SUPABASE_KEY`          | Yes      | Supabase service key                 |
-| `GEMINI_API_KEY`        | Yes      | Google Gemini API key                |
-| `DOBBY_BOT_URL`         | Yes      | Base URL of your Discord bot service |
-| `DOBBY_SECURITY_TOKEN`  | Yes      | Shared token for internal callbacks  |
-| `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID             |
-| `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret         |
-| `DISCORD_REDIRECT_URI`  | Yes      | Discord OAuth2 redirect URI          |
-| `JWT_SECRET`            | Yes      | Secret key for JWT signing           |
-| `JWT_EXPIRATION`        | Yes      | JWT expiration time (e.g., 7d, 7h)   |
-| `SECERTE_DEV_KEY`       | Yes      | Development secret key               |
-| `BACKEND_API_HEADER`    | Yes      | API header name (e.g., X-API-Key)    |
-| `BACKEND_API_KEY`       | Yes      | API key value                        |
-| `FRONTEND_URL`          | Yes      | Frontend application URL (for CORS)  |
-| `SPRING_REDIS_HOST`     | Yes      | Redis server hostname or IP          |
-| `SPRING_REDIS_PORT`     | Yes      | Redis server port (default: 6379)    |
-| `SPRING_REDIS_PASSWORD` | No       | Redis password (if required)         |
-
-**⚠️ Do not commit real `.env` values to version control.**
+| Variable                | Required | Purpose                             |
+|-------------------------|----------|-------------------------------------|
+| `SUPABASE_URL`          | Yes      | Your Supabase project URL           |
+| `SUPABASE_KEY`          | Yes      | Supabase service key                |
+| `GEMINI_API_KEY`        | Yes      | Google Gemini API key               |
+| `SECERTE_DEV_KEY`       | No       | Random key for token generation     |
+| `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID            |
+| `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret        |
+| `DISCORD_REDIRECT_URI`  | Yes      | Discord OAuth2 redirect URI         |
+| `JWT_SECRET`            | Yes      | Secret key for JWT signing          |
+| `JWT_EXPIRATION`        | Yes      | JWT expiration time (e.g., 7d, 7h)  |
+| `BACKEND_API_HEADER`    | Yes      | API header name (e.g., X-API-Key)   |
+| `BACKEND_API_KEY`       | Yes      | API key value                       |
+| `FRONTEND_URL`          | Yes      | Frontend application URL (for CORS) |
+| `REDIS_HOST`            | Yes      | Redis server hostname or IP         |
+| `REDIS_PORT`            | Yes      | Redis server port (default: 6379)   |
+| `REDIS_PASSWORD`        | No       | Redis password (if required)        |
 
 ### AI Prompt
 
-Edit `ai_prompt.txt` in the repository root to customize roast behavior. If missing, falls back to:
+Create `ai_prompt.txt` in the repository root to customize roast behavior. If missing, falls back to:
 `"You are a roast bot."`
 
 ### Project Structure
@@ -214,6 +209,7 @@ src/main/kotlin/com/example/dobby
 ├── dto/                         # Request/response models
 ├── exception/                   # Error handling
 ├── queue/                       # Redis Pub/Sub publishers & subscribers
+├── llm/                         # Gemini API integration
 ├── repository/                  # Supabase wrappers
 ├── service/                     # Business logic (RoastService, FactService, etc.)
 ├── supabase/                    # Supabase client setup
