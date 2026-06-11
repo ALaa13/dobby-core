@@ -2,7 +2,7 @@
 
 A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**.
 It accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini,
-and returns results to your Discord bot or to the Web Dashboard.
+and returns results to your Discord bot or to the Web Dashboard via **Redis Pub/Sub** for real-time delivery.
 
 ### Integrations
 - **[Discord Bot](https://github.com/ALaa13/dobby)** — Real-time roasts in your server
@@ -13,11 +13,13 @@ and returns results to your Discord bot or to the Web Dashboard.
 
 - **Generate Roasts**: Accepts chat history from Discord and generates contextual roasts using Google Gemini AI
 - **Store Facts**: Saves user-specific facts that are used as context for more personalized roasts
-- **Async Processing**: Handles roast generation asynchronously and delivers results via callback
+- **Async Processing**: Handles roast generation asynchronously with coroutines and delivers results via **Redis Pub/Sub**
+- **Real-time Delivery**: Uses Redis channels to publish roast results in real-time
 
 ## 📋 Prerequisites
 
 - **Java 21** (check with `java -version`)
+- **Redis** (local or remote instance for async message delivery)
 - **Network access** to Supabase, Google Gemini API, and your Discord bot service
 - **API Keys**: Supabase credentials, Google Gemini API key, and Discord OAuth2 credentials
 
@@ -60,6 +62,10 @@ BACKEND_API_HEADER=X-API-Key
 BACKEND_API_KEY=your-backend-api-key
 # Frontend Integration
 FRONTEND_URL=http://localhost:4200
+# Redis Configuration
+SPRING_REDIS_HOST=localhost
+SPRING_REDIS_PORT=6379
+SPRING_REDIS_PASSWORD=
 ```
 
 ### 3. Run
@@ -83,6 +89,7 @@ curl http://localhost:8080/api/v1/
 - **Spring Boot 4.0** with virtual threads
 - **Google Gemini API** for AI roast generation
 - **Supabase PostgREST** for data persistence
+- **Redis** for async message publishing and real-time delivery
 - **Ktor CIO** HTTP client for Discord bot callbacks
 - **Gradle** for build management
 
@@ -186,6 +193,9 @@ Facts linked to user profiles.
 | `BACKEND_API_HEADER`    | Yes      | API header name (e.g., X-API-Key)    |
 | `BACKEND_API_KEY`       | Yes      | API key value                        |
 | `FRONTEND_URL`          | Yes      | Frontend application URL (for CORS)  |
+| `SPRING_REDIS_HOST`     | Yes      | Redis server hostname or IP          |
+| `SPRING_REDIS_PORT`     | Yes      | Redis server port (default: 6379)    |
+| `SPRING_REDIS_PASSWORD` | No       | Redis password (if required)         |
 
 **⚠️ Do not commit real `.env` values to version control.**
 
@@ -199,12 +209,14 @@ Edit `ai_prompt.txt` in the repository root to customize roast behavior. If miss
 ```
 src/main/kotlin/com/example/dobby
 ├── DobbyApplication.kt          # Spring Boot entry point
-├── config/                      # Gemini, Supabase, HTTP config
+├── config/                      # Gemini, Supabase, Redis, HTTP config
 ├── controller/                  # HTTP API controllers
 ├── dto/                         # Request/response models
 ├── exception/                   # Error handling
+├── queue/                       # Redis Pub/Sub publishers & subscribers
 ├── repository/                  # Supabase wrappers
-├── service/                     # Business logic
+├── service/                     # Business logic (RoastService, FactService, etc.)
+├── supabase/                    # Supabase client setup
 └── util/                        # Helpers
 ```
 
@@ -224,22 +236,17 @@ Output: `build/libs/dobby-core-0.0.1-SNAPSHOT.jar`
 java -jar build/libs/dobby-core-0.0.1-SNAPSHOT.jar
 ```
 
-## 📡 Discord Bot Integration
+## 📡 Redis Integration
 
-Your Discord bot must expose this endpoint to receive roast results:
+### Roast Delivery via Redis
 
-```
-POST {DOBBY_BOT_URL}/api/internal/deliver
-```
+The service uses **Redis Pub/Sub** to deliver roasts in real-time:
 
-**Headers:**
+- **Channel**: `roast-delivery`
+- **Publisher**: `RoastService` publishes results after Gemini generation
+- **Subscriber**: Discord bot (or other consumers) subscribe to `roast-delivery` channel
 
-```
-Content-Type: application/json
-X-Internal-Token: {DOBBY_SECURITY_TOKEN}
-```
-
-**Body:**
+**Message Format:**
 
 ```json
 {
@@ -249,6 +256,18 @@ X-Internal-Token: {DOBBY_SECURITY_TOKEN}
 }
 ```
 
+### Redis Configuration
+
+Make sure Redis is running and accessible. For local development:
+
+```bash
+# Start Redis locally (macOS with Homebrew)
+brew services start redis
+
+# Or using Docker
+docker run -d -p 6379:6379 redis:latest
+```
+
 ## 🐛 Troubleshooting
 
 | Problem                          | Solution                                                                                                             |
@@ -256,14 +275,14 @@ X-Internal-Token: {DOBBY_SECURITY_TOKEN}
 | `JAVA_HOME is not set`           | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                           |
 | `Supabase url must not be blank` | Check `.env` exists with all required Supabase variables filled                                                      |
 | Gemini prompt file not found     | Create `ai_prompt.txt` in repo root or update `gemini.prompt.file` in `application.properties`                       |
-| Discord doesn't receive results  | Verify `DOBBY_BOT_URL`, `/api/internal/deliver` endpoint exists, and `DOBBY_SECURITY_TOKEN` matches                  |
+| Redis connection refused         | Ensure Redis is running on the configured host/port, or update `SPRING_REDIS_HOST` and `SPRING_REDIS_PORT`           |
 | Facts not in roasts              | Ensure `discord_user_id` matches message author, `guild_id` matches request, and Supabase relationship is configured |
 | Missing environment variables    | Run `cp .env.example .env` and fill in all required values                                                           |
 
 ## ℹ️ Notes
 
 - Roast generation is **asynchronous** — `202 Accepted` only confirms the job was queued
-- Internal callbacks use `DOBBY_SECURITY_TOKEN` — incoming endpoints require proper API key authentication
+- Results are delivered via **Redis Pub/Sub** for real-time, scalable message distribution
 - Virtual threads are enabled for better concurrency
 - Gemini models with "flash" are preferred; models fail over to backups with 15-minute cooldowns
 - Always use `.env.example` as a reference for required variables
