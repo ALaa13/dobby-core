@@ -12,4 +12,4 @@ data class RoastRequest(
 
 
 fun RoastRequest.toResult(content: String, success: Boolean) =
-    RoastResultRequest(channelId, content, success)
+    RoastResult(channelId, content, success)

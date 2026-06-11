@@ -4,7 +4,7 @@ import com.example.dobby.dto.*
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,7 +18,7 @@ class FactService(
     }
 
     suspend fun saveFact(request: DiscordFactRequest) {
-        Logging.logInfo("Received remember request for user $request")
+        logger.info("Received remember request for user $request")
         val profile = getOrCreateProfile(
             UserProfileCreateRequest(
                 discordUserId = request.discordUserId,
@@ -47,6 +47,6 @@ class FactService(
                 guildId
             )
         userFactRepository.deleteFactsByProfileId(profile.id)
-        Logging.logInfo("Deleted all facts for user $discordUserId")
+        logger.info("Deleted all facts for user $discordUserId")
     }
 }

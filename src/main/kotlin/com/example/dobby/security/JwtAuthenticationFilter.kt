@@ -1,7 +1,7 @@
 package com.example.dobby.security
 
 import com.example.dobby.service.JWTService
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -43,7 +43,7 @@ class JwtAuthenticationFilter(
                 SecurityContextHolder.getContext().authentication = authToken
             }
         } catch (e: Exception) {
-            Logging.logError("Failed to set user authentication from JWT", e)
+            logger.error("Failed to set user authentication from JWT", e)
         }
         filterChain.doFilter(request, response)
     }

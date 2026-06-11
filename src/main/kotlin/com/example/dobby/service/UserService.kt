@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.example.dobby.dto.UserProfileResponse
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.Logging
+import com.example.dobby.util.logger
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
@@ -13,7 +13,7 @@ class UserService(
 ) {
 
     suspend fun getCurrentUser(): UserProfileResponse {
-        Logging.logInfo("Attempting to retrieve current user profile")
+        logger.info("Attempting to retrieve current user profile")
         val authentication = SecurityContextHolder.getContext().authentication
         val discordUserId = authentication?.name ?: throw DobbyException.ProfileNotFoundException(null, null)
 
