@@ -1,7 +1,6 @@
 package com.example.dobby.security
 
 import com.example.dobby.service.JWTService
-import com.example.dobby.util.logger
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

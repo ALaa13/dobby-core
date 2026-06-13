@@ -178,10 +178,16 @@ Facts linked to user profiles.
 | `REDIS_PORT`            | Yes      | Redis server port (default: 6379)   |
 | `REDIS_PASSWORD`        | No       | Redis password (if required)        |
 
-### AI Prompt
+### ⚙️ AI Prompt Configuration
 
-Create `ai_prompt.txt` in the repository root to customize roast behavior. If missing, falls back to:
-`"You are a roast bot."`
+The bot's personality and roasting rules are loaded from an external text file at the root of the repository.
+
+1. Create a file named `ai_prompt.txt` in the repository root.
+2. Customize the roast behavior, rules, and constraints to your liking.
+
+* **Example Template:** You can use `ai_prompt.txt.example` as a starting blueprint.
+* **Fallback Behavior:** If `ai_prompt.txt` is missing, the system automatically falls back to a default baseline
+  prompt: `"You are a roast bot."`
 
 ### Project Structure
 

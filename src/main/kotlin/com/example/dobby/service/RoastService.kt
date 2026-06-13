@@ -1,10 +1,10 @@
 package com.example.dobby.service
 
-import com.example.dobby.queue.RedisChannels
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.dto.RoastRequest
 import com.example.dobby.dto.toResult
 import com.example.dobby.exception.DobbyException
+import com.example.dobby.queue.RedisChannels
 import com.example.dobby.queue.RedisPublisher
 import com.example.dobby.repository.UserProfileRepository
 import com.example.dobby.util.logger
