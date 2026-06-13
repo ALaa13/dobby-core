@@ -1,5 +1,6 @@
 package com.example.dobby.controller
 
+import com.example.dobby.dto.ApiResponse
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.service.JWTService
 import org.springframework.beans.factory.annotation.Value
@@ -17,12 +18,15 @@ class DevController(
     private val jwtService: JWTService
 ) {
     @GetMapping("/token")
-    fun getTestToken(@RequestParam secret: String): Map<String, String> {
+    fun getTestToken(@RequestParam secret: String): ApiResponse {
         if (secret != devSecret) {
             throw DobbyException.AuthorizationException("Invalid secret")
         }
 
         val token = jwtService.generateJWTToken("dev", "dev@example.com")
-        return mapOf("token" to token)
+        return ApiResponse(
+            success = true,
+            message = token
+        )
     }
 }

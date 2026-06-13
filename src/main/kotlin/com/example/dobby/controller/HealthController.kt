@@ -1,17 +1,22 @@
 package com.example.dobby.controller
 
+import com.example.dobby.dto.ApiResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/")
 @RestController
+@RequestMapping("/")
 class HealthController {
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    suspend fun hello(): String {
-        return "Hello, World!"
+    suspend fun hello(): ApiResponse {
+        return ApiResponse(
+            success = true,
+            message = "Dobby Backend API is running smoothly."
+        )
     }
 }

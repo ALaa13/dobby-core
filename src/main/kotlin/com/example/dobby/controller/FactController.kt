@@ -1,5 +1,6 @@
 package com.example.dobby.controller
 
+import com.example.dobby.dto.ApiResponse
 import com.example.dobby.dto.DiscordFactRequest
 import com.example.dobby.dto.UserFactResponse
 import com.example.dobby.service.FactService
@@ -23,16 +24,24 @@ class FactController(
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    suspend fun saveFact(@Valid @RequestBody request: DiscordFactRequest) {
-        return factService.saveFact(request)
+    suspend fun saveFact(@Valid @RequestBody request: DiscordFactRequest): ApiResponse {
+        factService.saveFact(request)
+        return ApiResponse(
+            success = true,
+            message = "Fact saved successfully."
+        )
     }
 
     @DeleteMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     suspend fun resetFacts(
         @RequestParam("discord_user_id") discordUserId: String,
         @RequestParam("guild_id") guildId: String
-    ) {
+    ): ApiResponse {
         factService.resetFacts(discordUserId, guildId)
+        return ApiResponse(
+            success = true,
+            message = "All facts for this user have been successfully reset."
+        )
     }
 }

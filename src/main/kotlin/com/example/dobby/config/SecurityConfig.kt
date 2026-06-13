@@ -26,7 +26,7 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            // Completely strip tracking
+            // Complete strip tracking
             .csrf { it.disable() }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
@@ -36,15 +36,21 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            // Allow only authenticated users to access the API, except for specific endpoints
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/").permitAll()
-                auth.requestMatchers("/auth/**").permitAll()
-                auth.requestMatchers("/dev/token").permitAll()
-                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                auth.requestMatchers("/error").permitAll()
-                // Allow Spring's internal async dispatching requests to pass unblocked
-                auth.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
-                auth.anyRequest().authenticated()
+                auth.requestMatchers(
+                    "/",
+                    "/auth/**",
+                    "/dev/token",
+                    "/error",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/openapi.yaml"
+                ).permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                    .anyRequest().authenticated()
             }
         return http.build()
     }

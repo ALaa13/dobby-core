@@ -1,0 +1,570 @@
+openapi: 3.0.0
+
+info:
+  title: Dobby Backend API
+  description: |
+    A Kotlin/Spring Boot backend service that generates AI-powered roasts for Discord and a Web Dashboard.
+    It accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini,
+    and returns results to Discord or Web Dashboard via Redis Pub/Sub for real-time delivery.
+  version: 1.0.0
+  contact:
+    name: Dobby Backend
+    url: https://github.com/ALaa13/dobby-core
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+  - url: https://api.dobby.example.com/api/v1
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: Discord OAuth2 authentication flow
+  - name: Roasts
+    description: AI-powered roast generation endpoints
+  - name: Facts
+    description: User fact management endpoints
+  - name: Users
+    description: User profile and identity endpoints
+  - name: Logs
+    description: Real-time application streaming logs
+  - name: Development
+    description: Testing and mock endpoints restricted to dev profile
+
+paths:
+  /:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Verifies that the API service is active and responsive.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy and active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Dobby Backend API is running smoothly."
+                timestamp: 1781354405000
+
+  /auth/login:
+    get:
+      tags:
+        - Authentication
+      summary: Redirect to Discord login
+      description: Initiates the Discord OAuth2 authorization flow by returning a browser-level 302 redirection.
+      operationId: redirectToDiscord
+      security: [ ] # No authentication required to login
+      responses:
+        '302':
+          description: Redirects browser to Discord's authorization page.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Target authorization URL for Discord.
+
+  /auth/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Discord OAuth2 callback
+      description: Handles the incoming redirection code from Discord and forwards the user to the web dashboard with their token.
+      operationId: discordCallback
+      security: [ ]
+      parameters:
+        - name: code
+          in: query
+          required: true
+          description: Authorization grant token sent back by Discord.
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Successfully verified credentials; redirecting to frontend dashboard.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Frontend landing dashboard URL with the embedded access token.
+        '400':
+          description: Bad Request - Missing authorization token query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Validation failed: No authorization code provided"
+                timestamp: 1781354405000
+
+  /roast:
+    post:
+      tags:
+        - Roasts
+      summary: Generate an AI roast
+      description: Queues up an asynchronous task to evaluate chat streams and compile an AI roast response delivered via Redis Pub/Sub.
+      operationId: generateRoast
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoastRequest'
+      responses:
+        '202':
+          description: Roast request successfully accepted and positioned in execution queue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Roast generation job accepted and queued successfully."
+                timestamp: 1781354405000
+        '403':
+          description: Forbidden - Security validation credentials insufficient.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "You are not authorized to access facts for this guild."
+                timestamp: 1781354405000
+
+  /fact:
+    get:
+      tags:
+        - Facts
+      summary: Get user facts
+      description: Retrieves the entire array of documented facts assigned to a user profile context inside a specified guild.
+      operationId: getUserFacts
+      parameters:
+        - name: discord_user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: guild_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Query resolved; matching payload array returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserFactResponse'
+        '400':
+          description: Bad Request - Query parameter constraints violated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Validation failed: Required query parameter 'discord_user_id' or 'guild_id' is missing."
+                timestamp: 1781354405000
+        '403':
+          description: Forbidden - Security validation credentials insufficient.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "You are not authorized to access facts for this guild."
+                timestamp: 1781354405000
+
+    post:
+      tags:
+        - Facts
+      summary: Save a user fact
+      description: Commits or updates an entry describing characteristic behaviors inside a user profile context.
+      operationId: saveFact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscordFactRequest'
+      responses:
+        '201':
+          description: Data profile fact successfully verified and recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Fact saved successfully."
+                timestamp: 1781354405000
+        '400':
+          description: Bad Request - Fact body validations or data schema constraints failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Validation failed: fact: must not be blank"
+                timestamp: 1781354405000
+        '403':
+          description: Forbidden - Security validation credentials insufficient.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "You are not authorized to access facts for this guild."
+                timestamp: 1781354405000
+
+    delete:
+      tags:
+        - Facts
+      summary: Delete all user facts
+      description: Clears all collected context strings registered to a specific user inside that guild profile.
+      operationId: resetUserFacts
+      parameters:
+        - name: discord_user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: guild_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Purge operation successful; verification response delivered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "All facts for this user have been successfully reset."
+                timestamp: 1781354405000
+        '400':
+          description: Bad Request - Missing key mapping constraints in query paths.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Validation failed: guild_id parameter must be a numeric string."
+                timestamp: 1781354405000
+        '404':
+          description: Not Found - Target user metadata workspace mapping absent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "User profile not found."
+                timestamp: 1781354405000
+        '403':
+          description: Forbidden - Security validation credentials insufficient.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "You are not authorized to access facts for this guild."
+                timestamp: 1781354405000
+
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Returns the user context configuration model matching authorization data.
+      operationId: getCurrentUserProfile
+      responses:
+        '200':
+          description: Identity mapped; payload returned cleanly.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: Unauthenticated - Token payload signature is expired, deformed, or missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Invalid or expired JWT token."
+                timestamp: 1781354405000
+
+  /logs/stream:
+    get:
+      tags:
+        - Logs
+      summary: Stream server-sent events logs
+      description: Binds client sessions to an active stream connection dropping structured server log text frames continuously. Requires a valid X-API-Key header.
+      operationId: streamLogs
+      security:
+        - ApiKeyAuth: [ ]
+      responses:
+        '200':
+          description: Server-Sent Events logging tunnel established successfully.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                data: {"timestamp":"2026-06-13T14:30:00Z","level":"INFO","message":"Roast generation started"}
+                
+                data: {"timestamp":"2026-06-13T14:30:05Z","level":"DEBUG","message":"Facts retrieved from Supabase"}
+        '403':
+          description: Forbidden - Invalid or missing X-API-Key header.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "You are not authorized to perform this action."
+                timestamp: 1781354405000
+
+  /dev/token:
+    get:
+      tags:
+        - Development
+      summary: Generate test JWT token (dev only)
+      description: Creates simulated test tokens without requiring routing loops through Discord providers.
+      operationId: getTestToken
+      parameters:
+        - name: secret
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sandbox key generated and wrapped.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                timestamp: 1781354405000
+        '401':
+          description: Unauthenticated - Sandbox authorization phrase incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: "Invalid secret"
+                timestamp: 1781354405000
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      required:
+        - success
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Evaluation flag indicating success state.
+        message:
+          type: string
+          description: Data logs payload message, or token keys.
+        timestamp:
+          type: integer
+          format: int64
+          description: Time processing resolution epoch millisecond representation.
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          description: Evaluation flag indicating failure state (Always false).
+        message:
+          type: string
+          description: Breakdown information clarifying failure sources.
+        timestamp:
+          type: integer
+          format: int64
+          description: Time processing resolution epoch millisecond representation.
+
+    RoastRequest:
+      type: object
+      required:
+        - channelId
+        - guildId
+        - messages
+      properties:
+        channelId:
+          type: string
+          example: "123456789012345678"
+        guildId:
+          type: string
+          example: "987654321098765432"
+        persona:
+          type: string
+          nullable: true
+          example: "Arch Linux user"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscordChatMessage'
+
+    DiscordChatMessage:
+      type: object
+      required:
+        - author
+        - content
+        - timestamp
+      properties:
+        author:
+          type: string
+          example: "111111111111111111"
+        content:
+          type: string
+          example: "You use a GUI for that?"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-05-25T16:30:00Z"
+
+    DiscordFactRequest:
+      type: object
+      required:
+        - fact
+        - discordUserId
+        - guildId
+      properties:
+        fact:
+          type: string
+          example: "He'll fix a kernel panic before fixing his posture."
+        discordUserId:
+          type: string
+          example: "111111111111111111"
+        guildId:
+          type: string
+          example: "987654321098765432"
+        displayName:
+          type: string
+          nullable: true
+          example: "SomeUser"
+
+    UserFactResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        profile_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        fact_text:
+          type: string
+          example: "He'll fix a kernel panic before fixing his posture."
+        source:
+          type: string
+          enum: [ USER_SUBMISSION ]
+          example: "USER_SUBMISSION"
+        confidence_score:
+          type: integer
+          format: int16
+          nullable: true
+          example: 80
+        roastability_score:
+          type: integer
+          format: int16
+          nullable: true
+          example: 20
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-25T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-06-10T15:30:00Z"
+
+    UserProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        discord_user_id:
+          type: string
+          example: "111111111111111111"
+        guild_id:
+          type: string
+          example: "987654321098765432"
+        display_name:
+          type: string
+          nullable: true
+          example: "SomeUser"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-25T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-06-10T15:30:00Z"
+        user_facts:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/UserFactResponse'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Discord OAuth2 callback or dev token generator.
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Internal backend access security header token.
+
+security:
+  - BearerAuth: [ ]
+  - ApiKeyAuth: [ ]

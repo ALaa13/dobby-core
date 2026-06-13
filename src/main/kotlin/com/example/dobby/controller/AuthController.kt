@@ -1,6 +1,6 @@
 package com.example.dobby.controller
 
-import com.example.dobby.service.AuthService
+import com.example.dobby.service.DiscordAuthService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val authService: AuthService
+    private val authService: DiscordAuthService
 ) {
 
     @GetMapping("/login")

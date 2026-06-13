@@ -94,49 +94,33 @@ curl http://localhost:8080/api/v1/
 
 ## 🔌 API Endpoints
 
-### Generate a Roast
+This project uses **OpenAPI 3.0** to document and specify all REST endpoints. The API definitions are managed manually
+via a static design file.
 
-```
-POST /api/v1/roast
-```
+### 📝 Viewing the API Specs (Local Development)
 
-**Request:**
+When the backend application is running locally, you can access the interactive **Swagger UI** dashboard directly
+through your browser:
 
-```json
-{
-  "channelId": "123456789012345678",
-  "guildId": "987654321098765432",
-  "persona": "Arch Linux user",
-  "messages": [
-    {
-      "author": "111111111111111111",
-      "content": "You use a GUI for that?",
-      "timestamp": "2026-05-25T16:30:00Z"
-    }
-  ]
-}
-```
+* **Swagger UI Dashboard:** [http://localhost:8080/api/v1/swagger-ui.html](http://localhost:8080/api/v1/swagger-ui.html)
+* **Raw OpenAPI Specification:** [http://localhost:8080/api/v1/openapi.yaml](http://localhost:8080/api/v1/openapi.yaml)
 
-**Response:** `202 Accepted` (roast generated asynchronously)
+### 📂 File Structure
 
-### Store a User Fact
+If you need to update endpoints, add new schemas, or change authentication scopes, modify the core configuration file
+here:
 
-```
-POST /api/v1/fact
+```text
+src/main/resources/
+└── static/
+    └── openapi.yaml  <-- Edit this file to update documentation and API definitions
 ```
 
-**Request:**
+#### Available Core Endpoints (Explore via Swagger):
 
-```json
-{
-  "fact": "He'll fix a kernel panic before fixing his posture.",
-  "discordUserId": "111111111111111111",
-  "guildId": "987654321098765432",
-  "displayName": "SomeUser"
-}
-```
-
-**Response:** `200 OK`
+* `POST /api/v1/roast` — Triggers asynchronous AI roast generation via Redis Pub/Sub.
+* `POST /api/v1/fact` — Stores collected user facts for future context.
+* `GET /api/v1/logs/stream` — Real-time Server-Sent Events (SSE) log stream for the web dashboard.
 
 ## 🗄️ Database Schema
 

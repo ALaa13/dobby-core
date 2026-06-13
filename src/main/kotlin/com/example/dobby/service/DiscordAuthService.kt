@@ -16,7 +16,7 @@ import java.net.URI
 import java.net.URLEncoder
 
 @Service
-class AuthService(
+class DiscordAuthService(
     private val httpClient: HttpClient,
     private val jwtService: JWTService,
     @Value($$"${discord.client.id}") private val clientId: String,
