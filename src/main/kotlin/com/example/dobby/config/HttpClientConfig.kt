@@ -7,18 +7,24 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import io.ktor.client.HttpClientConfig as KtorClientConfig
 
 @Configuration
 class HttpClientConfig {
     @Bean
     fun httpClient(): HttpClient {
         return HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    prettyPrint = false
-                })
-            }
+            configureDobbyJson()
         }
+    }
+}
+
+
+fun KtorClientConfig<*>.configureDobbyJson() {
+    install(ContentNegotiation) {
+        json(Json {
+            ignoreUnknownKeys = true
+            prettyPrint = false
+        })
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/auth")
@@ -22,10 +21,7 @@ class AuthController(
     }
 
     @GetMapping("/callback")
-    suspend fun discordCallback(@RequestParam("code") code: String?): ResponseEntity<Void> {
-        if (code == null) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "No authorization code provided")
-        }
+    suspend fun discordCallback(@RequestParam("code", required = false) code: String?): ResponseEntity<Void> {
         val redirectDashboardUri = authService.handleCallbackAndGenerateRedirect(code)
         return ResponseEntity.status(HttpStatus.FOUND).location(redirectDashboardUri).build()
     }

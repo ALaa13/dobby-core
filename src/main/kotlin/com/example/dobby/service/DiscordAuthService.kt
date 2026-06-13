@@ -30,6 +30,7 @@ class DiscordAuthService(
         private const val DISCORD_USER_URL = "https://discord.com/api/v10/users/@me"
         private const val DISCORD_TOKEN_URL = "https://discord.com/api/v10/oauth2/token"
         private const val FRONT_END_REDIRECT_DESTINATION = "/dashboard"
+        private const val FRONT_END_LOGIN_PAGE = "/login"
     }
 
     // Generates the clean URI for the controller to redirect to
@@ -45,24 +46,33 @@ class DiscordAuthService(
     }
 
     // Handles the heavy exchange logic and returns the final destination URI
-    suspend fun handleCallbackAndGenerateRedirect(code: String): URI {
-        // 1. Trade temporary Code for Access Token
-        val tokenResponse = getToken(code)
-        val accessToken = tokenResponse.accessToken
-            ?: throw DobbyException.AuthorizationException("Failed to retrieve access token from Discord")
+    suspend fun handleCallbackAndGenerateRedirect(code: String?): URI {
+        return try {
+            if (code == null) {
+                throw DobbyException.InvalidAuthenticationRequestException("Missing authorization code in callback request")
+            }
+            val tokenResponse = getTokenFromDiscordOAuth(code)
+            val accessToken = tokenResponse.accessToken
+                ?: throw DobbyException.AuthorizationException("Failed to retrieve access token from Discord")
 
-        // 2. Pull user data from Discord API
-        val userResponse = getUserData(accessToken)
-        val discordUserId = userResponse.id
-        val username = userResponse.username ?: "Unknown User"
+            val userResponse = getUserDataFromDiscordToken(accessToken)
+            val discordUserId = userResponse.id
+            val username = userResponse.username ?: "Unknown User"
 
-        val jwtToken = jwtService.generateJWTToken(discordUserId, username)
-        return buildRedirectUri(frontendUrl + FRONT_END_REDIRECT_DESTINATION, jwtToken)
+            val jwtToken = jwtService.generateJWTToken(discordUserId, username)
+            buildRedirectUri(frontendUrl + FRONT_END_REDIRECT_DESTINATION, jwtToken)
+        } catch (e: DobbyException.InvalidAuthenticationRequestException) {
+            logger.warn("Authentication request rejected: ${e.message}")
+            buildRedirectUri(frontendUrl + FRONT_END_LOGIN_PAGE, "error=invalid_request")
+        } catch (e: Exception) {
+            logger.error("OAuth handshake failed due to a severe system error", e)
+            buildRedirectUri(frontendUrl + FRONT_END_LOGIN_PAGE, "error=discord_auth_failed")
+        }
     }
 
     /*** Helper functions ***/
 
-    private suspend fun getToken(code: String): DiscordTokenResponse {
+    private suspend fun getTokenFromDiscordOAuth(code: String): DiscordTokenResponse {
         return try {
             logger.info("Exchanging authorization code for access token with Discord")
             logger.info("Requesting token with code: $code, clientId: $clientId, redirectUri: $redirectUri")
@@ -84,7 +94,7 @@ class DiscordAuthService(
         }
     }
 
-    private suspend fun getUserData(accessToken: String): DiscordUser {
+    private suspend fun getUserDataFromDiscordToken(accessToken: String): DiscordUser {
         return try {
             httpClient.get(DISCORD_USER_URL) {
                 headers {
