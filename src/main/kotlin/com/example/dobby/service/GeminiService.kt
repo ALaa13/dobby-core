@@ -6,39 +6,15 @@ import com.example.dobby.llm.GeminiModelManager
 import com.example.dobby.util.logger
 import com.google.genai.Client
 import com.google.genai.types.GenerateContentResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.nio.file.Files
-import java.nio.file.Paths
 
 
 @Service
 class GeminiService(
     private val googleApiClient: Client,
     private val geminiModelManager: GeminiModelManager,
-    @Value($$"${gemini.prompt.file:}") private val promptFilePath: String
+    private val promptLoader: PromptLoader,
 ) {
-    private val promptText: String = loadPrompt()
-
-    private fun loadPrompt(): String {
-        val defaultPrompt = """You are a roast bot.""".trimIndent()
-        if (promptFilePath.isBlank()) {
-            return defaultPrompt
-        }
-        return try {
-            val path = Paths.get(promptFilePath).toAbsolutePath()
-            if (!Files.exists(path)) {
-                logger.error("Gemini prompt file not found at $path; using default prompt.")
-                defaultPrompt
-            } else {
-                logger.info("Loading Gemini prompt from $path")
-                Files.readString(path)
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to load Gemini prompt from $promptFilePath: ${e.message}; using default.")
-            defaultPrompt
-        }
-    }
 
     suspend fun generateRoast(messages: List<DiscordChatMessage>, persona: String?, memoryContext: String): String {
         val fullPrompt = buildFullPrompt(messages, persona, memoryContext)
@@ -66,6 +42,7 @@ class GeminiService(
         val messagesText = messages.joinToString("\n") {
             "${it.author} (${it.timestamp}): ${it.content}"
         }
+        val promptText: String = promptLoader.loadPrompt()
         return "$promptText\n\n" +
                 "Persona: ${persona}\n\n" +
                 "Memory Context: \n$memoryContext\n\n" +
