@@ -44,6 +44,13 @@ sealed class DobbyException(
         cause: Throwable? = null
     ) : DobbyException("Authorization failed: $message", cause)
 
+    // Authentication failures (Missing or invalid authentication headers or user cancels login)
+    class InvalidAuthenticationRequestException(
+        message: String,
+        cause: Throwable? = null
+    ) : DobbyException("Invalid authentication request: $message", cause)
+
+
     // JWT failures (Malformed tokens, signature verification failures)
     class JWTException(
         message: String,

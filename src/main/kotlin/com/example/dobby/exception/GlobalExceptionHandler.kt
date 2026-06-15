@@ -35,6 +35,9 @@ class GlobalExceptionHandler {
             is DobbyException.AuthorizationException ->
                 HttpStatus.UNAUTHORIZED to "You are not authorized to perform this action."
 
+            is DobbyException.InvalidAuthenticationRequestException ->
+                HttpStatus.BAD_REQUEST to "Invalid authentication request."
+
             is DobbyException.JWTException ->
                 HttpStatus.UNAUTHORIZED to "Invalid or expired JWT token."
 

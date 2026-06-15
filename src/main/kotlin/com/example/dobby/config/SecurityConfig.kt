@@ -1,9 +1,9 @@
 package com.example.dobby.config
 
+import com.example.dobby.AppProperties
 import com.example.dobby.security.ApiKeyFilter
 import com.example.dobby.security.JwtAuthenticationFilter
 import jakarta.servlet.DispatcherType
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -19,9 +19,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
+    private val appProperties: AppProperties,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val apiKeyFilter: ApiKeyFilter,
-    @Value($$"${frontend.url}") private val frontendUrl: String
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -58,6 +58,8 @@ class SecurityConfig(
     // Keep frontend URL allowed to communicate with the API
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
+        val frontendUrl = appProperties.frontend.url
+
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf(frontendUrl)
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
