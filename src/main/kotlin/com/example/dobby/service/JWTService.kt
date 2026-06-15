@@ -2,20 +2,21 @@ package com.example.dobby.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.example.dobby.AppProperties
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.util.logger
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.util.*
 
 @Service
 class JWTService(
-    @Value($$"${jwt.secret}") private val jwtSecret: String,
-    @Value($$"${jwt.expiration}") private val jwtExpiration: Duration,
+    private val appProperties: AppProperties,
 ) {
 
     fun generateJWTToken(subject: String, claim: String): String {
+        val jwtSecret = appProperties.jwt.secret
+        val jwtExpiration = appProperties.jwt.expiration
+
         return try {
             val algorithm = Algorithm.HMAC256(jwtSecret)
             JWT.create()
@@ -31,6 +32,8 @@ class JWTService(
     }
 
     fun validateTokenAndGetSubject(token: String): String {
+        val jwtSecret = appProperties.jwt.secret
+
         return try {
             val algorithm = Algorithm.HMAC256(jwtSecret)
             val verifier = JWT.require(algorithm)

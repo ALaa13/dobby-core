@@ -21,17 +21,17 @@ class FactService(
         logger.info("Received remember request for user $request")
         val profile = getOrCreateProfile(
             UserProfileCreateRequest(
-                discordUserId = request.discordUserId,
-                guildId = request.guildId,
-                displayName = request.displayName
+                request.discordUserId,
+                request.guildId,
+                request.displayName
             )
         )
         val fact = UserFactCreateRequest(
-            profileId = profile.id,
-            factText = request.fact,
-            source = FactSource.USER_SUBMISSION,
-            confidenceScore = 80,
-            roastabilityScore = 20
+            profile.id,
+            request.fact,
+            FactSource.USER_SUBMISSION,
+            80,
+            20
         )
         userFactRepository.saveFact(fact)
     }

@@ -1,9 +1,9 @@
 package com.example.dobby.security
 
+import com.example.dobby.AppProperties
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -13,8 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class ApiKeyFilter(
-    @Value($$"${app.security.api-key-header}") private val apiKeyHeader: String,
-    @Value($$"${app.security.api-key-secret}") private val apiKeySecret: String
+    private val appProperties: AppProperties,
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -22,6 +21,9 @@ class ApiKeyFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        val apiKeyHeader = appProperties.app.security.apiKeyHeader
+        val apiKeySecret = appProperties.app.security.apiKeySecret
+
         val requestKey = request.getHeader(apiKeyHeader)
 
         // If the header matches our secret, authenticate the system

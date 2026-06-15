@@ -1,19 +1,21 @@
 package com.example.dobby.service
 
+import com.example.dobby.AppProperties
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Paths
 
 @Component
-class PromptLoader(
-    @Value($$"${gemini.prompt.file.path}") private val promptFilePath: String
+class PromptLoaderService(
+    private val appProperties: AppProperties,
 ) {
-    private val logger = LoggerFactory.getLogger(PromptLoader::class.java)
+    private val logger = LoggerFactory.getLogger(PromptLoaderService::class.java)
     private val defaultPrompt = "You are a roast bot."
 
     fun loadPrompt(): String {
+        val promptFilePath = appProperties.gemini.promptFilePath
+
         if (promptFilePath.isBlank()) return defaultPrompt
 
         return try {

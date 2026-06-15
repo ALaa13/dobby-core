@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.AppProperties
 import com.example.dobby.dto.DiscordTokenResponse
 import com.example.dobby.dto.DiscordUser
 import com.example.dobby.exception.DobbyException
@@ -10,43 +11,43 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
-import java.net.URLEncoder
 
 @Service
 class DiscordAuthService(
     private val httpClient: HttpClient,
     private val jwtService: JWTService,
-    @Value($$"${discord.client.id}") private val clientId: String,
-    @Value($$"${discord.client.secret}") private val clientSecret: String,
-    @Value($$"${discord.redirect.uri}") private val redirectUri: String,
-    @Value($$"${frontend.url}") private val frontendUrl: String
+    private val appProperties: AppProperties,
 ) {
 
     companion object {
         private const val DISCORD_AUTH_URL = "https://discord.com/api/oauth2/authorize"
         private const val DISCORD_USER_URL = "https://discord.com/api/v10/users/@me"
         private const val DISCORD_TOKEN_URL = "https://discord.com/api/v10/oauth2/token"
+
         private const val FRONT_END_REDIRECT_DESTINATION = "/dashboard"
         private const val FRONT_END_LOGIN_PAGE = "/login"
     }
 
     // Generates the clean URI for the controller to redirect to
     fun getDiscordLoginUri(): URI {
-        val url = DISCORD_AUTH_URL +
-                "?client_id=$clientId" +
-                "&redirect_uri=${URLEncoder.encode(redirectUri, "UTF-8")}" +
-                "&response_type=code" +
-                "&scope=identify"
-        val uri = URI.create(url)
+        val uri = UriComponentsBuilder.fromUriString(DISCORD_AUTH_URL)
+            .queryParam("client_id", appProperties.discord.clientId)
+            .queryParam("redirect_uri", appProperties.discord.redirectUri)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "identify")
+            .build()
+            .toUri()
+
         logger.info("Generated Discord login URI: $uri")
         return uri
     }
 
     // Handles the heavy exchange logic and returns the final destination URI
     suspend fun handleCallbackAndGenerateRedirect(code: String?): URI {
+        val frontendUrl = appProperties.frontend.url
         return try {
             if (code == null) {
                 throw DobbyException.InvalidAuthenticationRequestException("Missing authorization code in callback request")
@@ -73,6 +74,10 @@ class DiscordAuthService(
     /*** Helper functions ***/
 
     private suspend fun getTokenFromDiscordOAuth(code: String): DiscordTokenResponse {
+        val clientId = appProperties.discord.clientId
+        val clientSecret = appProperties.discord.clientSecret
+        val redirectUri = appProperties.discord.redirectUri
+
         return try {
             logger.info("Exchanging authorization code for access token with Discord")
             logger.info("Requesting token with code: $code, clientId: $clientId, redirectUri: $redirectUri")

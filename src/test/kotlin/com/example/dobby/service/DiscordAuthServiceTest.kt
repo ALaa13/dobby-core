@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.AppProperties
 import com.example.dobby.config.configureDobbyJson
 import com.example.dobby.dto.DiscordTokenResponse
 import com.example.dobby.dto.DiscordUser
@@ -16,11 +17,20 @@ import org.junit.jupiter.api.Test
 
 class DiscordAuthServiceTest {
 
+    private lateinit var testProperties: AppProperties
     private lateinit var authService: DiscordAuthService
     private val jwtService = mockk<JWTService>()
 
     @BeforeEach
     fun setUp() {
+
+        testProperties = AppProperties().apply {
+            frontend.url = "http://localhost:3000"
+            discord.clientId = "mock-client-id"
+            discord.clientSecret = "mock-client-secret"
+            discord.redirectUri = "http://localhost:8080/callback"
+        }
+
         val mockEngine = MockEngine { request ->
             when (request.url.encodedPath) {
                 "/api/v10/oauth2/token" -> {
@@ -63,10 +73,7 @@ class DiscordAuthServiceTest {
         authService = DiscordAuthService(
             httpClient = mockHttpClient,
             jwtService = jwtService,
-            clientId = "fake-client-id",
-            clientSecret = "fake-client-secret",
-            redirectUri = "http://localhost:8080/callback",
-            frontendUrl = "http://localhost:3000"
+            appProperties = testProperties
         )
     }
 
@@ -92,7 +99,7 @@ class DiscordAuthServiceTest {
         val buggyAuthService = DiscordAuthService(
             httpClient = localClient,
             jwtService = jwtService,
-            clientId = "fake", clientSecret = "fake", redirectUri = "fake", frontendUrl = "http://localhost:3000"
+            appProperties = testProperties
         )
         val redirectUri = buggyAuthService.handleCallbackAndGenerateRedirect("any-code")
         val uriString = redirectUri.toString()

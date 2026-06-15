@@ -20,6 +20,9 @@ repositories {
     mavenCentral()
 }
 
+val mockitoAgent = configurations.create("mockitoAgent")
+
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -51,6 +54,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:3.0.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("io.mockk:mockk:1.13.12")
+    mockitoAgent("org.mockito:mockito-core:5.23.0") { isTransitive = false }
 }
 
 kotlin {
@@ -60,6 +64,7 @@ kotlin {
 }
 
 tasks.withType<Test> {
+    jvmArgs("-javaagent:${mockitoAgent.asPath}")
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true

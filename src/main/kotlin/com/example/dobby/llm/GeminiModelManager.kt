@@ -14,10 +14,6 @@ class GeminiModelManager(private val aiClient: Client) {
     private var availableModels = listOf<String>()
     private val modelCooldowns = ConcurrentHashMap<String, Instant>()
 
-    /**
-     * Call this during your bot's startup sequence.
-     * Compatible with com.google.genai:google-genai:1.51.0
-     */
     @EventListener(ApplicationReadyEvent::class)
     fun initialize() {
         runCatching {

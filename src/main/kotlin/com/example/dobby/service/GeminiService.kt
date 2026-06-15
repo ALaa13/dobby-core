@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 class GeminiService(
     private val googleApiClient: Client,
     private val geminiModelManager: GeminiModelManager,
-    private val promptLoader: PromptLoader,
+    private val promptLoader: PromptLoaderService,
 ) {
 
     suspend fun generateRoast(messages: List<DiscordChatMessage>, persona: String?, memoryContext: String): String {
