@@ -9,7 +9,7 @@ and returns results to your Discord bot or to the Web Dashboard via **Redis Pub/
 - **[Discord Bot](https://github.com/ALaa13/dobby)** — Real-time roasts in your server
 - **[Web Dashboard](https://github.com/ALaa13/dobby-web)** — View and manage roasts via browser
 
-## 🎯 What It Does
+## What It Does
 
 - **Generate Roasts**: Accepts chat history from Discord and generates contextual roasts using Google Gemini AI
 - **Store Facts**: Saves user-specific facts that are used as context for more personalized roasts
@@ -17,14 +17,14 @@ and returns results to your Discord bot or to the Web Dashboard via **Redis Pub/
   **
 - **Real-time Delivery**: Uses Redis channels to publish roast results in real-time
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Java 21** (check with `java -version`)
 - **Redis** (local or remote instance for async message delivery)
 - **Network access** to Supabase, Google Gemini API, and your Discord bot service
 - **API Keys**: Supabase credentials, Google Gemini API key, and Discord OAuth2 credentials
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone & Setup
 
@@ -80,10 +80,10 @@ Server starts on `http://localhost:8080/api/v1/`
 
 ```bash
 curl http://localhost:8080/api/v1/
-# Expected: "Hello, World!"
+# Expected: "Dobby Backend API is running smoothly."
 ```
 
-## 📚 Tech Stack
+## Tech Stack
 
 - **Kotlin 2.2** & **Java 21**
 - **Spring Boot 4.0** with virtual threads
@@ -92,12 +92,12 @@ curl http://localhost:8080/api/v1/
 - **Redis** for async message publishing and real-time delivery
 - **Gradle** for build management
 
-## 🔌 API Endpoints
+## API Endpoints
 
 This project uses **OpenAPI 3.0** to document and specify all REST endpoints. The API definitions are managed manually
 via a static design file.
 
-### 📝 Viewing the API Specs (Local Development)
+### Viewing the API Specs (Local Development)
 
 When the backend application is running locally, you can access the interactive **Swagger UI** dashboard directly
 through your browser:
@@ -105,15 +105,13 @@ through your browser:
 * **Swagger UI Dashboard:** [http://localhost:8080/api/v1/swagger-ui.html](http://localhost:8080/api/v1/swagger-ui.html)
 * **Raw OpenAPI Specification:** [http://localhost:8080/api/v1/openapi.yaml](http://localhost:8080/api/v1/openapi.yaml)
 
-### 📂 File Structure
-
 If you need to update endpoints, add new schemas, or change authentication scopes, modify the core configuration file
 here:
 
 ```text
 src/main/resources/
 └── static/
-    └── openapi.yaml  <-- Edit this file to update documentation and API definitions
+    └── openapi.yaml
 ```
 
 #### Available Core Endpoints (Explore via Swagger):
@@ -122,11 +120,11 @@ src/main/resources/
 * `POST /api/v1/fact` — Stores collected user facts for future context.
 * `GET /api/v1/logs/stream` — Real-time Server-Sent Events (SSE) log stream for the web dashboard.
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Required Supabase Tables
 
-## `user_profiles`
+### `user_profiles`
 
 One profile per user per guild.
 
@@ -139,7 +137,7 @@ One profile per user per guild.
 | `created_at`      | timestamp      | Auto-set by Supabase    |
 | `updated_at`      | timestamp/null | Auto-set by Supabase    |
 
-## `user_facts`
+### `user_facts`
 
 Facts linked to user profiles.
 
@@ -156,7 +154,7 @@ Facts linked to user profiles.
 
 **Note:** Create a relationship in Supabase between these tables for embedded selection.
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables Reference
 
@@ -178,7 +176,7 @@ Facts linked to user profiles.
 | `REDIS_PORT`            | Yes      | Redis server port (default: 6379)   |
 | `REDIS_PASSWORD`        | No       | Redis password (if required)        |
 
-### ⚙️ AI Prompt Configuration
+## AI Prompt Configuration
 
 The bot's personality and roasting rules are loaded from an external text file at the root of the repository.
 
@@ -189,7 +187,7 @@ The bot's personality and roasting rules are loaded from an external text file a
 * **Fallback Behavior:** If `ai_prompt.txt` is missing, the system automatically falls back to a default baseline
   prompt: `"You are a roast bot."`
 
-### Project Structure
+## Project Structure
 
 ```
 src/main/kotlin/com/example/dobby
@@ -203,10 +201,10 @@ src/main/kotlin/com/example/dobby
 ├── repository/                  # Supabase wrappers
 ├── service/                     # Business logic (RoastService, FactService, etc.)
 ├── supabase/                    # Supabase client setup
-└── util/                        # Helpers
+└── logging/                     # Logging emitter
 ```
 
-## 🧪 Testing
+## Testing
 
 This repository includes a comprehensive unit and slice testing suite using **MockK** and **KotlinX Coroutines Test** to
 verify core service business logic, asynchronous background tasks, and web controllers.
@@ -222,7 +220,7 @@ Execute the following command from the root directory of the project:
 ./gradlew test
 ```
 
-## 🏗️ Build & Deploy
+## Build & Deploy
 
 ### Build JAR
 
@@ -238,7 +236,7 @@ Output: `build/libs/dobby-core-0.0.1-SNAPSHOT.jar`
 java -jar build/libs/dobby-core-0.0.1-SNAPSHOT.jar
 ```
 
-## 📡 Redis Integration
+## Redis Integration
 
 ### Roast Delivery via Redis
 
@@ -270,7 +268,7 @@ brew services start redis
 docker run -d -p 6379:6379 redis:latest
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Problem                          | Solution                                                                                                             |
 |----------------------------------|----------------------------------------------------------------------------------------------------------------------|
@@ -281,7 +279,7 @@ docker run -d -p 6379:6379 redis:latest
 | Facts not in roasts              | Ensure `discord_user_id` matches message author, `guild_id` matches request, and Supabase relationship is configured |
 | Missing environment variables    | Run `cp .env.example .env` and fill in all required values                                                           |
 
-## ℹ️ Notes
+## Notes
 
 - Roast generation is **asynchronous** — `202 Accepted` only confirms the job was queued
 - Results are delivered via **Redis Pub/Sub** for real-time, scalable message distribution
