@@ -1,10 +1,10 @@
 package com.example.dobby.service
 
 import com.example.dobby.AppProperties
+import com.example.dobby.config.logger
 import com.example.dobby.dto.DiscordTokenResponse
 import com.example.dobby.dto.DiscordUser
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.util.logger
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -114,9 +114,10 @@ class DiscordAuthService(
         }
     }
 
-    private fun buildRedirectUri(baseUrl: String, token: String): URI {
+    private fun buildRedirectUri(baseUrl: String, queryValue: String): URI {
+        val querySegment = if (queryValue.contains("=")) queryValue else "token=$queryValue"
         val delimiter = if (baseUrl.contains("?")) "&" else "?"
-        val uri = URI.create("$baseUrl${delimiter}token=$token")
+        val uri = URI.create("$baseUrl$delimiter$querySegment")
         logger.info("Generated redirect: $uri")
         return uri
     }

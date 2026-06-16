@@ -1,7 +1,7 @@
 package com.example.dobby.queue
 
+import com.example.dobby.config.logger
 import com.example.dobby.dto.RoastResult
-import com.example.dobby.util.logger
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service

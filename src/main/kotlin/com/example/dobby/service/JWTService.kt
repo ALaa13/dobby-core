@@ -3,8 +3,8 @@ package com.example.dobby.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.dobby.AppProperties
+import com.example.dobby.config.logger
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.util.logger
 import org.springframework.stereotype.Service
 import java.util.*
 

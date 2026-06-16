@@ -1,10 +1,10 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.logger
 import com.example.dobby.dto.*
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.logger
 import org.springframework.stereotype.Service
 
 @Service

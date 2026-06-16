@@ -1,7 +1,6 @@
 package com.example.dobby.llm
 
-import com.example.dobby.util.logger
-import com.google.genai.Client
+import com.example.dobby.config.logger
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
@@ -9,7 +8,7 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 @Configuration
-class GeminiModelManager(private val aiClient: Client) {
+class GeminiModelManager(private val geminiApi: GeminiApiPort) {
 
     private var availableModels = listOf<String>()
     private val modelCooldowns = ConcurrentHashMap<String, Instant>()
@@ -17,7 +16,7 @@ class GeminiModelManager(private val aiClient: Client) {
     @EventListener(ApplicationReadyEvent::class)
     fun initialize() {
         runCatching {
-            val responseList = aiClient.models.list(null)
+            val responseList = geminiApi.listModels()
 
             // Safely unpack the Optional<String> and filter
             availableModels = responseList

@@ -1,7 +1,7 @@
 package com.example.dobby.queue
 
 import ch.qos.logback.classic.LoggerContext
-import com.example.dobby.util.logger
+import com.example.dobby.config.logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean

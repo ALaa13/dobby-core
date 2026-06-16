@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.logger
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.dto.RoastRequest
 import com.example.dobby.dto.toResult
@@ -7,18 +8,20 @@ import com.example.dobby.exception.DobbyException
 import com.example.dobby.queue.RedisChannels
 import com.example.dobby.queue.RedisPublisher
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.logger
 import jakarta.annotation.PreDestroy
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
 class RoastService(
     private val userRepository: UserProfileRepository,
     private val geminiService: GeminiService,
-    private val redisPublisher: RedisPublisher
+    private val redisPublisher: RedisPublisher,
+    @Qualifier("ioScope") private val serviceScope: CoroutineScope
 ) {
-    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @PreDestroy
     private fun cleanup() {
@@ -27,30 +30,50 @@ class RoastService(
 
     fun processRoastAsync(request: RoastRequest) {
         serviceScope.launch {
-            try {
-                val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
-                val roastResult = geminiService.generateRoast(request.messages, request.persona, memoryContext)
-                redisPublisher.publishRoastDelivery(
-                    RedisChannels.ROAST_DELIVERY,
-                    request.toResult(roastResult, true)
-                )
-            } catch (e: DobbyException) {
-                // Determine the message reply to be sent to the Client (Messages fit the UI theme)
-                val friendlyBotErrorMessage = when (e) {
-                    is DobbyException.DatabaseException -> "🤖 Memory vault locked out! I'm struggling to read the database right now."
-                    is DobbyException.NetworkTimeoutException -> "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
-                    is DobbyException.AiModelException -> "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"
-                    is DobbyException.DataMappingException -> "⚙️ System parsing error inside my memory core."
-                    is DobbyException.GeneralException -> "System encountered an unexpected glitch."
+            processRoast(request)
+        }
+    }
 
-                    else -> "⚠️ System encountered an unexpected glitch while processing your roast."
-                }
-                logger.error("Managed Dobby Exception caught: ${e.message}")
-                redisPublisher.publishRoastDelivery(
-                    RedisChannels.ROAST_DELIVERY,
-                    request.toResult(friendlyBotErrorMessage, false)
-                )
+    private suspend fun processRoast(request: RoastRequest) {
+        try {
+            val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
+            val roastText = geminiService.generateRoast(
+                request.messages,
+                request.persona,
+                memoryContext
+            )
+            val result = request.toResult(roastText, true)
+            redisPublisher.publishRoastDelivery(
+                RedisChannels.ROAST_DELIVERY,
+                result
+            )
+        } catch (e: DobbyException) {
+            val friendlyBotErrorMessage = when (e) {
+                is DobbyException.DatabaseException ->
+                    "🤖 Memory vault locked out! I'm struggling to read the database right now."
+
+                is DobbyException.NetworkTimeoutException ->
+                    "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
+
+                is DobbyException.AiModelException ->
+                    "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"
+
+                is DobbyException.DataMappingException ->
+                    "⚙️ System parsing error inside my memory core."
+
+                is DobbyException.GeneralException ->
+                    "System encountered an unexpected glitch."
+
+                else ->
+                    "⚠️ System encountered an unexpected glitch while processing your roast."
             }
+
+            logger.error("Managed Dobby Exception caught: ${e.message}")
+            val result = request.toResult(friendlyBotErrorMessage, false)
+            redisPublisher.publishRoastDelivery(
+                RedisChannels.ROAST_DELIVERY,
+                result
+            )
         }
     }
 

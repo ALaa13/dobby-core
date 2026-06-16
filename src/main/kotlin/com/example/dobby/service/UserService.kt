@@ -1,9 +1,9 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.logger
 import com.example.dobby.dto.UserProfileResponse
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserProfileRepository
-import com.example.dobby.util.logger
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
