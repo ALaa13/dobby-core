@@ -206,6 +206,22 @@ src/main/kotlin/com/example/dobby
 └── util/                        # Helpers
 ```
 
+## 🧪 Testing
+
+This repository includes a comprehensive unit and slice testing suite using **MockK** and **KotlinX Coroutines Test** to
+verify core service business logic, asynchronous background tasks, and web controllers.
+
+Before submitting a Pull Request or deploying changes, ensure that all components pass validation by running the test
+suite locally.
+
+### Running Tests via Terminal
+
+Execute the following command from the root directory of the project:
+
+```bash
+./gradlew test
+```
+
 ## 🏗️ Build & Deploy
 
 ### Build JAR
