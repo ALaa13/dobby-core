@@ -36,6 +36,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+    implementation("com.bucket4j:bucket4j_jdk17-core:8.19.0")
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
     implementation("com.google.genai:google-genai:1.51.0")
     implementation("com.auth0:java-jwt:4.4.0")

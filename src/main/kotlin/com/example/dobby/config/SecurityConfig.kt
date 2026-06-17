@@ -63,7 +63,7 @@ class SecurityConfig(
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf(frontendUrl)
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        configuration.allowedHeaders = listOf("Authorization", "Content-Type")
+        configuration.allowedHeaders = listOf("Authorization", "Content-Type", appProperties.app.security.apiKeyHeader)
         configuration.allowCredentials = true
 
         val source = UrlBasedCorsConfigurationSource()
