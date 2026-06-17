@@ -1,138 +1,202 @@
 # Dobby Backend
 
-A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**.
-It accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini,
-and returns results to your Discord bot or to the Web Dashboard via **Redis Pub/Sub** for real-time delivery.
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-Pub%2FSub-DC382D?logo=redis&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-### Integrations
+A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**. It
+accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini, and
+delivers results in real-time via **Redis Pub/Sub**.
 
-- **[Discord Bot](https://github.com/ALaa13/dobby)** — Real-time roasts in your server
-- **[Web Dashboard](https://github.com/ALaa13/dobby-web)** — View and manage roasts via browser
+### Related Repositories
 
-## What It Does
+| Project                                              | Description                                                    |
+|------------------------------------------------------|----------------------------------------------------------------|
+| [Discord Bot](https://github.com/ALaa13/dobby)       | Subscribes to Redis and delivers roasts in your Discord server |
+| [Web Dashboard](https://github.com/ALaa13/dobby-web) | Browser-based UI to view and manage roasts                     |
 
-- **Generate Roasts**: Accepts chat history from Discord and generates contextual roasts using Google Gemini AI
-- **Store Facts**: Saves user-specific facts that are used as context for more personalized roasts
-- **Async Processing**: Handles roast generation asynchronously with coroutines and delivers results via **Redis Pub/Sub
-  **
-- **Real-time Delivery**: Uses Redis channels to publish roast results in real-time
+---
+
+## Architecture
+
+```
+Discord Bot / Web Dashboard
+         │
+         │  POST /api/v1/roast
+         ▼
+┌─────────────────────┐
+│   Dobby Backend     │  ──── Fetch user facts ──▶  Supabase
+│   (Spring Boot)     │  ──── Generate roast  ──▶  Google Gemini
+└─────────────────────┘
+         │
+         │  Publish to Redis channel: roast-delivery
+         ▼
+      Redis
+         │
+         │  Subscribe
+         ▼
+   Discord Bot  ──▶  Discord Channel
+```
+
+**Request lifecycle:**
+
+1. Client sends chat history to `POST /api/v1/roast`
+2. Backend responds immediately with `202 Accepted` (job is queued)
+3. Service fetches stored user facts from Supabase for context
+4. Gemini generates a personalized roast asynchronously
+5. Result is published to the `roast-delivery` Redis channel
+6. Discord bot (or other consumers) receive and deliver it in real-time
+
+---
+
+## Tech Stack
+
+| Layer         | Technology                                          |
+|---------------|-----------------------------------------------------|
+| Language      | Kotlin 2.2 on Java 21                               |
+| Framework     | Spring Boot 4.0 with virtual threads                |
+| AI            | Google Gemini API                                   |
+| Database      | Supabase (PostgREST)                                |
+| Messaging     | Redis Pub/Sub                                       |
+| Build         | Gradle (wrapper included — no local install needed) |
+| Rate Limiting | Bucket4j (Token Bucket, in-memory)                  |
+
+---
 
 ## Prerequisites
 
-- **Java 21** (check with `java -version`)
-- **Redis** (local or remote instance for async message delivery)
-- **Network access** to Supabase, Google Gemini API, and your Discord bot service
-- **API Keys**: Supabase credentials, Google Gemini API key, and Discord OAuth2 credentials
+- **Java 21** — verify with `java -version`
+- **Redis** — local or remote instance
+- **API credentials** — Supabase, Google Gemini, and Discord OAuth2 (see [Configuration](#configuration))
+
+> **Note:** Gradle is bundled via the wrapper (`./gradlew`). You do not need to install it separately.
+
+---
 
 ## Quick Start
 
-### 1. Clone & Setup
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/ALaa13/dobby-core.git
 cd dobby-core
 ```
 
-### 2. Configure Environment
-
-Copy the example environment file and fill in your credentials:
+### 2. Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your actual values:
+Edit `.env` with your credentials. See the full [Environment Variables Reference](#environment-variables-reference)
+below.
 
-```properties
-# Core Service
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-supabase-service-key
-GEMINI_API_KEY=your-gemini-api-key
-DOBBY_BOT_URL=http://localhost:3000
-DOBBY_SECURITY_TOKEN=your-shared-secret-token
-# Discord OAuth2 (from Discord Developer Portal)
-DISCORD_CLIENT_ID=your-client-id
-DISCORD_CLIENT_SECRET=your-client-secret
-DISCORD_REDIRECT_URI=http://localhost:8080/login/oauth2/code/discord
-# JWT Configuration
-JWT_SECRET=your-jwt-secret-key
-JWT_EXPIRATION=7d
-# Development & API Security
-SECRET_DEV_KEY=your-dev-secret-key
-BACKEND_API_HEADER=X-API-Key
-BACKEND_API_KEY=your-backend-api-key
-# Frontend Integration
-FRONTEND_URL=http://localhost:4200
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
+### 3. Create the AI prompt file
+
+```bash
+cp ai_prompt.txt.example ai_prompt.txt
 ```
 
-### 3. Run
+Customize `ai_prompt.txt` to define the bot's personality and roasting rules. If this file is missing, the system falls
+back to a default prompt: `"You are a roast bot."`
+
+### 4. Start Redis
+
+```bash
+# Using Docker (recommended)
+docker run -d -p 6379:6379 redis:latest
+
+# macOS with Homebrew
+brew services start redis
+```
+
+### 5. Run the application
 
 ```bash
 ./gradlew bootRun
 ```
 
-Server starts on `http://localhost:8080/api/v1/`
+The server starts at `http://localhost:8080/api/v1/`
 
-**Health check:**
+**Verify it's running:**
 
 ```bash
 curl http://localhost:8080/api/v1/
 # Expected: "Dobby Backend API is running smoothly."
 ```
 
-## Tech Stack
+---
 
-- **Kotlin 2.2** & **Java 21**
-- **Spring Boot 4.0** with virtual threads
-- **Google Gemini API** for AI roast generation
-- **Supabase PostgREST** for data persistence
-- **Redis** for async message publishing and real-time delivery
-- **Gradle** for build management
+## Running with Docker Compose (Recommended)
+
+Docker Compose spins up both the Spring Boot service and a pre-configured Redis instance together, with no manual Redis
+setup required.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed and running
+- A fully populated `.env` file at the project root
+
+### Start the stack
+
+```bash
+docker compose up -d --build
+```
+
+This command:
+
+- Builds the Kotlin application inside a secure multi-stage container
+- Fetches and starts Redis
+- Links both services on a shared virtual network
+- Runs everything in the background
+
+### Stop the stack
+
+```bash
+docker compose down
+```
+
+---
 
 ## API Endpoints
 
-This project uses **OpenAPI 3.0** to document and specify all REST endpoints. The API definitions are managed manually
-via a static design file.
+The API is documented with **OpenAPI 3.0**. When the application is running locally, explore all endpoints interactively
+via Swagger:
 
-### Viewing the API Specs (Local Development)
+- **Swagger UI:** [http://localhost:8080/api/v1/swagger-ui.html](http://localhost:8080/api/v1/swagger-ui.html)
+- **Raw OpenAPI spec:** [http://localhost:8080/api/v1/openapi.yaml](http://localhost:8080/api/v1/openapi.yaml)
 
-When the backend application is running locally, you can access the interactive **Swagger UI** dashboard directly
-through your browser:
+To update the spec, edit:
 
-* **Swagger UI Dashboard:** [http://localhost:8080/api/v1/swagger-ui.html](http://localhost:8080/api/v1/swagger-ui.html)
-* **Raw OpenAPI Specification:** [http://localhost:8080/api/v1/openapi.yaml](http://localhost:8080/api/v1/openapi.yaml)
-
-If you need to update endpoints, add new schemas, or change authentication scopes, modify the core configuration file
-here:
-
-```text
-src/main/resources/
-└── static/
-    └── openapi.yaml
+```
+src/main/resources/static/openapi.yaml
 ```
 
-#### Available Core Endpoints (Explore via Swagger):
+### Core Endpoints
 
-* `POST /api/v1/roast` — Triggers asynchronous AI roast generation via Redis Pub/Sub.
-* `POST /api/v1/fact` — Stores collected user facts for future context.
-* `GET /api/v1/logs/stream` — Real-time Server-Sent Events (SSE) log stream for the web dashboard.
+| Method | Endpoint              | Auth    | Description                                           |
+|--------|-----------------------|---------|-------------------------------------------------------|
+| `POST` | `/api/v1/roast`       | API Key | Queues async roast generation; returns `202 Accepted` |
+| `POST` | `/api/v1/fact`        | API Key | Stores a user fact for future roast context           |
+| `GET`  | `/api/v1/logs/stream` | JWT     | Real-time SSE log stream for the web dashboard        |
 
-## Rate Limiting & Throttling
+> Roast generation is **asynchronous** — `202 Accepted` confirms the job was queued. The result arrives via Redis
+> Pub/Sub, not in the HTTP response.
 
-To protect the system infrastructure and external service quotas (like the Gemini AI engine), incoming requests
-authenticated via an API Key are subject to rate limiting.
+---
 
-* **Rate Limiter Type:** In-memory Token Bucket (via Bucket4j)
-* **Rate Limit:** 10 requests per minute per API Key.
-* **Refill Strategy:** Greedy (tokens regenerate smoothly over time, roughly 1 token every 6 seconds).
+## Rate Limiting
 
-### Handling Rate Limit Errors
+API Key-authenticated endpoints are protected by an in-memory Token Bucket (via **Bucket4j**).
 
-When a client exceeds their allocated quota, the backend short-circuits the request at the filter layer and returns an *
-*HTTP 429 Too Many Requests** response:
+| Setting         | Value                              |
+|-----------------|------------------------------------|
+| Limit           | 10 requests per minute per API Key |
+| Refill strategy | Greedy (~1 token every 6 seconds)  |
+
+When the limit is exceeded, the API returns:
 
 ```json
 {
@@ -142,133 +206,81 @@ When a client exceeds their allocated quota, the backend short-circuits the requ
 }
 ```
 
-## Database Schema
-
-### Required Supabase Tables
-
-### `user_profiles`
-
-One profile per user per guild.
-
-| Column            | Type           | Notes                   |
-|-------------------|----------------|-------------------------|
-| `id`              | uuid           | Primary key             |
-| `discord_user_id` | string         | Discord user ID         |
-| `guild_id`        | string         | Discord guild/server ID |
-| `display_name`    | string/null    | Optional                |
-| `created_at`      | timestamp      | Auto-set by Supabase    |
-| `updated_at`      | timestamp/null | Auto-set by Supabase    |
-
-### `user_facts`
-
-Facts linked to user profiles.
-
-| Column               | Type           | Notes                         |
-|----------------------|----------------|-------------------------------|
-| `id`                 | uuid           | Primary key                   |
-| `profile_id`         | uuid           | References `user_profiles.id` |
-| `fact_text`          | string         | The fact                      |
-| `source`             | enum           | "USER_SUBMISSION"             |
-| `confidence_score`   | smallint/null  | Default: 80                   |
-| `roastability_score` | smallint/null  | Default: 20                   |
-| `created_at`         | timestamp      | Auto-set by Supabase          |
-| `updated_at`         | timestamp/null | Auto-set by Supabase          |
-
-**Note:** Create a relationship in Supabase between these tables for embedded selection.
+---
 
 ## Configuration
 
 ### Environment Variables Reference
 
-| Variable                | Required | Purpose                             |
-|-------------------------|----------|-------------------------------------|
-| `SUPABASE_URL`          | Yes      | Your Supabase project URL           |
-| `SUPABASE_KEY`          | Yes      | Supabase service key                |
-| `GEMINI_API_KEY`        | Yes      | Google Gemini API key               |
-| `SECRET_DEV_KEY`        | No       | Random key for token generation     |
-| `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID            |
-| `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret        |
-| `DISCORD_REDIRECT_URI`  | Yes      | Discord OAuth2 redirect URI         |
-| `JWT_SECRET`            | Yes      | Secret key for JWT signing          |
-| `JWT_EXPIRATION`        | Yes      | JWT expiration time (e.g., 7d, 7h)  |
-| `BACKEND_API_HEADER`    | Yes      | API header name (e.g., X-API-Key)   |
-| `BACKEND_API_KEY`       | Yes      | API key value                       |
-| `FRONTEND_URL`          | Yes      | Frontend application URL (for CORS) |
-| `REDIS_HOST`            | Yes      | Redis server hostname or IP         |
-| `REDIS_PORT`            | Yes      | Redis server port (default: 6379)   |
-| `REDIS_PASSWORD`        | No       | Redis password (if required)        |
+| Variable                | Required | Description                                                                  |
+|-------------------------|----------|------------------------------------------------------------------------------|
+| `SUPABASE_URL`          | Yes      | Your Supabase project URL                                                    |
+| `SUPABASE_KEY`          | Yes      | Supabase service key                                                         |
+| `GEMINI_API_KEY`        | Yes      | Google Gemini API key                                                        |
+| `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID                                                     |
+| `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret                                                 |
+| `DISCORD_REDIRECT_URI`  | Yes      | OAuth2 redirect URI (e.g. `http://localhost:8080/login/oauth2/code/discord`) |
+| `JWT_SECRET`            | Yes      | Secret key for signing JWTs                                                  |
+| `JWT_EXPIRATION`        | Yes      | JWT TTL (e.g. `7d`, `12h`)                                                   |
+| `BACKEND_API_HEADER`    | Yes      | API header name (e.g. `X-API-Key`)                                           |
+| `BACKEND_API_KEY`       | Yes      | API key value for bot-to-backend auth                                        |
+| `FRONTEND_URL`          | Yes      | Frontend URL for CORS (e.g. `http://localhost:4200`)                         |
+| `REDIS_HOST`            | Yes      | Redis hostname or IP                                                         |
+| `REDIS_PORT`            | Yes      | Redis port (default: `6379`)                                                 |
+| `REDIS_PASSWORD`        | Yes      | Redis password (leave blank if none)                                         |
+| `DOBBY_BOT_URL`         | Yes      | Discord bot service URL                                                      |
+| `DOBBY_SECURITY_TOKEN`  | Yes      | Shared secret for backend-to-bot calls                                       |
+| `SECRET_DEV_KEY`        | No       | Dev key for manual token generation                                          |
 
-## AI Prompt Configuration
+Full example: see `.env.example` in the repository root.
 
-The bot's personality and roasting rules are loaded from an external text file at the root of the repository.
+---
 
-1. Create a file named `ai_prompt.txt` in the repository root.
-2. Customize the roast behavior, rules, and constraints to your liking.
+## Database Schema
 
-* **Example Template:** You can use `ai_prompt.txt.example` as a starting blueprint.
-* **Fallback Behavior:** If `ai_prompt.txt` is missing, the system automatically falls back to a default baseline
-  prompt: `"You are a roast bot."`
+Both tables live in your **Supabase** project. Create a foreign key relationship between them so the backend can use
+embedded selection.
 
-## Project Structure
+### `user_profiles`
 
-```
-src/main/kotlin/com/example/dobby
-├── DobbyApplication.kt          # Spring Boot entry point
-├── config/                      # Gemini, Supabase, Redis, HTTP config
-├── controller/                  # HTTP API controllers
-├── dto/                         # Request/response models
-├── exception/                   # Error handling
-├── queue/                       # Redis Pub/Sub publishers & subscribers
-├── llm/                         # Gemini API integration
-├── repository/                  # Supabase wrappers
-├── service/                     # Business logic (RoastService, FactService, etc.)
-├── supabase/                    # Supabase client setup
-└── logging/                     # Logging emitter
-```
+One row per user per Discord guild.
 
-## Testing
+| Column            | Type             | Notes                     |
+|-------------------|------------------|---------------------------|
+| `id`              | uuid             | Primary key               |
+| `discord_user_id` | string           | Discord user snowflake ID |
+| `guild_id`        | string           | Discord guild/server ID   |
+| `display_name`    | string / null    | Optional                  |
+| `created_at`      | timestamp        | Auto-set by Supabase      |
+| `updated_at`      | timestamp / null | Auto-set by Supabase      |
 
-This repository includes a comprehensive unit and slice testing suite using **MockK** and **KotlinX Coroutines Test** to
-verify core service business logic, asynchronous background tasks, and web controllers.
+### `user_facts`
 
-Before submitting a Pull Request or deploying changes, ensure that all components pass validation by running the test
-suite locally.
+Facts linked to a user profile, used as context for roast generation.
 
-### Running Tests via Terminal
+| Column               | Type             | Notes                            |
+|----------------------|------------------|----------------------------------|
+| `id`                 | uuid             | Primary key                      |
+| `profile_id`         | uuid             | Foreign key → `user_profiles.id` |
+| `fact_text`          | string           | The fact content                 |
+| `source`             | enum             | `"USER_SUBMISSION"`              |
+| `confidence_score`   | smallint / null  | Default: `80`                    |
+| `roastability_score` | smallint / null  | Default: `20`                    |
+| `created_at`         | timestamp        | Auto-set by Supabase             |
+| `updated_at`         | timestamp / null | Auto-set by Supabase             |
 
-Execute the following command from the root directory of the project:
-
-```bash
-./gradlew test
-```
-
-## Build & Deploy
-
-### Build JAR
-
-```bash
-./gradlew build
-```
-
-Output: `build/libs/dobby-core-0.0.1-SNAPSHOT.jar`
-
-### Run JAR
-
-```bash
-java -jar build/libs/dobby-core-0.0.1-SNAPSHOT.jar
-```
+---
 
 ## Redis Integration
 
-### Roast Delivery via Redis
+### Channel: `roast-delivery`
 
-The service uses **Redis Pub/Sub** to deliver roasts in real-time:
+| Role       | Component      | Behavior                                     |
+|------------|----------------|----------------------------------------------|
+| Publisher  | `RoastService` | Publishes after Gemini returns the result    |
+| Subscriber | Discord Bot    | Receives and delivers to the Discord channel |
 
-- **Channel**: `roast-delivery`
-- **Publisher**: `RoastService` publishes results after Gemini generation
-- **Subscriber**: Discord bot (or other consumers) subscribe to `roast-delivery` channel
-
-**Message Format:**
+### Message format
 
 ```json
 {
@@ -278,33 +290,83 @@ The service uses **Redis Pub/Sub** to deliver roasts in real-time:
 }
 ```
 
-### Redis Configuration
+---
 
-Make sure Redis is running and accessible. For local development:
+## Project Structure
+
+```
+src/main/kotlin/com/example/dobby
+├── DobbyApplication.kt       # Spring Boot entry point
+├── config/                   # Gemini, Supabase, Redis, HTTP clients
+├── controller/               # REST API controllers
+├── dto/                      # Request / response models
+├── exception/                # Global error handling
+├── queue/                    # Redis Pub/Sub publishers & subscribers
+├── llm/                      # Gemini API adapter & port interface
+├── repository/               # Supabase data access wrappers
+├── service/                  # Business logic (RoastService, FactService…)
+├── supabase/                 # Supabase client configuration
+└── logging/                  # SSE log emitter
+```
+
+---
+
+## Testing
+
+The test suite covers service logic, async background tasks, and web layer slices using **MockK** and **KotlinX
+Coroutines Test**.
 
 ```bash
-# Start Redis locally (macOS with Homebrew)
-brew services start redis
-
-# Or using Docker
-docker run -d -p 6379:6379 redis:latest
+./gradlew test
 ```
+
+Run this before opening a PR or deploying.
+
+---
+
+## Build & Deploy
+
+### Build a JAR
+
+```bash
+./gradlew build
+# Output: build/libs/dobby-core-0.0.1-SNAPSHOT.jar
+```
+
+### Run the JAR directly
+
+```bash
+java -jar build/libs/dobby-core-0.0.1-SNAPSHOT.jar
+```
+
+---
 
 ## Troubleshooting
 
-| Problem                          | Solution                                                                                                             |
-|----------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `JAVA_HOME is not set`           | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                           |
-| `Supabase url must not be blank` | Check `.env` exists with all required Supabase variables filled                                                      |
-| Gemini prompt file not found     | Create `ai_prompt.txt` in repo root or update `gemini.prompt.file` in `application.properties`                       |
-| Redis connection refused         | Ensure Redis is running on the configured host/port, or update `SPRING_REDIS_HOST` and `SPRING_REDIS_PORT`           |
-| Facts not in roasts              | Ensure `discord_user_id` matches message author, `guild_id` matches request, and Supabase relationship is configured |
-| Missing environment variables    | Run `cp .env.example .env` and fill in all required values                                                           |
+| Problem                        | Solution                                                                                                                                |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| JAVA_HOME is not set           | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                                              |
+| Supabase url must not be blank | Ensure `.env` exists with all Supabase variables filled in                                                                              |
+| Gemini prompt file not found   | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
+| Redis connection refused       | Verify Redis is running on the configured host/port; check `REDIS_HOST`, `REDIS_PORT` and `REDIS_PASSWORD`                              |
+| Facts not appearing in roasts  | Confirm `discord_user_id` matches the message author, `guild_id` matches the request, and the Supabase table relationship is configured |
+| JWT rejected / 401 errors      | Check `JWT_SECRET` matches across services and that `JWT_EXPIRATION` is set correctly                                                   |
+| Missing env variables          | Run `cp .env.example .env` and fill in all required fields                                                                              |
+| Gemini model unavailable       | Flash models fail over to backups automatically with a 15-minute cooldown per model                                                     |
 
-## Notes
+---
 
-- Roast generation is **asynchronous** — `202 Accepted` only confirms the job was queued
-- Results are delivered via **Redis Pub/Sub** for real-time, scalable message distribution
-- Virtual threads are enabled for better concurrency
-- Gemini models with "flash" are preferred; models fail over to backups with 15-minute cooldowns
-- Always use `.env.example` as a reference for required variables
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Commit your changes: `git commit -m "feat: describe your change"`
+4. Push and open a Pull Request
+
+Please ensure all tests pass (`./gradlew test`) before submitting.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
