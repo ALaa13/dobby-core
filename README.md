@@ -58,7 +58,7 @@ DISCORD_REDIRECT_URI=http://localhost:8080/login/oauth2/code/discord
 JWT_SECRET=your-jwt-secret-key
 JWT_EXPIRATION=7d
 # Development & API Security
-SECERTE_DEV_KEY=your-dev-secret-key
+SECRET_DEV_KEY=your-dev-secret-key
 BACKEND_API_HEADER=X-API-Key
 BACKEND_API_KEY=your-backend-api-key
 # Frontend Integration
@@ -120,6 +120,28 @@ src/main/resources/
 * `POST /api/v1/fact` — Stores collected user facts for future context.
 * `GET /api/v1/logs/stream` — Real-time Server-Sent Events (SSE) log stream for the web dashboard.
 
+## Rate Limiting & Throttling
+
+To protect the system infrastructure and external service quotas (like the Gemini AI engine), incoming requests
+authenticated via an API Key are subject to rate limiting.
+
+* **Rate Limiter Type:** In-memory Token Bucket (via Bucket4j)
+* **Rate Limit:** 10 requests per minute per API Key.
+* **Refill Strategy:** Greedy (tokens regenerate smoothly over time, roughly 1 token every 6 seconds).
+
+### Handling Rate Limit Errors
+
+When a client exceeds their allocated quota, the backend short-circuits the request at the filter layer and returns an *
+*HTTP 429 Too Many Requests** response:
+
+```json
+{
+  "status": 429,
+  "error": "Too Many Requests",
+  "message": "API Key rate limit exceeded. Please throttle your requests."
+}
+```
+
 ## Database Schema
 
 ### Required Supabase Tables
@@ -163,7 +185,7 @@ Facts linked to user profiles.
 | `SUPABASE_URL`          | Yes      | Your Supabase project URL           |
 | `SUPABASE_KEY`          | Yes      | Supabase service key                |
 | `GEMINI_API_KEY`        | Yes      | Google Gemini API key               |
-| `SECERTE_DEV_KEY`       | No       | Random key for token generation     |
+| `SECRET_DEV_KEY`        | No       | Random key for token generation     |
 | `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID            |
 | `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret        |
 | `DISCORD_REDIRECT_URI`  | Yes      | Discord OAuth2 redirect URI         |
