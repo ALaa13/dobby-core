@@ -117,7 +117,6 @@ class DiscordAuthServiceTest {
     @Test
     fun `should redirect to login page when discord rejects the authorization code`() = runTest {
         val badRequestEngine = MockEngine { request ->
-            // 💡 IMPROVEMENT: Verify that the service is actually sending the token request correctly
             assertEquals("/api/v10/oauth2/token", request.url.encodedPath)
             assertEquals(HttpMethod.Post, request.method)
 
