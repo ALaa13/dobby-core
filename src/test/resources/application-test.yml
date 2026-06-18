@@ -1,0 +1,38 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+# Mock Supabase Configuration
+supabase:
+  url: "https://mock.supabase.co"
+  key: "mock-supabase-long-key-for-validation"
+
+# Mock Gemini Configuration
+gemini:
+  apiKey: "mock-gemini-api-key"
+  promptFilePath: "ai_prompt.txt"
+
+# Mock Discord Configuration
+discord:
+  clientId: "1234567890"
+  clientSecret: "mock-discord-secret"
+  redirectUri: "http://localhost:8080/callback"
+
+# Mock JWT Configuration (Secret must be long enough for HS256 encryption)
+jwt:
+  secret: "super-secret-mock-jwt-key-that-is-at-least-256-bits-long"
+  expiration: 1h
+
+# Mock Dev & Frontend Configuration
+dev:
+  secretKey: "mock-dev-key"
+
+frontend:
+  url: "http://localhost:4200"
+
+# Mock App Internal Security Configuration
+app:
+  security:
+    apiKeyHeader: "X-API-KEY"
+    apiKeySecret: "mock-api-key-secret"
