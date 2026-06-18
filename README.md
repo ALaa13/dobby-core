@@ -1,4 +1,5 @@
 # Dobby Backend
+![CI Pipeline](https://github.com/ALaa13/dobby-core/actions/workflows/ci.yml/badge.svg)
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)
