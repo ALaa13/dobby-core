@@ -3,6 +3,7 @@ spring:
     activate:
       on-profile: test
 
+
 # Mock Supabase Configuration
 supabase:
   url: "https://mock.supabase.co"
