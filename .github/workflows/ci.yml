@@ -39,8 +39,5 @@ jobs:
       - name: Run Build and Unit Tests
         # We pass dummy env values just so Spring Boot boots up cleanly during tests
         env:
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          SPRING_REDIS_PASSWORD: ""
           SPRING_PROFILES_ACTIVE: test
         run: ./gradlew build
