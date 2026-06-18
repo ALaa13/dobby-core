@@ -341,6 +341,19 @@ java -jar build/libs/dobby-core-0.0.1-SNAPSHOT.jar
 
 ---
 
+## Linux System Optimization (Optional)
+
+If you are running this stack on a Linux host (like Fedora or Ubuntu), you might see a warning in the Redis logs:
+`WARNING Memory overcommit must be enabled!`.
+
+To fix this and ensure Redis can safely back up data to disk in the background, run the following commands on your host
+terminal to enable memory overcommit:
+
+```bash
+# Make the fix permanent across system reboots
+echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
+```
+
 ## Troubleshooting
 
 | Problem                        | Solution                                                                                                                                |
