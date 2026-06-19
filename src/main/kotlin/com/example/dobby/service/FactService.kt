@@ -37,6 +37,7 @@ class FactService(
     }
 
     suspend fun getFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
+        logger.info("Received fact request for user $discordUserId")
         return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
     }
 
