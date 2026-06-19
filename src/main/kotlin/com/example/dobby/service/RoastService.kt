@@ -42,6 +42,7 @@ class RoastService(
                 request.persona,
                 memoryContext
             )
+            logger.info("Roast generation completed successfully")
             val result = request.toResult(roastText, true)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
@@ -82,6 +83,7 @@ class RoastService(
         messages: List<DiscordChatMessage>,
         guildId: String
     ): String {
+        logger.info("Building facts memory context for guild $guildId with ${messages.size} messages")
         val factsMap = getFactsForUsers(messages, guildId)
         val builder = StringBuilder()
         for ((userId, facts) in factsMap) {

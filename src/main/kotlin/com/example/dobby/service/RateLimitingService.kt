@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.logger
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.bucket4j.Bucket
 import org.springframework.stereotype.Service
@@ -21,6 +22,7 @@ class RateLimitingService {
     }
 
     private fun createNewBucket(): Bucket {
+        logger.info("Creating new rate limit bucket for caller")
         return Bucket.builder()
             .addLimit { limit ->
                 limit.capacity(RATE_LIMIT_TOKENS)

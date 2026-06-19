@@ -18,6 +18,7 @@ class JWTService(
         val jwtExpiration = appProperties.jwt.expiration
 
         return try {
+            logger.info("Generating JWT token for subject: $subject, claim: $claim")
             val algorithm = Algorithm.HMAC256(jwtSecret)
             JWT.create()
                 .withIssuer("dobby-core")
@@ -35,6 +36,7 @@ class JWTService(
         val jwtSecret = appProperties.jwt.secret
 
         return try {
+            logger.info("Validating JWT token")
             val algorithm = Algorithm.HMAC256(jwtSecret)
             val verifier = JWT.require(algorithm)
                 .withIssuer("dobby-core")
