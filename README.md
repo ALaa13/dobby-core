@@ -1,4 +1,5 @@
 # Dobby Backend
+
 ![CI Pipeline](https://github.com/ALaa13/dobby-core/actions/workflows/ci.yml/badge.svg)
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
@@ -231,6 +232,7 @@ When the limit is exceeded, the API returns:
 | `REDIS_PASSWORD`        | Yes      | Redis password (leave blank if none)                                         |
 | `DOBBY_BOT_URL`         | Yes      | Discord bot service URL                                                      |
 | `DOBBY_SECURITY_TOKEN`  | Yes      | Shared secret for backend-to-bot calls                                       |
+| `SECRET_ENCRYPTION_KEY` | Yes      | Secerte key used for encrypting the auth token                               |
 | `SECRET_DEV_KEY`        | No       | Dev key for manual token generation                                          |
 
 Full example: see `.env.example` in the repository root.
@@ -239,49 +241,28 @@ Full example: see `.env.example` in the repository root.
 
 ## Database Schema
 
-Both tables live in your **Supabase** project. Create a foreign key relationship between them so the backend can use
-embedded selection.
-
-### `user_profiles`
-
-One row per user per Discord guild.
-
-| Column            | Type             | Notes                     |
-|-------------------|------------------|---------------------------|
-| `id`              | uuid             | Primary key               |
-| `discord_user_id` | string           | Discord user snowflake ID |
-| `guild_id`        | string           | Discord guild/server ID   |
-| `display_name`    | string / null    | Optional                  |
-| `created_at`      | timestamp        | Auto-set by Supabase      |
-| `updated_at`      | timestamp / null | Auto-set by Supabase      |
-
-### `user_facts`
-
-Facts linked to a user profile, used as context for roast generation.
-
-| Column               | Type             | Notes                            |
-|----------------------|------------------|----------------------------------|
-| `id`                 | uuid             | Primary key                      |
-| `profile_id`         | uuid             | Foreign key → `user_profiles.id` |
-| `fact_text`          | string           | The fact content                 |
-| `source`             | enum             | `"USER_SUBMISSION"`              |
-| `confidence_score`   | smallint / null  | Default: `80`                    |
-| `roastability_score` | smallint / null  | Default: `20`                    |
-| `created_at`         | timestamp        | Auto-set by Supabase             |
-| `updated_at`         | timestamp / null | Auto-set by Supabase             |
+The project uses **Supabase** as the database.
+All table definitions, columns, constraints, and foreign key relationships are defined in
+[`db/schema.sql`](db/schema.sql).
 
 ---
 
 ## Redis Integration
 
-### Channel: `roast-delivery`
+Channel constants, cache key patterns, and TTL values are defined in [
+`RedisMetadata.kt`](./src/main/kotlin/com/example/dobby/queue/RedisMetadata.kt).
 
-| Role       | Component      | Behavior                                     |
-|------------|----------------|----------------------------------------------|
-| Publisher  | `RoastService` | Publishes after Gemini returns the result    |
-| Subscriber | Discord Bot    | Receives and delivers to the Discord channel |
+### Pub/Sub: `roast-delivery`
 
-### Message format
+`RoastService` publishes once Gemini returns a result; the Discord bot subscribes and delivers the message to the
+originating channel.
+
+| Role       | Component      | Behavior                                                    |
+|------------|----------------|-------------------------------------------------------------|
+| Publisher  | `RoastService` | Publishes after Gemini returns the result                   |
+| Subscriber | Discord Bot    | Receives the message and delivers it to the Discord channel |
+
+**Message format**
 
 ```json
 {
@@ -290,6 +271,15 @@ Facts linked to a user profile, used as context for roast generation.
   "success": true
 }
 ```
+
+### Caching: User Profiles
+
+| Key Pattern                     | Data Cached                   | TTL                                         |
+|---------------------------------|-------------------------------|---------------------------------------------|
+| `discord:user:profile:{userId}` | User profile & server layouts | 15 minutes (`RedisKeyTimeout.USER_PROFILE`) |
+
+Uses a cache-aside strategy: the app checks Redis first. On a miss, it fetches from the Discord API or Supabase and
+populates the cache to avoid hitting Discord rate limits.
 
 ---
 
@@ -300,6 +290,7 @@ src/main/kotlin/com/example/dobby
 ├── DobbyApplication.kt       # Spring Boot entry point
 ├── config/                   # Gemini, Supabase, Redis, HTTP clients
 ├── controller/               # REST API controllers
+├── crypto/                   # Util functions for token en/decryption
 ├── dto/                      # Request / response models
 ├── exception/                # Global error handling
 ├── queue/                    # Redis Pub/Sub publishers & subscribers

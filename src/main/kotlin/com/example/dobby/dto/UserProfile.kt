@@ -30,6 +30,6 @@ data class UserProfileResponse(
     @SerialName("updated_at")
     val updatedAt: String?,
     @SerialName("user_facts")
-    val facts: List<UserFactResponse>?
+    val facts: List<UserFactResponse>? = emptyList()
 )
 

@@ -61,7 +61,7 @@ class LogEmitter(
             log.info("Client dashboard disconnected. Remaining active streams: $remaining")
         }
         emitter.onTimeout {
-            job.cancel();
+            job.cancel()
             emitter.complete()
         }
         return emitter
