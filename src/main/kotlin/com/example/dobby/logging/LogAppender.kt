@@ -3,7 +3,7 @@ package com.example.dobby.logging
 import ch.qos.logback.classic.PatternLayout
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.AppenderBase
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -44,7 +44,7 @@ class LogAppender : AppenderBase<ILoggingEvent>() {
         // This formats the log object into the exact full console string line layout
         val formattedLog = layout.doLayout(eventObject).trimEnd()
         if (!_logFlow.tryEmit(formattedLog)) {
-            logger.warn("Log buffer full, dropping oldest log")
+            log.warn("Log buffer full, dropping oldest log")
             // Buffer was full even with DROP_OLDEST — extremely unlikely, but worth knowing about
             // (avoid logging here directly to prevent feedback loops into this same appender)
         }

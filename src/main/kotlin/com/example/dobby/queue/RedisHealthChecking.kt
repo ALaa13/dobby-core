@@ -1,7 +1,7 @@
 package com.example.dobby.queue
 
 import ch.qos.logback.classic.LoggerContext
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
@@ -20,14 +20,14 @@ class RedisHealthCheckConfig {
             connectionFactory.connection.use { connection ->
                 val response = connection.ping()
                 if (response == "PONG" || response != null) {
-                    logger.info("Redis Health Check Passed: Backend connected successfully.")
+                    log.info("Redis Health Check Passed: Backend connected successfully.")
                 } else {
                     throw IllegalStateException("Redis responded, but PING failed.")
                 }
             }
         } catch (e: Exception) {
-            logger.error("CRITICAL ERROR: Redis is offline! The backend application cannot start.")
-            logger.error("Reason: ${e.message}")
+            log.error("CRITICAL ERROR: Redis is offline! The backend application cannot start.")
+            log.error("Reason: ${e.message}")
             (LoggerFactory.getILoggerFactory() as? LoggerContext)?.stop()
             exitProcess(1)
         }

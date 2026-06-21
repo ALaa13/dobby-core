@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.dobby.AppProperties
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.exception.DobbyException
 import org.springframework.stereotype.Service
 import java.util.*
@@ -18,7 +18,7 @@ class JWTService(
         val jwtExpiration = appProperties.jwt.expiration
 
         return try {
-            logger.info("Generating JWT token for subject: $subject, claim: $claim")
+            log.info("Generating JWT token for subject: $subject, claim: $claim")
             val algorithm = Algorithm.HMAC256(jwtSecret)
             JWT.create()
                 .withIssuer("dobby-core")
@@ -27,7 +27,7 @@ class JWTService(
                 .withExpiresAt(Date(System.currentTimeMillis() + jwtExpiration.toMillis()))
                 .sign(algorithm)
         } catch (e: Exception) {
-            logger.error("Failed to generate JWT token", e)
+            log.error("Failed to generate JWT token", e)
             throw DobbyException.JWTException("Failed to generate JWT token: ${e.message}", e)
         }
     }
@@ -36,7 +36,7 @@ class JWTService(
         val jwtSecret = appProperties.jwt.secret
 
         return try {
-            logger.info("Validating JWT token")
+            log.info("Validating JWT token")
             val algorithm = Algorithm.HMAC256(jwtSecret)
             val verifier = JWT.require(algorithm)
                 .withIssuer("dobby-core")
@@ -44,7 +44,7 @@ class JWTService(
             val decodedJWT = verifier.verify(token)
             decodedJWT.subject
         } catch (e: Exception) {
-            logger.error("Failed to validate JWT token", e)
+            log.error("Failed to validate JWT token", e)
             throw DobbyException.JWTException("Failed to validate JWT token: ${e.message}", e)
         }
     }

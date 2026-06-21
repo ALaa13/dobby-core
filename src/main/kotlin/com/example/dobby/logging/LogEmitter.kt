@@ -1,6 +1,6 @@
 package com.example.dobby.logging
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import kotlinx.coroutines.*
 import kotlinx.io.IOException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -22,7 +22,7 @@ class LogEmitter(
             try {
 
                 val currentCount = activeConnections.incrementAndGet()
-                logger.info("New client dashboard connected. Active stream counts: $currentCount")
+                log.info("New client dashboard connected. Active stream counts: $currentCount")
 
                 // send an immediate heartbeat to keep the connection alive while we wait for the first log line to arrive.
                 safeHeartbeat(emitter)
@@ -49,7 +49,7 @@ class LogEmitter(
             } catch (_: CancellationException) {
                 // normal shutdown
             } catch (e: Exception) {
-                logger.error("Unexpected error in log stream", e)
+                log.error("Unexpected error in log stream", e)
                 runCatching {
                     emitter.completeWithError(e)
                 }
@@ -58,7 +58,7 @@ class LogEmitter(
         emitter.onCompletion {
             job.cancel()
             val remaining = activeConnections.decrementAndGet()
-            logger.info("Client dashboard disconnected. Remaining active streams: $remaining")
+            log.info("Client dashboard disconnected. Remaining active streams: $remaining")
         }
         emitter.onTimeout {
             job.cancel();

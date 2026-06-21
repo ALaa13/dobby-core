@@ -1,6 +1,6 @@
 package com.example.dobby.service
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.dto.RoastRequest
 import com.example.dobby.dto.toResult
@@ -42,7 +42,7 @@ class RoastService(
                 request.persona,
                 memoryContext
             )
-            logger.info("Roast generation completed successfully")
+            log.info("Roast generation completed successfully")
             val result = request.toResult(roastText, true)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
@@ -69,7 +69,7 @@ class RoastService(
                     "⚠️ System encountered an unexpected glitch while processing your roast."
             }
 
-            logger.error("Managed Dobby Exception caught: ${e.message}")
+            log.error("Managed Dobby Exception caught: ${e.message}")
             val result = request.toResult(friendlyBotErrorMessage, false)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
@@ -83,7 +83,7 @@ class RoastService(
         messages: List<DiscordChatMessage>,
         guildId: String
     ): String {
-        logger.info("Building facts memory context for guild $guildId with ${messages.size} messages")
+        log.info("Building facts memory context for guild $guildId with ${messages.size} messages")
         val factsMap = getFactsForUsers(messages, guildId)
         val builder = StringBuilder()
         for ((userId, facts) in factsMap) {

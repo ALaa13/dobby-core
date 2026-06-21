@@ -21,6 +21,7 @@ class HttpClientConfig {
 
 
 fun KtorClientConfig<*>.configureDobbyJson() {
+    expectSuccess = true
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true

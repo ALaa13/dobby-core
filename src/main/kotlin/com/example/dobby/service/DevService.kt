@@ -1,7 +1,7 @@
 package com.example.dobby.service
 
 import com.example.dobby.AppProperties
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.exception.DobbyException
 import org.springframework.stereotype.Service
 
@@ -11,7 +11,7 @@ class DevService(
     private val jwtService: JWTService
 ) {
     fun getTestToken(secreteCode: String): String {
-        logger.info("Generating test token for dev environment")
+        log.info("Generating test token for dev environment")
         val devSecret = appProperties.dev.secretKey
         if (secreteCode != devSecret) {
             throw DobbyException.AuthorizationException("Invalid secret")
