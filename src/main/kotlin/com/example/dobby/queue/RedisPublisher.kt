@@ -1,6 +1,6 @@
 package com.example.dobby.queue
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.dto.RoastResult
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -17,7 +17,7 @@ class RedisPublisher(
             val jsonMessage = objectMapper.writeValueAsString(request)
             redisTemplate.convertAndSend(channel, jsonMessage)
         } catch (e: Exception) {
-            logger.error("Error publishing message to Redis channel '$channel': ${e.message}")
+            log.error("Error publishing message to Redis channel '$channel': ${e.message}")
         }
     }
 }

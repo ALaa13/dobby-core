@@ -1,6 +1,6 @@
 package com.example.dobby.llm
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
@@ -36,9 +36,9 @@ class GeminiModelManager(private val geminiApi: GeminiApiPort) {
                 }
                 // Sort so "flash" variants appear at index 0 (fast/cheap default options)
                 .sortedByDescending { it.contains("flash", ignoreCase = true) }
-            logger.info("Dynamically discovered Gemini models count: ${availableModels.size}")
+            log.info("Dynamically discovered Gemini models count: ${availableModels.size}")
         }.onFailure { error ->
-            logger.info("Failed to dynamically discover Gemini models: ${error.message}")
+            log.info("Failed to dynamically discover Gemini models: ${error.message}")
             availableModels = listOf("gemini-2.5-flash", "gemini-2.5-pro")
         }
     }

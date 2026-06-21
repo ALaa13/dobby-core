@@ -1,6 +1,6 @@
 package com.example.dobby.service
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.dto.*
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
@@ -18,7 +18,7 @@ class FactService(
     }
 
     suspend fun saveFact(request: DiscordFactRequest) {
-        logger.info("Received remember request for user $request")
+        log.info("Received remember request for user $request")
         val profile = getOrCreateProfile(
             UserProfileCreateRequest(
                 request.discordUserId,
@@ -37,7 +37,7 @@ class FactService(
     }
 
     suspend fun getFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
-        logger.info("Received fact request for user $discordUserId")
+        log.info("Received fact request for user $discordUserId")
         return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
     }
 
@@ -48,6 +48,6 @@ class FactService(
                 guildId
             )
         userFactRepository.deleteFactsByProfileId(profile.id)
-        logger.info("Deleted all facts for user $discordUserId")
+        log.info("Deleted all facts for user $discordUserId")
     }
 }

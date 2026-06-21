@@ -1,6 +1,6 @@
 package com.example.dobby.service
 
-import com.example.dobby.config.logger
+import com.example.dobby.config.log
 import com.example.dobby.dto.DiscordChatMessage
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.llm.GeminiApiPort
@@ -20,7 +20,7 @@ class GeminiService(
         val aiModel = geminiModelManager.getBestModel()
 
         val response = try {
-            logger.info("Using Gemini model: $aiModel for roasting")
+            log.info("Using Gemini model: $aiModel for roasting")
             geminiApi.generateContent(aiModel, fullPrompt)
         } catch (e: Exception) {
             geminiModelManager.reportModelFailure(aiModel)

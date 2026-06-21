@@ -13,6 +13,7 @@ data class AppProperties(
     val jwt: Jwt = Jwt(),
     val dev: Dev = Dev(),
     val frontend: Frontend = Frontend(),
+    val encryption: Encryption = Encryption(),
     val app: App = App()
 ) {
     data class Supabase(
@@ -37,6 +38,10 @@ data class AppProperties(
     )
 
     data class Dev(
+        var secretKey: String = ""
+    )
+
+    data class Encryption(
         var secretKey: String = ""
     )
 
