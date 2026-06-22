@@ -1,4 +1,4 @@
-package com.example.dobby.controller
+package com.example.dobby.controller.discord
 
 import com.example.dobby.dto.ApiResponse
 import com.example.dobby.dto.DiscordFactRequest
@@ -19,13 +19,13 @@ class FactController(
         @RequestParam("discord_user_id") discordUserId: String,
         @RequestParam("guild_id") guildId: String
     ): List<UserFactResponse> {
-        return factService.getFacts(discordUserId, guildId)
+        return factService.getUserFacts(discordUserId, guildId)
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     suspend fun saveFact(@Valid @RequestBody request: DiscordFactRequest): ApiResponse {
-        factService.saveFact(request)
+        factService.saveUserFact(request)
         return ApiResponse(
             success = true,
             message = "Fact saved successfully."
@@ -38,7 +38,7 @@ class FactController(
         @RequestParam("discord_user_id") discordUserId: String,
         @RequestParam("guild_id") guildId: String
     ): ApiResponse {
-        factService.resetFacts(discordUserId, guildId)
+        factService.resetUserFacts(discordUserId, guildId)
         return ApiResponse(
             success = true,
             message = "All facts for this user have been successfully reset."

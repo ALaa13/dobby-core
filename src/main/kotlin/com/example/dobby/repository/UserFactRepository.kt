@@ -13,6 +13,10 @@ class UserFactRepository(
         return supabaseUserFactClient.insertNewFact(fact)
     }
 
+    suspend fun deleteFactById(factId: String) {
+        supabaseUserFactClient.deleteFactById(factId)
+    }
+
     suspend fun deleteFactsByProfileId(profileId: String) {
         supabaseUserFactClient.deleteFactsByProfileId(profileId)
     }

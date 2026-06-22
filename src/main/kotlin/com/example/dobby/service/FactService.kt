@@ -17,7 +17,7 @@ class FactService(
         return existingProfile ?: userProfileRepository.saveProfile(profile)
     }
 
-    suspend fun saveFact(request: DiscordFactRequest) {
+    suspend fun saveUserFact(request: DiscordFactRequest) {
         log.info("Received remember request for user $request")
         val profile = getOrCreateProfile(
             UserProfileCreateRequest(
@@ -30,18 +30,28 @@ class FactService(
             profile.id,
             request.fact,
             FactSource.USER_SUBMISSION,
-            80,
-            20
+            80, // TODO - get this from Gemini
+            20 // TODO - get this from Gemini
         )
         userFactRepository.saveFact(fact)
     }
 
-    suspend fun getFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
+    suspend fun getUserFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
         log.info("Received fact request for user $discordUserId")
         return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
     }
 
-    suspend fun resetFacts(discordUserId: String, guildId: String) {
+    suspend fun getAllFactsByGuild(guildId: String): List<UserProfileResponse> {
+        log.info("Received fact request for all users in guild $guildId")
+        return userProfileRepository.findAllByGuildId(guildId)
+    }
+
+    suspend fun deleteUserFact(factId: String) {
+        log.info("Received fact delete request for fact $factId")
+        userFactRepository.deleteFactById(factId)
+    }
+
+    suspend fun resetUserFacts(discordUserId: String, guildId: String) {
         val profile =
             userProfileRepository.findProfile(discordUserId, guildId) ?: throw DobbyException.ProfileNotFoundException(
                 discordUserId,

@@ -9,8 +9,7 @@ CREATE TABLE public.user_profiles
     display_name    text,
     created_at      timestamp with time zone NOT NULL DEFAULT now(),
     updated_at      timestamp with time zone,
-    CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
-    CONSTRAINT user_profiles_discord_user_id_fkey FOREIGN KEY (discord_user_id) REFERENCES public.discord_accounts (discord_user_id)
+    CONSTRAINT user_profiles_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.user_facts
 (
@@ -28,7 +27,7 @@ CREATE TABLE public.user_facts
 CREATE TABLE public.discord_accounts
 (
     discord_user_id text                     NOT NULL,
-    encrypted_token text                     NOT NULL,
+    encrypted_token text,
     created_at      timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT discord_accounts_pkey PRIMARY KEY (discord_user_id)
 );

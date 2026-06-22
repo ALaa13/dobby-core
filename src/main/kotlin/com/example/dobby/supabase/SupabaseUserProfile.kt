@@ -30,6 +30,20 @@ class SupabaseUserProfileClient(
         }
     }
 
+    suspend fun findAllByGuildId(guildId: String): List<UserProfileResponse> {
+        return safeDbCall("find all users and facts by guild $guildId") {
+            supabaseClient.from(USER_PROFILE_TABLE)
+                .select(
+                    columns = Columns.raw("*, user_facts(*)")
+                ) {
+                    filter {
+                        eq("guild_id", guildId)
+                    }
+                }
+                .decodeList<UserProfileResponse>()
+        }
+    }
+
 
     suspend fun findByDiscordIdAndGuildId(discordUserId: String, guildId: String): UserProfileResponse? {
         return safeDbCall("find user by $discordUserId and guild") {
