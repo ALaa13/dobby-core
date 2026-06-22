@@ -65,7 +65,7 @@ class FactServiceTest {
         coEvery { userFactRepository.saveFact(any()) } returns mockFactResponse
 
 
-        factService.saveFact(request)
+        factService.saveUserFact(request)
 
 
         coVerify(exactly = 1) { userProfileRepository.findProfile("user-123", "guild-456") }
@@ -115,7 +115,7 @@ class FactServiceTest {
         coEvery { userFactRepository.saveFact(any()) } returns mockFactResponse
 
 
-        factService.saveFact(request)
+        factService.saveUserFact(request)
 
 
         coVerify(exactly = 1) { userProfileRepository.findProfile("user-123", "guild-456") }
@@ -164,7 +164,7 @@ class FactServiceTest {
         coEvery { userProfileRepository.findProfile("user-123", "guild-456") } returns profile
 
 
-        val result = factService.getFacts("user-123", "guild-456")
+        val result = factService.getUserFacts("user-123", "guild-456")
 
 
         assertEquals(2, result.size)
@@ -175,7 +175,7 @@ class FactServiceTest {
     fun `getFacts should return empty list when profile does not exist`() = runTest {
         coEvery { userProfileRepository.findProfile("any-user", "any-guild") } returns null
 
-        val result = factService.getFacts("any-user", "any-guild")
+        val result = factService.getUserFacts("any-user", "any-guild")
 
         assertTrue(result.isEmpty())
     }
@@ -198,7 +198,7 @@ class FactServiceTest {
         coEvery { userFactRepository.deleteFactsByProfileId("1") } returns Unit
 
 
-        factService.resetFacts("user-123", "guild-456")
+        factService.resetUserFacts("user-123", "guild-456")
 
 
         coVerify(exactly = 1) { userFactRepository.deleteFactsByProfileId("1") }
@@ -209,7 +209,7 @@ class FactServiceTest {
         coEvery { userProfileRepository.findProfile("fake-user", "fake-guild") } returns null
 
         assertFailsWith<DobbyException.ProfileNotFoundException> {
-            factService.resetFacts("fake-user", "fake-guild")
+            factService.resetUserFacts("fake-user", "fake-guild")
         }
 
         coVerify(exactly = 0) { userFactRepository.deleteFactsByProfileId(any()) }

@@ -17,6 +17,10 @@ class UserProfileRepository(
         return supabaseUserProfileClient.findByDiscordIdAndGuildId(discordUserId, guildId)
     }
 
+    suspend fun findAllByGuildId(guildId: String): List<UserProfileResponse> {
+        return supabaseUserProfileClient.findAllByGuildId(guildId)
+    }
+
     suspend fun saveProfile(profile: UserProfileCreateRequest): UserProfileResponse {
         return supabaseUserProfileClient.insertNewProfile(profile)
     }

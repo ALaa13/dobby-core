@@ -22,6 +22,18 @@ class SupabaseUserFactClient(
         }
     }
 
+
+    suspend fun deleteFactById(factId: String) {
+        safeDbCall("Deleting user fact") {
+            supabaseClient.from(USER_FACTS_TABLE)
+                .delete {
+                    filter {
+                        eq("id", factId)
+                    }
+                }
+        }
+    }
+
     suspend fun deleteFactsByProfileId(profileId: String) {
         safeDbCall("Deleting user fact") {
             supabaseClient.from(USER_FACTS_TABLE)

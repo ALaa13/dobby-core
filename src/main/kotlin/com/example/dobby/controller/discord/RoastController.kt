@@ -1,4 +1,4 @@
-package com.example.dobby.controller
+package com.example.dobby.controller.discord
 
 import com.example.dobby.dto.ApiResponse
 import com.example.dobby.dto.RoastRequest

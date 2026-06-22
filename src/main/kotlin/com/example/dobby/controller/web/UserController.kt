@@ -1,4 +1,4 @@
-package com.example.dobby.controller
+package com.example.dobby.controller.web
 
 import com.example.dobby.dto.DiscordDashboardResponse
 import com.example.dobby.service.UserService
