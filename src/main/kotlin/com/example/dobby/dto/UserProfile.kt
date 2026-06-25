@@ -12,6 +12,8 @@ data class UserProfileCreateRequest(
     val guildId: String,
     @SerialName("display_name")
     val displayName: String?,
+    @SerialName("avatar_hash")
+    val avatarHash: String?
 )
 
 
@@ -25,6 +27,8 @@ data class UserProfileResponse(
     val guildId: String,
     @SerialName("display_name")
     val displayName: String?,
+    @SerialName("avatar_hash")
+    val avatarHash: String?,
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")

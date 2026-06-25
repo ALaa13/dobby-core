@@ -9,10 +9,6 @@ import org.springframework.stereotype.Repository
 class UserProfileRepository(
     private val supabaseUserProfileClient: SupabaseUserProfileClient
 ) {
-    suspend fun findProfile(discordUserId: String): UserProfileResponse? {
-        return supabaseUserProfileClient.findByDiscordId(discordUserId)
-    }
-
     suspend fun findProfile(discordUserId: String, guildId: String): UserProfileResponse? {
         return supabaseUserProfileClient.findByDiscordIdAndGuildId(discordUserId, guildId)
     }
@@ -23,5 +19,9 @@ class UserProfileRepository(
 
     suspend fun saveProfile(profile: UserProfileCreateRequest): UserProfileResponse {
         return supabaseUserProfileClient.insertNewProfile(profile)
+    }
+
+    suspend fun deleteAllByGuildId(guildId: String) {
+        return supabaseUserProfileClient.deleteAllByGuildId(guildId)
     }
 }

@@ -12,11 +12,12 @@ import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(
+class AdminUserService(
     private val appProperties: AppProperties,
     private val discordAccountRepository: DiscordAccountRepository,
     private val discordApiService: DiscordApiService,
     private val stringRedisTemplate: StringRedisTemplate,
+    private val guildManagementService: GuildManagementService
 ) {
 
     suspend fun getCurrentUser(userIdFromJwt: String): DiscordDashboardResponse {
@@ -50,5 +51,9 @@ class UserService(
         stringRedisTemplate.opsForValue().set(redisKey, jsonPayload, RedisKeyTimeout.USER_PROFILE)
 
         return freshProfile
+    }
+
+    suspend fun purgeGuildFacts(guildId: String) {
+        guildManagementService.resetGuildFacts(guildId)
     }
 }

@@ -38,13 +38,15 @@ class FactServiceTest {
             "He'll fix a kernel panic before fixing his posture.",
             "user-123",
             "guild-456",
-            "SomeUser"
+            "SomeUser",
+            "00112233"
         )
         val createdProfile = UserProfileResponse(
             id = "1",
             discordUserId = "user-123",
             guildId = "guild-456",
             displayName = "SomeUser",
+            avatarHash = "00112233",
             facts = emptyList(),
             createdAt = "2023-01-01T00:00:00Z",
             updatedAt = "2023-01-01T00:00:00Z"
@@ -71,7 +73,7 @@ class FactServiceTest {
         coVerify(exactly = 1) { userProfileRepository.findProfile("user-123", "guild-456") }
         coVerify(exactly = 1) {
             userProfileRepository.saveProfile(match {
-                it.discordUserId == "user-123" && it.guildId == "guild-456" && it.displayName == "SomeUser"
+                it.discordUserId == "user-123" && it.guildId == "guild-456" && it.displayName == "SomeUser" && it.avatarHash == "00112233"
             })
         }
         coVerify(exactly = 1) {
@@ -88,13 +90,15 @@ class FactServiceTest {
             "He'll fix a kernel panic before fixing his posture.",
             "user-123",
             "guild-456",
-            "SomeUser"
+            "SomeUser",
+            "00112233"
         )
         val existingProfile = UserProfileResponse(
             id = "1",
             discordUserId = "user-123",
             guildId = "guild-456",
             displayName = "SomeUser",
+            avatarHash = "00112233",
             facts = emptyList(),
             createdAt = "2023-01-01T00:00:00Z",
             updatedAt = "2023-01-01T00:00:00Z"
@@ -156,6 +160,7 @@ class FactServiceTest {
             discordUserId = "user-123",
             guildId = "guild-456",
             displayName = "SomeUser",
+            avatarHash = "00112233",
             facts = mockFacts,
             createdAt = "2023-01-01T00:00:00Z",
             updatedAt = "2023-01-01T00:00:00Z"
@@ -190,6 +195,7 @@ class FactServiceTest {
             discordUserId = "user-123",
             guildId = "guild-456",
             displayName = "Alaa",
+            avatarHash = "00112233",
             facts = emptyList(),
             createdAt = "2023-01-01T00:00:00Z",
             updatedAt = "2023-01-01T00:00:00Z"
