@@ -9,6 +9,7 @@ CREATE TABLE public.user_profiles
     display_name    text,
     created_at      timestamp with time zone NOT NULL DEFAULT now(),
     updated_at      timestamp with time zone,
+    avatar_hash     text,
     CONSTRAINT user_profiles_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.user_facts

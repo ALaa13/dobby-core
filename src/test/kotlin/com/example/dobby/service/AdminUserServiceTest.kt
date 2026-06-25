@@ -18,15 +18,16 @@ import org.springframework.data.redis.core.ValueOperations
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class UserServiceTest {
+class AdminUserServiceTest {
 
     private val appProperties = mockk<AppProperties>()
     private val discordAccountRepository = mockk<DiscordAccountRepository>()
     private val discordApiService = mockk<DiscordApiService>()
     private val stringRedisTemplate = mockk<StringRedisTemplate>()
     private val valueOperations = mockk<ValueOperations<String, String>>()
+    private val guildManagementService = mockk<GuildManagementService>()
 
-    private lateinit var userService: UserService
+    private lateinit var adminUserService: AdminUserService
 
     private val testUserId = "123456789"
     private val redisKey = RedisKeys.USER_PROFILE + ":" + testUserId
@@ -38,11 +39,12 @@ class UserServiceTest {
         // Mock the nested Redis structure Spring Template uses
         every { stringRedisTemplate.opsForValue() } returns valueOperations
 
-        userService = UserService(
+        adminUserService = AdminUserService(
             appProperties,
             discordAccountRepository,
             discordApiService,
-            stringRedisTemplate
+            stringRedisTemplate,
+            guildManagementService
         )
 
         // Mock object we're using for encryption
@@ -62,7 +64,7 @@ class UserServiceTest {
         // Stub Redis hit
         every { valueOperations.get(redisKey) } returns cachedJson
 
-        val result = userService.getCurrentUser(testUserId)
+        val result = adminUserService.getCurrentUser(testUserId)
 
         assertEquals(expectedResponse, result)
 
@@ -96,7 +98,7 @@ class UserServiceTest {
         coEvery { discordApiService.fetchCompleteUserProfile("decrypted-discord-token") } returns expectedResponse
         every { valueOperations.set(redisKey, any(), RedisKeyTimeout.USER_PROFILE) } just Runs
 
-        val result = userService.getCurrentUser(testUserId)
+        val result = adminUserService.getCurrentUser(testUserId)
 
         assertEquals(expectedResponse, result)
 
@@ -112,9 +114,23 @@ class UserServiceTest {
         coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns null // Database empty
 
         assertFailsWith<NoSuchElementException> {
-            userService.getCurrentUser(testUserId)
+            adminUserService.getCurrentUser(testUserId)
         }
 
         coVerify(exactly = 0) { discordApiService.fetchCompleteUserProfile(any()) }
+    }
+
+    @Test
+    fun `purgeGuildFacts should delegate call to GuildManagementService successfully`() = runTest {
+        val targetGuildId = "123456789012345678"
+
+        coEvery { guildManagementService.resetGuildFacts(targetGuildId) } coAnswers { }
+
+        adminUserService.purgeGuildFacts(targetGuildId)
+
+        // Verify that the call was passed down to the underlying domain service exactly once
+        coVerify(exactly = 1) {
+            guildManagementService.resetGuildFacts(targetGuildId)
+        }
     }
 }

@@ -26,6 +26,8 @@ tags:
     description: AI-powered roast generation endpoints
   - name: Facts
     description: User fact management endpoints
+  - name: Guilds
+    description: Guild data and workspace management endpoints
   - name: Users
     description: User profile and identity endpoints
   - name: Logs
@@ -60,7 +62,7 @@ paths:
       summary: Redirect to Discord login
       description: Initiates the Discord OAuth2 authorization flow by returning a browser-level 302 redirection.
       operationId: redirectToDiscord
-      security: [ ] # No authentication required to login
+      security: [ ]
       responses:
         '302':
           description: Redirects browser to Discord's authorization page.
@@ -292,6 +294,87 @@ paths:
                 message: "You are not authorized to access facts for this guild."
                 timestamp: 1781354405000
 
+  /guild/{guildId}:
+    get:
+      tags:
+        - Guilds
+      summary: Get all facts for a guild
+      description: Returns a complete list of profiles along with their structured facts registered under a specified guild ID.
+      operationId: getAllGuildFacts
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the Discord guild.
+      responses:
+        '200':
+          description: Full list of user profiles with facts resolved cleanly.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: Unauthenticated or expired token validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Guilds
+      summary: Reset all guild facts
+      description: Destroys and purges all workspace user data facts completely across an entire target guild configuration layout.
+      operationId: resetGuildFacts
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the Discord guild to purge.
+      responses:
+        '200':
+          description: Absolute workspace purge clean up execution finished successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Fact deleted successfully."
+                timestamp: 1781354405000
+
+  /guild/facts/{factId}:
+    delete:
+      tags:
+        - Guilds
+      summary: Delete a single guild fact
+      description: Targets and deletes an explicit single fact row footprint matching the assigned reference path ID.
+      operationId: deleteGuildFact
+      parameters:
+        - name: factId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Database ID string identifier of the targeted fact record.
+      responses:
+        '200':
+          description: Explicit fact removal tracking finished successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Fact deleted successfully."
+                timestamp: 1781354405000
+
   /users/me:
     get:
       tags:
@@ -481,6 +564,10 @@ components:
           type: string
           nullable: true
           example: "SomeUser"
+        avatarHash:
+          type: string
+          nullable: true
+          example: "00112233"
 
     UserFactResponse:
       type: object
@@ -537,6 +624,10 @@ components:
           type: string
           nullable: true
           example: "SomeUser"
+        avatarHash:
+          type: string
+          nullable: true
+          example: "00112233"
         created_at:
           type: string
           format: date-time

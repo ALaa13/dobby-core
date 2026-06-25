@@ -23,7 +23,8 @@ class FactService(
             UserProfileCreateRequest(
                 request.discordUserId,
                 request.guildId,
-                request.displayName
+                request.displayName,
+                request.avatarHash
             )
         )
         val fact = UserFactCreateRequest(
