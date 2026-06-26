@@ -1,9 +1,9 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DiscordUserDto(
+data class DiscordUser(
     val id: String,
     val username: String,
     val avatar: String?

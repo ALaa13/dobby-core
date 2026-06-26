@@ -1,9 +1,9 @@
 package com.example.dobby.service
 
-import com.example.dobby.dto.DiscordFactRequest
-import com.example.dobby.dto.FactSource
-import com.example.dobby.dto.UserFactResponse
-import com.example.dobby.dto.UserProfileResponse
+import com.example.dobby.dto.discord.DiscordFactRequest
+import com.example.dobby.dto.fact.FactSource
+import com.example.dobby.dto.fact.UserFactResponse
+import com.example.dobby.dto.user.UserProfileResponse
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
@@ -56,8 +56,6 @@ class FactServiceTest {
             profileId = "1",
             factText = "Enjoys Kotlin development",
             source = "USER_SUBMISSION",
-            confidenceScore = 80,
-            roastabilityScore = 20,
             createdAt = "2026-06-16T12:00:00Z",
             updatedAt = "2026-06-16T12:00:00Z"
         )
@@ -109,8 +107,6 @@ class FactServiceTest {
             profileId = "1",
             factText = "He'll fix a kernel panic before fixing his posture.",
             source = "USER_SUBMISSION",
-            confidenceScore = 80,
-            roastabilityScore = 20,
             createdAt = "2026-06-16T12:00:00Z",
             updatedAt = "2026-06-16T12:00:00Z"
         )
@@ -139,8 +135,6 @@ class FactServiceTest {
                 profileId = "1",
                 factText = "Fact 1",
                 source = "USER_SUBMISSION",
-                confidenceScore = 80,
-                roastabilityScore = 20,
                 createdAt = "2023-01-01T00:00:00Z",
                 updatedAt = "2023-01-01T00:00:00Z"
             ),
@@ -149,8 +143,6 @@ class FactServiceTest {
                 profileId = "1",
                 factText = "Fact 2",
                 source = "USER_SUBMISSION",
-                confidenceScore = 80,
-                roastabilityScore = 20,
                 createdAt = "2023-01-01T00:00:00Z",
                 updatedAt = "2023-01-01T00:00:00Z"
             )

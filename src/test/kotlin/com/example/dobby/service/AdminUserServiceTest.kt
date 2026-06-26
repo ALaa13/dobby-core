@@ -3,8 +3,8 @@ package com.example.dobby.service
 import com.example.dobby.AppProperties
 import com.example.dobby.crypto.CryptoUtils
 import com.example.dobby.crypto.CryptoUtils.decryptToken
-import com.example.dobby.dto.DiscordAccount
-import com.example.dobby.dto.DiscordDashboardResponse
+import com.example.dobby.dto.discord.DiscordAccount
+import com.example.dobby.dto.discord.DiscordDashboardResponse
 import com.example.dobby.queue.RedisKeyTimeout
 import com.example.dobby.queue.RedisKeys
 import com.example.dobby.repository.DiscordAccountRepository
@@ -25,7 +25,6 @@ class AdminUserServiceTest {
     private val discordApiService = mockk<DiscordApiService>()
     private val stringRedisTemplate = mockk<StringRedisTemplate>()
     private val valueOperations = mockk<ValueOperations<String, String>>()
-    private val guildManagementService = mockk<GuildManagementService>()
 
     private lateinit var adminUserService: AdminUserService
 
@@ -43,8 +42,7 @@ class AdminUserServiceTest {
             appProperties,
             discordAccountRepository,
             discordApiService,
-            stringRedisTemplate,
-            guildManagementService
+            stringRedisTemplate
         )
 
         // Mock object we're using for encryption
@@ -118,19 +116,5 @@ class AdminUserServiceTest {
         }
 
         coVerify(exactly = 0) { discordApiService.fetchCompleteUserProfile(any()) }
-    }
-
-    @Test
-    fun `purgeGuildFacts should delegate call to GuildManagementService successfully`() = runTest {
-        val targetGuildId = "123456789012345678"
-
-        coEvery { guildManagementService.resetGuildFacts(targetGuildId) } coAnswers { }
-
-        adminUserService.purgeGuildFacts(targetGuildId)
-
-        // Verify that the call was passed down to the underlying domain service exactly once
-        coVerify(exactly = 1) {
-            guildManagementService.resetGuildFacts(targetGuildId)
-        }
     }
 }

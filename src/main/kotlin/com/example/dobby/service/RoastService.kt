@@ -1,12 +1,15 @@
 package com.example.dobby.service
 
 import com.example.dobby.config.log
-import com.example.dobby.dto.DiscordChatMessage
-import com.example.dobby.dto.RoastRequest
-import com.example.dobby.dto.toResult
+import com.example.dobby.dto.discord.DiscordChatMessage
+import com.example.dobby.dto.roast.RoastLogDbResponse
+import com.example.dobby.dto.roast.RoastRequest
+import com.example.dobby.dto.roast.toResult
+import com.example.dobby.dto.user.UserProfileCreateRequest
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.queue.RedisChannels
 import com.example.dobby.queue.RedisPublisher
+import com.example.dobby.repository.RoastRepository
 import com.example.dobby.repository.UserProfileRepository
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineScope
@@ -18,15 +21,11 @@ import org.springframework.stereotype.Service
 @Service
 class RoastService(
     private val userRepository: UserProfileRepository,
+    private val roastRepository: RoastRepository,
     private val geminiService: GeminiService,
     private val redisPublisher: RedisPublisher,
     @Qualifier("ioScope") private val serviceScope: CoroutineScope
 ) {
-
-    @PreDestroy
-    private fun cleanup() {
-        serviceScope.cancel()
-    }
 
     fun processRoastAsync(request: RoastRequest) {
         serviceScope.launch {
@@ -34,16 +33,35 @@ class RoastService(
         }
     }
 
+    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> {
+        log.info("Getting roasts for guild $guildId")
+        return roastRepository.getGuildRoasts(guildId)
+    }
+
+
+    @PreDestroy
+    private fun cleanup() {
+        serviceScope.cancel()
+    }
+
     private suspend fun processRoast(request: RoastRequest) {
         try {
+            // Sync user profiles
+            syncUserProfiles(request)
+
             val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
-            val roastText = geminiService.generateRoast(
+            val roastResult = geminiService.generateRoast(
                 request.messages,
                 request.persona,
                 memoryContext
             )
             log.info("Roast generation completed successfully")
-            val result = request.toResult(roastText, true)
+
+            // Save to the datasbse
+            roastRepository.saveRoastResult(request.guildId, request.channelId, roastResult)
+            log.info("Roast result saved to database")
+
+            val result = request.toResult(roastResult.text, true)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
                 result
@@ -78,6 +96,22 @@ class RoastService(
         }
     }
 
+    suspend fun syncUserProfiles(request: RoastRequest) {
+        val profilesToSync = request.messages
+            .distinctBy { it.discordUserId }
+            .map { msg ->
+                UserProfileCreateRequest(
+                    discordUserId = msg.discordUserId,
+                    guildId = request.guildId,
+                    displayName = msg.displayName,
+                    avatarHash = msg.avatarHash
+                )
+            }
+
+        // Fire the batch upsert to lock down their identities
+        userRepository.upsertProfiles(profilesToSync)
+        log.info("Successfully synced ${profilesToSync.size} user profiles from chat history")
+    }
 
     private suspend fun buildFactsMemoryContext(
         messages: List<DiscordChatMessage>,
@@ -112,6 +146,6 @@ class RoastService(
     }
 
     private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> {
-        return messages.map { it.author }.toSet()
+        return messages.map { it.displayName }.toSet()
     }
 }

@@ -1,8 +1,8 @@
 package com.example.dobby.service
 
 import com.example.dobby.AppProperties
-import com.example.dobby.dto.DiscordTokenResponse
-import com.example.dobby.dto.DiscordUserDto
+import com.example.dobby.dto.discord.DiscordTokenResponse
+import com.example.dobby.dto.discord.DiscordUser
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -44,7 +44,7 @@ class DiscordAuthServiceTest {
     @Test
     fun `should successfully handle login callback and return redirect uri`() = runTest {
         val mockTokenResponse = DiscordTokenResponse(accessToken = "mock-access-token")
-        val mockUserResponse = DiscordUserDto(id = "123456", username = "SomeUser", avatar = null)
+        val mockUserResponse = DiscordUser(id = "123456", username = "SomeUser", avatar = null)
 
         coEvery { discordApiService.exchangeCodeForToken(any(), any(), any(), any()) } returns mockTokenResponse
         coEvery { discordApiService.getUserProfile("mock-access-token") } returns mockUserResponse

@@ -1,7 +1,7 @@
 package com.example.dobby.repository
 
-import com.example.dobby.dto.UserProfileCreateRequest
-import com.example.dobby.dto.UserProfileResponse
+import com.example.dobby.dto.user.UserProfileCreateRequest
+import com.example.dobby.dto.user.UserProfileResponse
 import com.example.dobby.supabase.SupabaseUserProfileClient
 import org.springframework.stereotype.Repository
 
@@ -23,5 +23,9 @@ class UserProfileRepository(
 
     suspend fun deleteAllByGuildId(guildId: String) {
         return supabaseUserProfileClient.deleteAllByGuildId(guildId)
+    }
+
+    suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
+        return supabaseUserProfileClient.upsertProfiles(profiles)
     }
 }

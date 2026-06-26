@@ -1,6 +1,6 @@
 package com.example.dobby.supabase
 
-import com.example.dobby.dto.DiscordAccount
+import com.example.dobby.dto.discord.DiscordAccount
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns

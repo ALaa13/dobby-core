@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.example.dobby.AppProperties
 import com.example.dobby.config.log
 import com.example.dobby.crypto.CryptoUtils.decryptToken
-import com.example.dobby.dto.DiscordDashboardResponse
+import com.example.dobby.dto.discord.DiscordDashboardResponse
 import com.example.dobby.queue.RedisKeyTimeout
 import com.example.dobby.queue.RedisKeys
 import com.example.dobby.repository.DiscordAccountRepository
@@ -17,9 +17,7 @@ class AdminUserService(
     private val discordAccountRepository: DiscordAccountRepository,
     private val discordApiService: DiscordApiService,
     private val stringRedisTemplate: StringRedisTemplate,
-    private val guildManagementService: GuildManagementService
 ) {
-
     suspend fun getCurrentUser(userIdFromJwt: String): DiscordDashboardResponse {
         log.info("Attempting to retrieve current user profile")
         val redisKey = RedisKeys.USER_PROFILE + ":" + userIdFromJwt
@@ -51,9 +49,5 @@ class AdminUserService(
         stringRedisTemplate.opsForValue().set(redisKey, jsonPayload, RedisKeyTimeout.USER_PROFILE)
 
         return freshProfile
-    }
-
-    suspend fun purgeGuildFacts(guildId: String) {
-        guildManagementService.resetGuildFacts(guildId)
     }
 }

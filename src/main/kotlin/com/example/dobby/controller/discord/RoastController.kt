@@ -1,7 +1,7 @@
 package com.example.dobby.controller.discord
 
 import com.example.dobby.dto.ApiResponse
-import com.example.dobby.dto.RoastRequest
+import com.example.dobby.dto.roast.RoastRequest
 import com.example.dobby.service.RoastService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
