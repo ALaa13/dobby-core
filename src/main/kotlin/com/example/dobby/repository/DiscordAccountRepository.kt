@@ -1,6 +1,6 @@
 package com.example.dobby.repository
 
-import com.example.dobby.dto.DiscordAccount
+import com.example.dobby.dto.discord.DiscordAccount
 import com.example.dobby.supabase.SupabaseDiscordAccount
 import org.springframework.stereotype.Repository
 

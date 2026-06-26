@@ -1,10 +1,12 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.discord
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class DiscordChatMessage(
-    val author: String,
+    val displayName: String,
+    val discordUserId: String,
+    val avatarHash: String,
     val content: String,
     val timestamp: String
 )

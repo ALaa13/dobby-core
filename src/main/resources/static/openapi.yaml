@@ -22,12 +22,12 @@ tags:
     description: Health check endpoints
   - name: Authentication
     description: Discord OAuth2 authentication flow
+  - name: Dashboard
+    description: Real-time web panel and dashboard workspace management endpoints
   - name: Roasts
     description: AI-powered roast generation endpoints
   - name: Facts
     description: User fact management endpoints
-  - name: Guilds
-    description: Guild data and workspace management endpoints
   - name: Users
     description: User profile and identity endpoints
   - name: Logs
@@ -108,6 +108,112 @@ paths:
                 message: "Validation failed: No authorization code provided"
                 timestamp: 1781354405000
 
+  # ── Dashboard Endpoints ────────────────────────────────────────────────
+  /dashboard/facts/{guildId}:
+    get:
+      tags:
+        - Dashboard
+      summary: Get all dashboard facts
+      description: Fetches user profiles along with their captured facts for a given guild ID context.
+      operationId: getAllDashboardFacts
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          description: The Discord server ID.
+          schema:
+            type: string
+            example: "987654321098765432"
+      responses:
+        '200':
+          description: Full list of user profiles with facts resolved cleanly.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfileResponse'
+
+  /dashboard/facts/{factId}:
+    delete:
+      tags:
+        - Dashboard
+      summary: Delete a single fact
+      description: Removes a specific tracked user fact record matching the assigned path identifier.
+      operationId: deleteDashboardFact
+      parameters:
+        - name: factId
+          in: path
+          required: true
+          description: Database ID string identifier of the targeted fact record.
+          schema:
+            type: string
+            example: "fact-999"
+      responses:
+        '200':
+          description: Fact dropped successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Fact deleted successfully."
+                timestamp: 1781354405000
+
+  /dashboard/facts/{guildId}/reset:
+    delete:
+      tags:
+        - Dashboard
+      summary: Reset all dashboard facts
+      description: Purges all synchronized historical context facts associated with the specified guild id.
+      operationId: resetDashboardFacts
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          description: Unique identifier of the guild instance to purge.
+          schema:
+            type: string
+            example: "987654321098765432"
+      responses:
+        '200':
+          description: Absolute workspace data facts purge completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: "Facts reset successfully."
+                timestamp: 1781354405000
+
+  /dashboard/roasts/{guildId}:
+    get:
+      tags:
+        - Dashboard
+      summary: Get all dashboard roasts
+      description: Retrieves the entire historical feed log of AI-generated roast objects triggered inside a given guild space.
+      operationId: getAllDashboardRoasts
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          description: Unique identifier of the target guild space.
+          schema:
+            type: string
+            example: "987654321098765432"
+      responses:
+        '200':
+          description: Historical lists of logged roast feeds resolved cleanly.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoastLogDbResponse'
+
+  # ── Core Actions Paths ───────────────────────────────────────────────
   /roast:
     post:
       tags:
@@ -140,7 +246,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "You are not authorized to access facts for this guild."
+                message: "You are not authorized to access facts for this dashboard workspace."
                 timestamp: 1781354405000
 
   /fact:
@@ -148,7 +254,7 @@ paths:
       tags:
         - Facts
       summary: Get user facts
-      description: Retrieves the entire array of documented facts assigned to a user profile context inside a specified guild.
+      description: Retrieves the entire array of documented facts assigned to a user profile context inside a specified dashboard reference.
       operationId: getUserFacts
       parameters:
         - name: discord_user_id
@@ -156,7 +262,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: guild_id
+        - name: dashboard_id
           in: query
           required: true
           schema:
@@ -178,7 +284,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "Validation failed: Required query parameter 'discord_user_id' or 'guild_id' is missing."
+                message: "Validation failed: Required query parameter 'discord_user_id' or 'dashboard_id' is missing."
                 timestamp: 1781354405000
         '403':
           description: Forbidden - Security validation credentials insufficient.
@@ -188,7 +294,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "You are not authorized to access facts for this guild."
+                message: "You are not authorized to access facts for this dashboard instance."
                 timestamp: 1781354405000
 
     post:
@@ -232,14 +338,14 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "You are not authorized to access facts for this guild."
+                message: "You are not authorized to access facts for this workspace."
                 timestamp: 1781354405000
 
     delete:
       tags:
         - Facts
       summary: Delete all user facts
-      description: Clears all collected context strings registered to a specific user inside that guild profile.
+      description: Clears all collected context strings registered to a specific user inside that dashboard identity framework profile.
       operationId: resetUserFacts
       parameters:
         - name: discord_user_id
@@ -247,7 +353,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: guild_id
+        - name: dashboard_id
           in: query
           required: true
           schema:
@@ -271,7 +377,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "Validation failed: guild_id parameter must be a numeric string."
+                message: "Validation failed: dashboard_id parameter must be a numeric string."
                 timestamp: 1781354405000
         '404':
           description: Not Found - Target user metadata workspace mapping absent.
@@ -291,88 +397,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "You are not authorized to access facts for this guild."
-                timestamp: 1781354405000
-
-  /guild/{guildId}:
-    get:
-      tags:
-        - Guilds
-      summary: Get all facts for a guild
-      description: Returns a complete list of profiles along with their structured facts registered under a specified guild ID.
-      operationId: getAllGuildFacts
-      parameters:
-        - name: guildId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the Discord guild.
-      responses:
-        '200':
-          description: Full list of user profiles with facts resolved cleanly.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserProfileResponse'
-        '401':
-          description: Unauthenticated or expired token validation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    delete:
-      tags:
-        - Guilds
-      summary: Reset all guild facts
-      description: Destroys and purges all workspace user data facts completely across an entire target guild configuration layout.
-      operationId: resetGuildFacts
-      parameters:
-        - name: guildId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the Discord guild to purge.
-      responses:
-        '200':
-          description: Absolute workspace purge clean up execution finished successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-              example:
-                success: true
-                message: "Fact deleted successfully."
-                timestamp: 1781354405000
-
-  /guild/facts/{factId}:
-    delete:
-      tags:
-        - Guilds
-      summary: Delete a single guild fact
-      description: Targets and deletes an explicit single fact row footprint matching the assigned reference path ID.
-      operationId: deleteGuildFact
-      parameters:
-        - name: factId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Database ID string identifier of the targeted fact record.
-      responses:
-        '200':
-          description: Explicit fact removal tracking finished successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-              example:
-                success: true
-                message: "Fact deleted successfully."
+                message: "You are not authorized to access facts for this configuration."
                 timestamp: 1781354405000
 
   /users/me:
@@ -529,19 +554,26 @@ components:
     DiscordChatMessage:
       type: object
       required:
-        - author
+        - displayName
+        - discordUserId
+        - avatarHash
         - content
         - timestamp
       properties:
-        author:
+        displayName:
+          type: string
+          example: "User1"
+        discordUserId:
           type: string
           example: "111111111111111111"
+        avatarHash:
+          type: string
+          example: "a_00112233445566778899aabbccddeeff"
         content:
           type: string
           example: "You use a GUI for that?"
         timestamp:
           type: string
-          format: date-time
           example: "2026-05-25T16:30:00Z"
 
     DiscordFactRequest:
@@ -587,25 +619,10 @@ components:
           type: string
           enum: [ USER_SUBMISSION ]
           example: "USER_SUBMISSION"
-        confidence_score:
-          type: integer
-          format: int16
-          nullable: true
-          example: 80
-        roastability_score:
-          type: integer
-          format: int16
-          nullable: true
-          example: 20
         created_at:
           type: string
           format: date-time
           example: "2026-05-25T10:00:00Z"
-        updated_at:
-          type: string
-          format: date-time
-          nullable: true
-          example: "2026-06-10T15:30:00Z"
 
     UserProfileResponse:
       type: object
@@ -617,7 +634,7 @@ components:
         discord_user_id:
           type: string
           example: "111111111111111111"
-        guild_id:
+        dashboard_id:
           type: string
           example: "987654321098765432"
         display_name:
@@ -642,6 +659,99 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/UserFactResponse'
+
+    NestedUserProfileDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440001"
+        discord_user_id:
+          type: string
+          example: "111111111111111111"
+        display_name:
+          type: string
+          nullable: true
+          example: "SomeUser"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://cdn.discordapp.com/avatars/111111111111111111/00112233.png"
+
+    RoastTargetDbResponseDto:
+      type: object
+      required:
+        - roast_id
+        - discord_user_id
+        - dashboard_id
+        - damage_reason
+      properties:
+        roast_id:
+          type: string
+          example: "c73a2512-ece6-4dfd-b0a3-23df41f237ef"
+        discord_user_id:
+          type: string
+          example: "111111111111111111"
+        dashboard_id:
+          type: string
+          example: "987654321098765432"
+        damage_reason:
+          type: string
+          example: "Tried using a GUI to resolve a merge conflict."
+        user_profiles:
+          $ref: '#/components/schemas/NestedUserProfileDto'
+          nullable: true
+
+    RoastLogDbResponse:
+      type: object
+      required:
+        - dashboard_id
+        - channel_id
+        - roast_text
+        - primary_target_id
+        - clapped_the_most_id
+        - burn_accuracy
+        - severity_score
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          example: "c73a2512-ece6-4dfd-b0a3-23df41f237ef"
+        dashboard_id:
+          type: string
+          example: "987654321098765432"
+        channel_id:
+          type: string
+          example: "123456789012345678"
+        roast_text:
+          type: string
+          example: "That post is older than COBOL."
+        persona_used:
+          type: string
+          nullable: true
+          example: "Sarcastic"
+        primary_target_id:
+          type: string
+          example: "111111111111111111"
+        clapped_the_most_id:
+          type: string
+          example: "111111111111111111"
+        burn_accuracy:
+          type: integer
+          example: 90
+        severity_score:
+          type: integer
+          example: 85
+        created_at:
+          type: string
+          example: "2026-05-25T10:00:00Z"
+        roast_targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoastTargetDbResponseDto'
 
   securitySchemes:
     BearerAuth:

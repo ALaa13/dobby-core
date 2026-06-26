@@ -12,6 +12,8 @@ A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Disc
 accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini, and
 delivers results in real-time via **Redis Pub/Sub**.
 
+![Dobby Dashboard Demo](./src/main/resources/assets/Demo.png)
+
 ### Related Repositories
 
 | Project                                              | Description                                                    |

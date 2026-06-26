@@ -3,7 +3,7 @@ package com.example.dobby.service
 import com.example.dobby.AppProperties
 import com.example.dobby.config.log
 import com.example.dobby.crypto.CryptoUtils.encryptToken
-import com.example.dobby.dto.DiscordAccount
+import com.example.dobby.dto.discord.DiscordAccount
 import com.example.dobby.repository.DiscordAccountRepository
 import org.springframework.stereotype.Service
 

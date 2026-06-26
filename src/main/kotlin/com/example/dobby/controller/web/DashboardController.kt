@@ -1,45 +1,52 @@
 package com.example.dobby.controller.web
 
 import com.example.dobby.dto.ApiResponse
-import com.example.dobby.dto.UserProfileResponse
-import com.example.dobby.service.AdminUserService
-import com.example.dobby.service.FactService
+import com.example.dobby.dto.roast.RoastLogDbResponse
+import com.example.dobby.dto.user.UserProfileResponse
+import com.example.dobby.service.DashboardService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/guild")
-class GuildController(
-    private val factService: FactService,
-    private val adminUserService: AdminUserService
+@RequestMapping("/dashboard")
+class DashboardController(
+    private val dashboardService: DashboardService
 ) {
 
-    @GetMapping("/{guildId}")
+    @GetMapping("facts/{guildId}")
     suspend fun getAllGuildFacts(
         @PathVariable("guildId") guildId: String
     ): List<UserProfileResponse> {
-        return factService.getAllFactsByGuild(guildId)
+        return dashboardService.getAllFactsByGuildId(guildId)
     }
-
 
     @DeleteMapping("facts/{factId}")
     suspend fun deleteGuildFact(
         @PathVariable("factId") factId: String
     ): ApiResponse {
-        factService.deleteUserFact(factId)
+        dashboardService.deleteFact(factId)
         return ApiResponse(
             success = true,
             message = "Fact deleted successfully."
         )
     }
 
-    @DeleteMapping("/{guildId}")
+    @DeleteMapping("facts/{guildId}/reset")
     suspend fun resetGuildFacts(
         @PathVariable("guildId") guildId: String
     ): ApiResponse {
-        adminUserService.purgeGuildFacts(guildId)
+        dashboardService.purgeGuildFacts(guildId)
         return ApiResponse(
             success = true,
             message = "Fact deleted successfully."
         )
     }
+
+
+    @GetMapping("roasts/{guildId}")
+    suspend fun getAllGuildRoasts(
+        @PathVariable("guildId") guildId: String
+    ): List<RoastLogDbResponse> {
+        return dashboardService.getAllRoastByGuildId(guildId)
+    }
+
 }

@@ -1,8 +1,8 @@
 package com.example.dobby.controller.discord
 
 import com.example.dobby.dto.ApiResponse
-import com.example.dobby.dto.DiscordFactRequest
-import com.example.dobby.dto.UserFactResponse
+import com.example.dobby.dto.discord.DiscordFactRequest
+import com.example.dobby.dto.fact.UserFactResponse
 import com.example.dobby.service.FactService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

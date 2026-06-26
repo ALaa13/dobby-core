@@ -1,7 +1,7 @@
 package com.example.dobby.supabase
 
-import com.example.dobby.dto.UserFactCreateRequest
-import com.example.dobby.dto.UserFactResponse
+import com.example.dobby.dto.fact.UserFactCreateRequest
+import com.example.dobby.dto.fact.UserFactResponse
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import org.springframework.stereotype.Component

@@ -1,10 +1,10 @@
 package com.example.dobby.service
 
 import com.example.dobby.config.log
-import com.example.dobby.dto.DiscordDashboardResponse
-import com.example.dobby.dto.DiscordGuildDto
-import com.example.dobby.dto.DiscordTokenResponse
-import com.example.dobby.dto.DiscordUserDto
+import com.example.dobby.dto.discord.DiscordDashboardResponse
+import com.example.dobby.dto.discord.DiscordGuild
+import com.example.dobby.dto.discord.DiscordTokenResponse
+import com.example.dobby.dto.discord.DiscordUser
 import com.example.dobby.exception.DobbyException
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -51,7 +51,7 @@ class DiscordApiService(
     }
 
 
-    suspend fun getUserProfile(accessToken: String): DiscordUserDto {
+    suspend fun getUserProfile(accessToken: String): DiscordUser {
         return try {
             httpClient.get("$BASE_URL/users/@me") {
                 header("Authorization", "Bearer $accessToken")
@@ -71,7 +71,7 @@ class DiscordApiService(
         val guildsList = try {
             httpClient.get("$BASE_URL/users/@me/guilds") {
                 header("Authorization", "Bearer $discordUserToken")
-            }.body<List<DiscordGuildDto>>()
+            }.body<List<DiscordGuild>>()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

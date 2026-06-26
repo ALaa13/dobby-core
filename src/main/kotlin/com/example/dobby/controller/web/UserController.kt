@@ -1,6 +1,6 @@
 package com.example.dobby.controller.web
 
-import com.example.dobby.dto.DiscordDashboardResponse
+import com.example.dobby.dto.discord.DiscordDashboardResponse
 import com.example.dobby.service.AdminUserService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

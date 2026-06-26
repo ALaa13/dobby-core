@@ -1,5 +1,6 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.roast
 
+import com.example.dobby.dto.discord.DiscordChatMessage
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,4 +13,4 @@ data class RoastRequest(
 
 
 fun RoastRequest.toResult(content: String, success: Boolean) =
-    RoastResult(channelId, content, success)
+    DiscordRoastResult(channelId, content, success)

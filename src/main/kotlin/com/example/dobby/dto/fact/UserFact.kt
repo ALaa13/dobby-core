@@ -1,4 +1,4 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.fact
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,11 +16,7 @@ data class UserFactCreateRequest(
     @SerialName("fact_text")
     val factText: String,
     @SerialName("source")
-    val source: FactSource,
-    @SerialName("confidence_score")
-    val confidenceScore: Short?,
-    @SerialName("roastability_score")
-    val roastabilityScore: Short?
+    val source: FactSource
 )
 
 
@@ -34,10 +30,6 @@ data class UserFactResponse(
     val factText: String,
     @SerialName("source")
     val source: String?,
-    @SerialName("confidence_score")
-    val confidenceScore: Short?,
-    @SerialName("roastability_score")
-    val roastabilityScore: Short?,
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")

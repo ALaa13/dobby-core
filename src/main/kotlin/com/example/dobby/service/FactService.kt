@@ -1,7 +1,12 @@
 package com.example.dobby.service
 
 import com.example.dobby.config.log
-import com.example.dobby.dto.*
+import com.example.dobby.dto.discord.DiscordFactRequest
+import com.example.dobby.dto.fact.FactSource
+import com.example.dobby.dto.fact.UserFactCreateRequest
+import com.example.dobby.dto.fact.UserFactResponse
+import com.example.dobby.dto.user.UserProfileCreateRequest
+import com.example.dobby.dto.user.UserProfileResponse
 import com.example.dobby.exception.DobbyException
 import com.example.dobby.repository.UserFactRepository
 import com.example.dobby.repository.UserProfileRepository
@@ -30,9 +35,7 @@ class FactService(
         val fact = UserFactCreateRequest(
             profile.id,
             request.fact,
-            FactSource.USER_SUBMISSION,
-            80, // TODO - get this from Gemini
-            20 // TODO - get this from Gemini
+            FactSource.USER_SUBMISSION
         )
         userFactRepository.saveFact(fact)
     }
@@ -60,5 +63,10 @@ class FactService(
             )
         userFactRepository.deleteFactsByProfileId(profile.id)
         log.info("Deleted all facts for user $discordUserId")
+    }
+
+    suspend fun resetGuildFacts(guildId: String) {
+        log.info("Resetting all guild facts for guild $guildId")
+        userProfileRepository.deleteAllByGuildId(guildId)
     }
 }

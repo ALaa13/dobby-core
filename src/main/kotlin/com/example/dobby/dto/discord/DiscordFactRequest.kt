@@ -1,4 +1,4 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.discord
 
 import kotlinx.serialization.Serializable
 

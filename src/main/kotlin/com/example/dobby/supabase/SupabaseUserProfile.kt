@@ -1,15 +1,13 @@
 package com.example.dobby.supabase
 
-import com.example.dobby.dto.UserProfileCreateRequest
-import com.example.dobby.dto.UserProfileResponse
+import com.example.dobby.dto.user.UserProfileCreateRequest
+import com.example.dobby.dto.user.UserProfileResponse
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import org.springframework.stereotype.Component
 
-
 private const val USER_PROFILE_TABLE = "user_profiles"
-
 
 @Component
 class SupabaseUserProfileClient(
@@ -29,7 +27,6 @@ class SupabaseUserProfileClient(
         }
     }
 
-
     suspend fun findByDiscordIdAndGuildId(discordUserId: String, guildId: String): UserProfileResponse? {
         return safeDbCall("find user by $discordUserId and guild") {
             supabaseClient.from(USER_PROFILE_TABLE)
@@ -45,7 +42,6 @@ class SupabaseUserProfileClient(
         }
     }
 
-
     suspend fun insertNewProfile(profile: UserProfileCreateRequest): UserProfileResponse {
         return safeDbCall("insert new user profile") {
             supabaseClient.from(USER_PROFILE_TABLE)
@@ -56,7 +52,6 @@ class SupabaseUserProfileClient(
         }
     }
 
-
     suspend fun deleteAllByGuildId(guildId: String) {
         return safeDbCall("delete all users and facts by guild $guildId") {
             supabaseClient.from(USER_PROFILE_TABLE)
@@ -65,6 +60,17 @@ class SupabaseUserProfileClient(
                         eq("guild_id", guildId)
                     }
                 }
+        }
+    }
+
+    suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
+        if (profiles.isEmpty()) return
+
+        safeDbCall("batch upsert user profiles") {
+            supabaseClient.from(USER_PROFILE_TABLE).upsert(profiles) {
+                // Tells Supabase to overwrite fields on unique constraint conflict
+                onConflict = "discord_user_id,guild_id"
+            }
         }
     }
 }

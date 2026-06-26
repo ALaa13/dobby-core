@@ -1,5 +1,6 @@
-package com.example.dobby.dto
+package com.example.dobby.dto.user
 
+import com.example.dobby.dto.fact.UserFactResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

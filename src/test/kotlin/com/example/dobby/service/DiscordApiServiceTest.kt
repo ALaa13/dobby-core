@@ -1,9 +1,9 @@
 package com.example.dobby.service
 
 import com.example.dobby.config.configureDobbyJson
-import com.example.dobby.dto.DiscordGuildDto
-import com.example.dobby.dto.DiscordTokenResponse
-import com.example.dobby.dto.DiscordUserDto
+import com.example.dobby.dto.discord.DiscordGuild
+import com.example.dobby.dto.discord.DiscordTokenResponse
+import com.example.dobby.dto.discord.DiscordUser
 import com.example.dobby.exception.DobbyException
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
@@ -78,28 +78,28 @@ class DiscordApiServiceTest {
         val mockEngine = MockEngine { request ->
             when (request.url.encodedPath) {
                 "/api/v10/users/@me" -> respond(
-                    content = Json.encodeToString(DiscordUserDto("123456", "SomeUser", "avatar-hash")),
+                    content = Json.encodeToString(DiscordUser("123456", "SomeUser", "avatar-hash")),
                     status = HttpStatusCode.OK,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
 
                 "/api/v10/users/@me/guilds" -> {
                     val guilds = listOf(
-                        DiscordGuildDto(
+                        DiscordGuild(
                             id = "1",
                             name = "Admin Guild",
                             icon = null,
                             owner = false,
                             permissions = "8"
                         ), // 0x8 Admin
-                        DiscordGuildDto(
+                        DiscordGuild(
                             id = "2",
                             name = "Regular Guild",
                             icon = null,
                             owner = false,
                             permissions = "0"
                         ),
-                        DiscordGuildDto(id = "3", name = "Owner Guild", icon = null, owner = true, permissions = "0")
+                        DiscordGuild(id = "3", name = "Owner Guild", icon = null, owner = true, permissions = "0")
                     )
                     respond(
                         content = Json.encodeToString(guilds),
@@ -127,7 +127,7 @@ class DiscordApiServiceTest {
             when (request.url.encodedPath) {
                 "/api/v10/users/@me" -> respond(
                     // User has NO avatar hash set
-                    content = Json.encodeToString(DiscordUserDto("123456", "NoAvatarUser", avatar = null)),
+                    content = Json.encodeToString(DiscordUser("123456", "NoAvatarUser", avatar = null)),
                     status = HttpStatusCode.OK,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
@@ -156,7 +156,7 @@ class DiscordApiServiceTest {
             val mockEngine = MockEngine { request ->
                 when (request.url.encodedPath) {
                     "/api/v10/users/@me" -> respond(
-                        content = Json.encodeToString(DiscordUserDto("123", "User", "hash")),
+                        content = Json.encodeToString(DiscordUser("123", "User", "hash")),
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
@@ -164,7 +164,7 @@ class DiscordApiServiceTest {
                     "/api/v10/users/@me/guilds" -> {
                         val guilds = listOf(
                             // 1,048,584 in decimal = 0x100008 in hex (contains 0x8 Admin bit + other flags)
-                            DiscordGuildDto(
+                            DiscordGuild(
                                 id = "9",
                                 name = "Complex Permissions Guild",
                                 icon = null,
@@ -197,14 +197,14 @@ class DiscordApiServiceTest {
             val mockEngine = MockEngine { request ->
                 when (request.url.encodedPath) {
                     "/api/v10/users/@me" -> respond(
-                        content = Json.encodeToString(DiscordUserDto("123", "User", "hash")),
+                        content = Json.encodeToString(DiscordUser("123", "User", "hash")),
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
 
                     "/api/v10/users/@me/guilds" -> {
                         val guilds = listOf(
-                            DiscordGuildDto(
+                            DiscordGuild(
                                 id = "88",
                                 name = "Broken Guild",
                                 icon = null,
