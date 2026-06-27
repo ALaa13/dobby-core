@@ -1,6 +1,5 @@
 package com.example.dobby.dto.roast
 
-
 data class RoastResult(
     val text: String,
     val persona: String?,
@@ -8,10 +7,10 @@ data class RoastResult(
     val clappedTheMostId: String,
     val burnAccuracy: Int,
     val severityScore: Int,
-    val targets: List<TargetDamage>
+    val targets: List<TargetDamage>,
 )
 
 data class TargetDamage(
     val userId: String,
-    val reason: String
+    val reason: String,
 )

@@ -3,7 +3,6 @@ package com.example.dobby.dto.roast
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class RoastLogDb(
     @SerialName("guild_id")
@@ -21,9 +20,8 @@ data class RoastLogDb(
     @SerialName("burn_accuracy")
     val burnAccuracy: Int,
     @SerialName("severity_score")
-    val severityScore: Int
+    val severityScore: Int,
 )
-
 
 @Serializable
 data class RoastLogDbResponse(
@@ -48,5 +46,5 @@ data class RoastLogDbResponse(
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("roast_targets")
-    val targets: List<RoastTargetDbResponseDto> = emptyList()
+    val targets: List<RoastTargetDbResponseDto> = emptyList(),
 )

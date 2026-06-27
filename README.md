@@ -285,22 +285,47 @@ populates the cache to avoid hitting Discord rate limits.
 
 ---
 
+## Code Style & Quality Architecture
+
+This repository strictly enforces the Kotlin standard coding guidelines using **ktlint** and the `ktlint-gradle`
+verification plugin ecosystem.
+
+### Local Verification Commands
+
+Before pushing any branches, make sure your code style satisfies baseline static criteria:
+
+* **Static Analysis Checks:** Run the scanner locally to verify layout rules:
+
+```bash
+./gradlew ktlintCheck
+```
+
+* **Auto-format code:** Run the formatter to automatically fix any violations:
+
+```bash
+./gradlew ktlintFormat
+```
+
+---
+
 ## Project Structure
 
 ```
+
 src/main/kotlin/com/example/dobby
-├── DobbyApplication.kt       # Spring Boot entry point
-├── config/                   # Gemini, Supabase, Redis, HTTP clients
-├── controller/               # REST API controllers
-├── crypto/                   # Util functions for token en/decryption
-├── dto/                      # Request / response models
-├── exception/                # Global error handling
-├── queue/                    # Redis Pub/Sub publishers & subscribers
-├── llm/                      # Gemini API adapter & port interface
-├── repository/               # Supabase data access wrappers
-├── service/                  # Business logic (RoastService, FactService…)
-├── supabase/                 # Supabase client configuration
-└── logging/                  # SSE log emitter
+├── DobbyApplication.kt # Spring Boot entry point
+├── config/ # Gemini, Supabase, Redis, HTTP clients
+├── controller/ # REST API controllers
+├── crypto/ # Util functions for token en/decryption
+├── dto/ # Request / response models
+├── exception/ # Global error handling
+├── queue/ # Redis Pub/Sub publishers & subscribers
+├── llm/ # Gemini API adapter & port interface
+├── repository/ # Supabase data access wrappers
+├── service/ # Business logic (RoastService, FactService…)
+├── supabase/ # Supabase client configuration
+└── logging/ # SSE log emitter
+
 ```
 
 ---

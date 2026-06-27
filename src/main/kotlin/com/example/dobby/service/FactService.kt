@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 @Service
 class FactService(
     private val userProfileRepository: UserProfileRepository,
-    private val userFactRepository: UserFactRepository
+    private val userFactRepository: UserFactRepository,
 ) {
     private suspend fun getOrCreateProfile(profile: UserProfileCreateRequest): UserProfileResponse {
         val existingProfile = userProfileRepository.findProfile(profile.discordUserId, profile.guildId)
@@ -24,23 +24,28 @@ class FactService(
 
     suspend fun saveUserFact(request: DiscordFactRequest) {
         log.info("Received remember request for user $request")
-        val profile = getOrCreateProfile(
-            UserProfileCreateRequest(
-                request.discordUserId,
-                request.guildId,
-                request.displayName,
-                request.avatarHash
+        val profile =
+            getOrCreateProfile(
+                UserProfileCreateRequest(
+                    request.discordUserId,
+                    request.guildId,
+                    request.displayName,
+                    request.avatarHash,
+                ),
             )
-        )
-        val fact = UserFactCreateRequest(
-            profile.id,
-            request.fact,
-            FactSource.USER_SUBMISSION
-        )
+        val fact =
+            UserFactCreateRequest(
+                profile.id,
+                request.fact,
+                FactSource.USER_SUBMISSION,
+            )
         userFactRepository.saveFact(fact)
     }
 
-    suspend fun getUserFacts(discordUserId: String, guildId: String): List<UserFactResponse> {
+    suspend fun getUserFacts(
+        discordUserId: String,
+        guildId: String,
+    ): List<UserFactResponse> {
         log.info("Received fact request for user $discordUserId")
         return userProfileRepository.findProfile(discordUserId, guildId)?.facts ?: emptyList()
     }
@@ -55,11 +60,14 @@ class FactService(
         userFactRepository.deleteFactById(factId)
     }
 
-    suspend fun resetUserFacts(discordUserId: String, guildId: String) {
+    suspend fun resetUserFacts(
+        discordUserId: String,
+        guildId: String,
+    ) {
         val profile =
             userProfileRepository.findProfile(discordUserId, guildId) ?: throw DobbyException.ProfileNotFoundException(
                 discordUserId,
-                guildId
+                guildId,
             )
         userFactRepository.deleteFactsByProfileId(profile.id)
         log.info("Deleted all facts for user $discordUserId")

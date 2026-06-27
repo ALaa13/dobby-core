@@ -15,7 +15,6 @@ data class RoastTargetDb(
     val reason: String,
 )
 
-
 @Serializable
 data class RoastTargetDbResponseDto(
     @SerialName("roast_id")
@@ -27,14 +26,13 @@ data class RoastTargetDbResponseDto(
     @SerialName("damage_reason")
     val reason: String,
     @SerialName("user_profiles")
-    val userProfile: NestedUserProfileDto? = null
+    val userProfile: NestedUserProfileDto? = null,
 )
-
 
 @Serializable
 data class NestedUserProfileDto(
     @SerialName("display_name")
     val displayName: String?,
     @SerialName("avatar_hash")
-    val avatarHash: String?
+    val avatarHash: String?,
 )

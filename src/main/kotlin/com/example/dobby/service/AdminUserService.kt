@@ -31,14 +31,16 @@ class AdminUserService(
         }
 
         // Cache Miss: Grab the encrypted account record from Supabase
-        val account = discordAccountRepository.findByDiscordUserId(userIdFromJwt)
-            ?: throw NoSuchElementException("No encrypted account record found for user $userIdFromJwt")
+        val account =
+            discordAccountRepository.findByDiscordUserId(userIdFromJwt)
+                ?: throw NoSuchElementException("No encrypted account record found for user $userIdFromJwt")
 
         // Decrypt the access token using your AES-256 function
-        val decryptedToken = decryptToken(
-            account.encryptedToken,
-            appProperties.encryption.secretKey
-        )
+        val decryptedToken =
+            decryptToken(
+                account.encryptedToken,
+                appProperties.encryption.secretKey,
+            )
 
         // Hit Discord's API via your clean, centralized Ktor service
         val freshProfile = discordApiService.fetchCompleteUserProfile(decryptedToken)

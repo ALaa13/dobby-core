@@ -3,15 +3,17 @@ FROM gradle:8.5-jdk21 AS builder
 WORKDIR /app
 
 # Copy build configuration files
-COPY build.gradle.kts settings.gradle.kts gradlew ./
+COPY build.gradle.kts settings.gradle.kts gradlew .editorconfig ./
 COPY gradle ./gradle
-
 
 # Download dependencies without building (cached unless build.gradle.kts changes)
 RUN ./gradlew dependencies --no-daemon
 
 # Copy source code
 COPY src ./src
+
+# Check the code style
+RUN ./gradlew ktlintCheck --no-daemon
 
 # Build the application (skip tests for faster builds)
 RUN ./gradlew build -x test --no-daemon

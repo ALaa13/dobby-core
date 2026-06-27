@@ -8,5 +8,5 @@ data class RoastTargetAnalysis(
     @JsonProperty("discordUserId")
     val discordUserId: String,
     @JsonProperty("reason")
-    val reason: String
+    val reason: String,
 )

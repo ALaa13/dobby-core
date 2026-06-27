@@ -9,7 +9,7 @@ interface GeminiApiPort {
     suspend fun generateContent(
         model: String,
         prompt: String,
-        config: GenerateContentConfig? = null
+        config: GenerateContentConfig? = null,
     ): GenerateContentResponse
 
     fun listModels(): Pager<Model>

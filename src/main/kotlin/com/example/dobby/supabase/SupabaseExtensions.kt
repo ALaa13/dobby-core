@@ -2,11 +2,14 @@ package com.example.dobby.supabase
 
 import com.example.dobby.exception.DobbyException
 import io.github.jan.supabase.postgrest.exception.PostgrestRestException
-import io.ktor.client.plugins.*
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.serialization.SerializationException
 import org.slf4j.LoggerFactory
 
-suspend inline fun <reified T> safeDbCall(contextMessage: String, crossinline block: suspend () -> T): T {
+suspend inline fun <reified T> safeDbCall(
+    contextMessage: String,
+    crossinline block: suspend () -> T,
+): T {
     val log = LoggerFactory.getLogger(T::class.java)
     return try {
         block()

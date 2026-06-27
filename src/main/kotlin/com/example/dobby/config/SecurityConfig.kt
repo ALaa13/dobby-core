@@ -38,19 +38,23 @@ class SecurityConfig(
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             // Allow only authenticated users to access the API, except for specific endpoints
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers(
-                    "/",
-                    "/auth/**",
-                    "/dev/token",
-                    "/error",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**",
-                    "/openapi.yaml"
-                ).permitAll()
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
-                    .anyRequest().authenticated()
+                auth
+                    .requestMatchers(
+                        "/",
+                        "/auth/**",
+                        "/dev/token",
+                        "/error",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/openapi.yaml",
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
+                    .dispatcherTypeMatchers(DispatcherType.ASYNC)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated()
             }
         return http.build()
     }

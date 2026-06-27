@@ -7,14 +7,13 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class RoastRepository(
-    private val supabaseRoast: SupabaseRoast
+    private val supabaseRoast: SupabaseRoast,
 ) {
+    suspend fun saveRoastResult(
+        guildId: String,
+        channelId: String,
+        result: RoastResult,
+    ) = supabaseRoast.saveRoastResult(guildId, channelId, result)
 
-    suspend fun saveRoastResult(guildId: String, channelId: String, result: RoastResult) {
-        return supabaseRoast.saveRoastResult(guildId, channelId, result)
-    }
-
-    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> {
-        return supabaseRoast.getAllRoastsByGuildId(guildId)
-    }
+    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> = supabaseRoast.getAllRoastsByGuildId(guildId)
 }

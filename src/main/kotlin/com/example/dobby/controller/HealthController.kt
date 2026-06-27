@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/")
 class HealthController {
-
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    suspend fun hello(): ApiResponse {
-        return ApiResponse(
+    suspend fun hello(): ApiResponse =
+        ApiResponse(
             success = true,
-            message = "Dobby Backend API is running smoothly."
+            message = "Dobby Backend API is running smoothly.",
         )
-    }
 }

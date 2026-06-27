@@ -23,15 +23,17 @@ class SupabaseConfig(
 
         return createSupabaseClient(
             supabaseUrl = supabaseUrl,
-            supabaseKey = supabaseKey
-        )
-        {
+            supabaseKey = supabaseKey,
+        ) {
             install(Postgrest)
-            defaultSerializer = KotlinXSerializer(Json {
-                encodeDefaults = true
-                ignoreUnknownKeys = true
-                isLenient = true
-            })
+            defaultSerializer =
+                KotlinXSerializer(
+                    Json {
+                        encodeDefaults = true
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                    },
+                )
         }
     }
 }

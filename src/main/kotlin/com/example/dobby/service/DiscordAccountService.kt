@@ -10,17 +10,20 @@ import org.springframework.stereotype.Service
 @Service
 class DiscordAccountService(
     private val appProperties: AppProperties,
-    private val discordAccountRepository: DiscordAccountRepository
+    private val discordAccountRepository: DiscordAccountRepository,
 ) {
-
-    suspend fun saveDiscordAccount(discordUserId: String, rawAccessToken: String) {
+    suspend fun saveDiscordAccount(
+        discordUserId: String,
+        rawAccessToken: String,
+    ) {
         val encryptionKey = appProperties.encryption.secretKey
 
         val encryptedTokenBase64 = encryptToken(rawAccessToken, encryptionKey)
-        val account = DiscordAccount(
-            discordUserId,
-            encryptedTokenBase64
-        )
+        val account =
+            DiscordAccount(
+                discordUserId,
+                encryptedTokenBase64,
+            )
         log.info("Saving Discord account for user ID: $discordUserId with encrypted token: $encryptedTokenBase64")
         discordAccountRepository.saveDiscordUser(account)
     }

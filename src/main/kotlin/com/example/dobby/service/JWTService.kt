@@ -6,21 +6,24 @@ import com.example.dobby.AppProperties
 import com.example.dobby.config.log
 import com.example.dobby.exception.DobbyException
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
 
 @Service
 class JWTService(
     private val appProperties: AppProperties,
 ) {
-
-    fun generateJWTToken(subject: String, claim: String): String {
+    fun generateJWTToken(
+        subject: String,
+        claim: String,
+    ): String {
         val jwtSecret = appProperties.jwt.secret
         val jwtExpiration = appProperties.jwt.expiration
 
         return try {
             log.info("Generating JWT token for subject: $subject, claim: $claim")
             val algorithm = Algorithm.HMAC256(jwtSecret)
-            JWT.create()
+            JWT
+                .create()
                 .withIssuer("dobby-core")
                 .withSubject(subject)
                 .withClaim("username", claim)
@@ -38,9 +41,11 @@ class JWTService(
         return try {
             log.info("Validating JWT token")
             val algorithm = Algorithm.HMAC256(jwtSecret)
-            val verifier = JWT.require(algorithm)
-                .withIssuer("dobby-core")
-                .build()
+            val verifier =
+                JWT
+                    .require(algorithm)
+                    .withIssuer("dobby-core")
+                    .build()
             val decodedJWT = verifier.verify(token)
             decodedJWT.subject
         } catch (e: Exception) {

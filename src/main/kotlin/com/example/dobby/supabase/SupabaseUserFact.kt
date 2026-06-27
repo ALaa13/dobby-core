@@ -9,22 +9,22 @@ import org.springframework.stereotype.Component
 private const val USER_FACTS_TABLE = "user_facts"
 
 @Component
-class SupabaseUserFactClient(
-    private val supabaseClient: SupabaseClient
+class SupabaseUserFact(
+    private val supabaseClient: SupabaseClient,
 ) {
-    suspend fun insertNewFact(fact: UserFactCreateRequest): UserFactResponse {
-        return safeDbCall("Inserting new user fact") {
-            supabaseClient.from(USER_FACTS_TABLE)
+    suspend fun insertNewFact(fact: UserFactCreateRequest): UserFactResponse =
+        safeDbCall("Inserting new user fact") {
+            supabaseClient
+                .from(USER_FACTS_TABLE)
                 .insert(fact) {
                     select()
-                }
-                .decodeSingle<UserFactResponse>()
+                }.decodeSingle<UserFactResponse>()
         }
-    }
 
     suspend fun deleteFactById(factId: String) {
         safeDbCall("Deleting user fact") {
-            supabaseClient.from(USER_FACTS_TABLE)
+            supabaseClient
+                .from(USER_FACTS_TABLE)
                 .delete {
                     filter {
                         eq("id", factId)
@@ -35,7 +35,8 @@ class SupabaseUserFactClient(
 
     suspend fun deleteFactsByProfileId(profileId: String) {
         safeDbCall("Deleting user fact") {
-            supabaseClient.from(USER_FACTS_TABLE)
+            supabaseClient
+                .from(USER_FACTS_TABLE)
                 .delete {
                     filter {
                         eq("profile_id", profileId)

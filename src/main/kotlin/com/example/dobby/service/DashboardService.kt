@@ -9,14 +9,10 @@ class DashboardService(
     private val factService: FactService,
     private val roastService: RoastService,
 ) {
+    suspend fun getAllFactsByGuildId(guildId: String): List<UserProfileResponse> =
+        factService.getAllFactsByGuild(guildId)
 
-    suspend fun getAllFactsByGuildId(guildId: String): List<UserProfileResponse> {
-        return factService.getAllFactsByGuild(guildId)
-    }
-
-    suspend fun getAllRoastByGuildId(guildId: String): List<RoastLogDbResponse> {
-        return roastService.getGuildRoasts(guildId)
-    }
+    suspend fun getAllRoastByGuildId(guildId: String): List<RoastLogDbResponse> = roastService.getGuildRoasts(guildId)
 
     suspend fun deleteFact(factId: String) {
         factService.deleteUserFact(factId)

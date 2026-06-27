@@ -12,14 +12,16 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/dev")
 class DevController(
-    private val devService: DevService
+    private val devService: DevService,
 ) {
     @GetMapping("/token")
-    fun getTestToken(@RequestParam secret: String): ApiResponse {
+    fun getTestToken(
+        @RequestParam secret: String,
+    ): ApiResponse {
         val token = devService.getTestToken(secret)
         return ApiResponse(
             success = true,
-            message = token
+            message = token,
         )
     }
 }

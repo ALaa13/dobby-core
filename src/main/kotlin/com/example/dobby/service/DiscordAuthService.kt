@@ -14,7 +14,6 @@ class DiscordAuthService(
     private val jwtService: JWTService,
     private val discordAccountService: DiscordAccountService,
 ) {
-
     companion object {
         private const val DISCORD_AUTH_URL = "https://discord.com/api/oauth2/authorize"
         private const val FRONT_END_REDIRECT_DESTINATION = "/dashboard"
@@ -23,13 +22,15 @@ class DiscordAuthService(
 
     // Generates the clean URI for the controller to redirect to
     fun getDiscordLoginUri(): URI {
-        val uri = UriComponentsBuilder.fromUriString(DISCORD_AUTH_URL)
-            .queryParam("client_id", appProperties.discord.clientId)
-            .queryParam("redirect_uri", appProperties.discord.redirectUri)
-            .queryParam("response_type", "code")
-            .queryParam("scope", "identify guilds")
-            .build()
-            .toUri()
+        val uri =
+            UriComponentsBuilder
+                .fromUriString(DISCORD_AUTH_URL)
+                .queryParam("client_id", appProperties.discord.clientId)
+                .queryParam("redirect_uri", appProperties.discord.redirectUri)
+                .queryParam("response_type", "code")
+                .queryParam("scope", "identify guilds")
+                .build()
+                .toUri()
 
         log.info("Generated Discord login URI: $uri")
         return uri
@@ -40,19 +41,23 @@ class DiscordAuthService(
         val frontendUrl = appProperties.frontend.url
         return try {
             if (code == null) {
-                throw DobbyException.InvalidAuthenticationRequestException("Missing authorization code in callback request")
+                throw DobbyException.InvalidAuthenticationRequestException(
+                    "Missing authorization code in callback request",
+                )
             }
 
             // 1. Delegate Token Exchange to the API Service
-            val tokenResponse = discordApiService.exchangeCodeForToken(
-                code,
-                appProperties.discord.clientId,
-                appProperties.discord.clientSecret,
-                appProperties.discord.redirectUri
-            )
+            val tokenResponse =
+                discordApiService.exchangeCodeForToken(
+                    code,
+                    appProperties.discord.clientId,
+                    appProperties.discord.clientSecret,
+                    appProperties.discord.redirectUri,
+                )
 
-            val accessToken = tokenResponse.accessToken
-                ?: throw DobbyException.AuthorizationException("Failed to retrieve access token from Discord")
+            val accessToken =
+                tokenResponse.accessToken
+                    ?: throw DobbyException.AuthorizationException("Failed to retrieve access token from Discord")
 
             // 2. Delegate Identity Discovery to the API Service
             val userResponse = discordApiService.getUserProfile(accessToken)
@@ -73,7 +78,10 @@ class DiscordAuthService(
         }
     }
 
-    private fun buildRedirectUri(baseUrl: String, queryValue: String): URI {
+    private fun buildRedirectUri(
+        baseUrl: String,
+        queryValue: String,
+    ): URI {
         val querySegment = if (queryValue.contains("=")) queryValue else "token=$queryValue"
         val delimiter = if (baseUrl.contains("?")) "&" else "?"
         val uri = URI.create("$baseUrl$delimiter$querySegment")

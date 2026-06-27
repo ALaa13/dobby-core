@@ -12,6 +12,5 @@ data class RoastAnalytics(
     @JsonProperty("severityScore")
     val severityScore: Int,
     @JsonProperty("allTargets")
-    val allTargets: List<RoastTargetAnalysis>
-
+    val allTargets: List<RoastTargetAnalysis>,
 )

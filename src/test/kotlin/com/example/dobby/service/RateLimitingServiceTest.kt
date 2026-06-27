@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RateLimitingServiceTest {
-
     private lateinit var rateLimitingService: RateLimitingService
     private val testApiKey = "test-service-key"
 
@@ -20,14 +19,14 @@ class RateLimitingServiceTest {
         for (i in 1..10) {
             assertTrue(
                 rateLimitingService.tryConsume(testApiKey),
-                "Request $i should be allowed"
+                "Request $i should be allowed",
             )
         }
 
         // The 11th request must hit the rate limit barrier instantly
         assertFalse(
             rateLimitingService.tryConsume(testApiKey),
-            "The 11th request should be blocked"
+            "The 11th request should be blocked",
         )
     }
 
@@ -45,7 +44,7 @@ class RateLimitingServiceTest {
 
         assertTrue(
             rateLimitingService.tryConsume(goodClientKey),
-            "Good client should still be allowed through"
+            "Good client should still be allowed through",
         )
     }
 }

@@ -2,7 +2,6 @@ package com.example.dobby.queue
 
 import java.time.Duration
 
-
 object RedisChannels {
     const val ROAST_DELIVERY = "roast-delivery"
 }

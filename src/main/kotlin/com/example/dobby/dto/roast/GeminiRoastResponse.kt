@@ -10,5 +10,5 @@ data class GeminiRoastResponse(
     @JsonProperty("primaryTargetId")
     val primaryTargetId: String,
     @JsonProperty("analytics")
-    val analytics: RoastAnalytics
+    val analytics: RoastAnalytics,
 )

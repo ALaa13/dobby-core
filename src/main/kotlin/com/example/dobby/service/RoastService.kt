@@ -2,8 +2,8 @@ package com.example.dobby.service
 
 import com.example.dobby.config.log
 import com.example.dobby.dto.discord.DiscordChatMessage
+import com.example.dobby.dto.roast.DiscordRoastRequest
 import com.example.dobby.dto.roast.RoastLogDbResponse
-import com.example.dobby.dto.roast.RoastRequest
 import com.example.dobby.dto.roast.toResult
 import com.example.dobby.dto.user.UserProfileCreateRequest
 import com.example.dobby.exception.DobbyException
@@ -24,10 +24,9 @@ class RoastService(
     private val roastRepository: RoastRepository,
     private val geminiService: GeminiService,
     private val redisPublisher: RedisPublisher,
-    @Qualifier("ioScope") private val serviceScope: CoroutineScope
+    @Qualifier("ioScope") private val serviceScope: CoroutineScope,
 ) {
-
-    fun processRoastAsync(request: RoastRequest) {
+    fun processRoastAsync(request: DiscordRoastRequest) {
         serviceScope.launch {
             processRoast(request)
         }
@@ -38,23 +37,23 @@ class RoastService(
         return roastRepository.getGuildRoasts(guildId)
     }
 
-
     @PreDestroy
     private fun cleanup() {
         serviceScope.cancel()
     }
 
-    private suspend fun processRoast(request: RoastRequest) {
+    private suspend fun processRoast(request: DiscordRoastRequest) {
         try {
             // Sync user profiles
             syncUserProfiles(request)
 
             val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
-            val roastResult = geminiService.generateRoast(
-                request.messages,
-                request.persona,
-                memoryContext
-            )
+            val roastResult =
+                geminiService.generateRoast(
+                    request.messages,
+                    request.persona,
+                    memoryContext,
+                )
             log.info("Roast generation completed successfully")
 
             // Save to the datasbse
@@ -64,49 +63,51 @@ class RoastService(
             val result = request.toResult(roastResult.text, true)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
-                result
+                result,
             )
         } catch (e: DobbyException) {
-            val friendlyBotErrorMessage = when (e) {
-                is DobbyException.DatabaseException ->
-                    "🤖 Memory vault locked out! I'm struggling to read the database right now."
+            val friendlyBotErrorMessage =
+                when (e) {
+                    is DobbyException.DatabaseException ->
+                        "🤖 Memory vault locked out! I'm struggling to read the database right now."
 
-                is DobbyException.NetworkTimeoutException ->
-                    "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
+                    is DobbyException.NetworkTimeoutException ->
+                        "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
 
-                is DobbyException.AiModelException ->
-                    "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"
+                    is DobbyException.AiModelException ->
+                        "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"
 
-                is DobbyException.DataMappingException ->
-                    "⚙️ System parsing error inside my memory core."
+                    is DobbyException.DataMappingException ->
+                        "⚙️ System parsing error inside my memory core."
 
-                is DobbyException.GeneralException ->
-                    "System encountered an unexpected glitch."
+                    is DobbyException.GeneralException ->
+                        "System encountered an unexpected glitch."
 
-                else ->
-                    "⚠️ System encountered an unexpected glitch while processing your roast."
-            }
+                    else ->
+                        "⚠️ System encountered an unexpected glitch while processing your roast."
+                }
 
             log.error("Managed Dobby Exception caught: ${e.message}")
             val result = request.toResult(friendlyBotErrorMessage, false)
             redisPublisher.publishRoastDelivery(
                 RedisChannels.ROAST_DELIVERY,
-                result
+                result,
             )
         }
     }
 
-    suspend fun syncUserProfiles(request: RoastRequest) {
-        val profilesToSync = request.messages
-            .distinctBy { it.discordUserId }
-            .map { msg ->
-                UserProfileCreateRequest(
-                    discordUserId = msg.discordUserId,
-                    guildId = request.guildId,
-                    displayName = msg.displayName,
-                    avatarHash = msg.avatarHash
-                )
-            }
+    suspend fun syncUserProfiles(request: DiscordRoastRequest) {
+        val profilesToSync =
+            request.messages
+                .distinctBy { it.discordUserId }
+                .map { msg ->
+                    UserProfileCreateRequest(
+                        discordUserId = msg.discordUserId,
+                        guildId = request.guildId,
+                        displayName = msg.displayName,
+                        avatarHash = msg.avatarHash,
+                    )
+                }
 
         // Fire the batch upsert to lock down their identities
         userRepository.upsertProfiles(profilesToSync)
@@ -115,7 +116,7 @@ class RoastService(
 
     private suspend fun buildFactsMemoryContext(
         messages: List<DiscordChatMessage>,
-        guildId: String
+        guildId: String,
     ): String {
         log.info("Building facts memory context for guild $guildId with ${messages.size} messages")
         val factsMap = getFactsForUsers(messages, guildId)
@@ -133,7 +134,7 @@ class RoastService(
 
     private suspend fun getFactsForUsers(
         messages: List<DiscordChatMessage>,
-        guildId: String
+        guildId: String,
     ): Map<String, List<String>> {
         val userIds = extractUniqueUserIds(messages)
         val facts = mutableMapOf<String, List<String>>()
@@ -142,10 +143,11 @@ class RoastService(
             facts[userFacts?.discordUserId ?: userId] = userFacts?.facts?.map { it.factText } ?: emptyList()
         }
         return facts
-
     }
 
-    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> {
-        return messages.map { it.displayName }.toSet()
-    }
+    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> =
+        messages
+            .map {
+                it.discordUserId
+            }.toSet()
 }
