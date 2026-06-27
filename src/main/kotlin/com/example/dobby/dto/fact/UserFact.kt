@@ -3,11 +3,9 @@ package com.example.dobby.dto.fact
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 enum class FactSource {
-    USER_SUBMISSION
+    USER_SUBMISSION,
 }
-
 
 @Serializable
 data class UserFactCreateRequest(
@@ -16,9 +14,8 @@ data class UserFactCreateRequest(
     @SerialName("fact_text")
     val factText: String,
     @SerialName("source")
-    val source: FactSource
+    val source: FactSource,
 )
-
 
 @Serializable
 data class UserFactResponse(
@@ -33,7 +30,5 @@ data class UserFactResponse(
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: String?
+    val updatedAt: String?,
 )
-
-

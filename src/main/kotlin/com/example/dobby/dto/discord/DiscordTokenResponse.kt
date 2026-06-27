@@ -9,5 +9,5 @@ data class DiscordTokenResponse(
     @SerialName("token_type") val tokenType: String? = null,
     @SerialName("expires_in") val expiresIn: Int? = null,
     @SerialName("refresh_token") val refreshToken: String? = null,
-    val scope: String? = null
+    val scope: String? = null,
 )

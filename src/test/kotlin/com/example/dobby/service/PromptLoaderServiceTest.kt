@@ -6,8 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class PromptLoaderTest {
-
+class PromptLoaderServiceTest {
     private lateinit var testProperties: AppProperties
     private lateinit var promptLoaderService: PromptLoaderService
 
@@ -16,7 +15,6 @@ class PromptLoaderTest {
         testProperties = AppProperties()
         promptLoaderService = PromptLoaderService(appProperties = testProperties)
     }
-
 
     @Test
     fun `should return default prompt when path is blank`() {

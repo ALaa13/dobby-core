@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 @Service
 class DevService(
     private val appProperties: AppProperties,
-    private val jwtService: JWTService
+    private val jwtService: JWTService,
 ) {
     fun getTestToken(secreteCode: String): String {
         log.info("Generating test token for dev environment")

@@ -8,6 +8,5 @@ data class DiscordFactRequest(
     val discordUserId: String,
     val guildId: String,
     val displayName: String?,
-    val avatarHash: String?
+    val avatarHash: String?,
 )
-

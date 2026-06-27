@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val authService: DiscordAuthService
+    private val authService: DiscordAuthService,
 ) {
-
     @GetMapping("/login")
     fun redirectToDiscord(): ResponseEntity<Void> {
         val loginUri = authService.getDiscordLoginUri()
@@ -21,7 +20,9 @@ class AuthController(
     }
 
     @GetMapping("/callback")
-    suspend fun discordCallback(@RequestParam("code", required = false) code: String?): ResponseEntity<Void> {
+    suspend fun discordCallback(
+        @RequestParam("code", required = false) code: String?,
+    ): ResponseEntity<Void> {
         val redirectDashboardUri = authService.handleCallbackAndGenerateRedirect(code)
         return ResponseEntity.status(HttpStatus.FOUND).location(redirectDashboardUri).build()
     }

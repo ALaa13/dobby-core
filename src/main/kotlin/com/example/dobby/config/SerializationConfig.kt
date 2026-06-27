@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class SerializationConfig {
     @Bean
-    fun kotlinxSerializationJson(): Json {
-        return Json {
+    fun kotlinxSerializationJson(): Json =
+        Json {
             ignoreUnknownKeys = true
             explicitNulls = false
         }
-    }
 }

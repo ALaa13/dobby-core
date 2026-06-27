@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class DiscordRoastResult(
     val channelId: String,
     val content: String,
-    val success: Boolean
+    val success: Boolean,
 )

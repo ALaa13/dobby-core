@@ -15,14 +15,19 @@ class GeminiClientConfig(
     fun getClient(): Client {
         val apiKey = appProperties.gemini.apiKey
 
-        val retryOptions = HttpRetryOptions.builder()
-            .attempts(3)
-            .httpStatusCodes(408, 429)
-            .build()
-        val httpOptions = HttpOptions.builder()
-            .retryOptions(retryOptions)
-            .build()
-        return Client.builder()
+        val retryOptions =
+            HttpRetryOptions
+                .builder()
+                .attempts(3)
+                .httpStatusCodes(408, 429)
+                .build()
+        val httpOptions =
+            HttpOptions
+                .builder()
+                .retryOptions(retryOptions)
+                .build()
+        return Client
+            .builder()
             .apiKey(apiKey)
             .httpOptions(httpOptions)
             .build()

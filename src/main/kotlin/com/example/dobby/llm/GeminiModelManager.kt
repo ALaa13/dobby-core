@@ -8,8 +8,9 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 @Configuration
-class GeminiModelManager(private val geminiApi: GeminiApiPort) {
-
+class GeminiModelManager(
+    private val geminiApi: GeminiApiPort,
+) {
     private var availableModels = listOf<String>()
     private val modelCooldowns = ConcurrentHashMap<String, Instant>()
 
@@ -19,23 +20,23 @@ class GeminiModelManager(private val geminiApi: GeminiApiPort) {
             val responseList = geminiApi.listModels()
 
             // Safely unpack the Optional<String> and filter
-            availableModels = responseList
-                .mapNotNull { model ->
-                    // Get the list of supported actions for this model safely
-                    val actions: List<String> = model.supportedActions().orElse(null) ?: emptyList()
-                    if (actions.contains("generateContent")) {
-                        model.name().orElse(null)?.removePrefix("models/")
-                    } else {
-                        null
-                    }
-                }
-                .filter { name ->
-                    name.isNotBlank() &&
+            availableModels =
+                responseList
+                    .mapNotNull { model ->
+                        // Get the list of supported actions for this model safely
+                        val actions: List<String> = model.supportedActions().orElse(null) ?: emptyList()
+                        if (actions.contains("generateContent")) {
+                            model.name().orElse(null)?.removePrefix("models/")
+                        } else {
+                            null
+                        }
+                    }.filter { name ->
+                        name.isNotBlank() &&
                             name.contains("gemini", ignoreCase = true) &&
                             !name.contains("vision", ignoreCase = true)
-                }
-                // Sort so "flash" variants appear at index 0 (fast/cheap default options)
-                .sortedByDescending { it.contains("flash", ignoreCase = true) }
+                    }
+                    // Sort so "flash" variants appear at index 0 (fast/cheap default options)
+                    .sortedByDescending { it.contains("flash", ignoreCase = true) }
             log.info("Dynamically discovered Gemini models count: ${availableModels.size}")
         }.onFailure { error ->
             log.info("Failed to dynamically discover Gemini models: ${error.message}")

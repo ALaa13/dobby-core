@@ -4,13 +4,14 @@ import com.example.dobby.dto.discord.DiscordChatMessage
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RoastRequest(
+data class DiscordRoastRequest(
     val channelId: String,
     val guildId: String,
     val messages: List<DiscordChatMessage>,
-    val persona: String?
+    val persona: String?,
 )
 
-
-fun RoastRequest.toResult(content: String, success: Boolean) =
-    DiscordRoastResult(channelId, content, success)
+fun DiscordRoastRequest.toResult(
+    content: String,
+    success: Boolean,
+) = DiscordRoastResult(channelId, content, success)

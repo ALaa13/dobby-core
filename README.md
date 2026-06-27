@@ -106,6 +106,13 @@ cp ai_prompt.txt.example ai_prompt.txt
 Customize `ai_prompt.txt` to define the bot's personality and roasting rules. If this file is missing, the system falls
 back to a default prompt: `"You are a roast bot."`
 
+#### CRITICAL: Do NOT modify the "IMPORTANT: Output Format Specification" section
+
+This section must remain exactly as provided. The system relies on this JSON structure to function. Changing it will
+break the bot.
+You can customize: Personality, tone, style, rules
+DO NOT change: The output format specification or JSON structure
+
 ### 4. Start Redis
 
 ```bash
@@ -285,22 +292,47 @@ populates the cache to avoid hitting Discord rate limits.
 
 ---
 
+## Code Style & Quality Architecture
+
+This repository strictly enforces the Kotlin standard coding guidelines using **ktlint** and the `ktlint-gradle`
+verification plugin ecosystem.
+
+### Local Verification Commands
+
+Before pushing any branches, make sure your code style satisfies baseline static criteria:
+
+* **Static Analysis Checks:** Run the scanner locally to verify layout rules:
+
+```bash
+./gradlew ktlintCheck
+```
+
+* **Auto-format code:** Run the formatter to automatically fix any violations:
+
+```bash
+./gradlew ktlintFormat
+```
+
+---
+
 ## Project Structure
 
 ```
+
 src/main/kotlin/com/example/dobby
-├── DobbyApplication.kt       # Spring Boot entry point
-├── config/                   # Gemini, Supabase, Redis, HTTP clients
-├── controller/               # REST API controllers
-├── crypto/                   # Util functions for token en/decryption
-├── dto/                      # Request / response models
-├── exception/                # Global error handling
-├── queue/                    # Redis Pub/Sub publishers & subscribers
-├── llm/                      # Gemini API adapter & port interface
-├── repository/               # Supabase data access wrappers
-├── service/                  # Business logic (RoastService, FactService…)
-├── supabase/                 # Supabase client configuration
-└── logging/                  # SSE log emitter
+├── DobbyApplication.kt # Spring Boot entry point
+├── config/ # Gemini, Supabase, Redis, HTTP clients
+├── controller/ # REST API controllers
+├── crypto/ # Util functions for token en/decryption
+├── dto/ # Request / response models
+├── exception/ # Global error handling
+├── queue/ # Redis Pub/Sub publishers & subscribers
+├── llm/ # Gemini API adapter & port interface
+├── repository/ # Supabase data access wrappers
+├── service/ # Business logic (RoastService, FactService…)
+├── supabase/ # Supabase client configuration
+└── logging/ # SSE log emitter
+
 ```
 
 ---
@@ -350,16 +382,17 @@ echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
 
 ## Troubleshooting
 
-| Problem                        | Solution                                                                                                                                |
-|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| JAVA_HOME is not set           | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                                              |
-| Supabase url must not be blank | Ensure `.env` exists with all Supabase variables filled in                                                                              |
-| Gemini prompt file not found   | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
-| Redis connection refused       | Verify Redis is running on the configured host/port; check `REDIS_HOST`, `REDIS_PORT` and `REDIS_PASSWORD`                              |
-| Facts not appearing in roasts  | Confirm `discord_user_id` matches the message author, `guild_id` matches the request, and the Supabase table relationship is configured |
-| JWT rejected / 401 errors      | Check `JWT_SECRET` matches across services and that `JWT_EXPIRATION` is set correctly                                                   |
-| Missing env variables          | Run `cp .env.example .env` and fill in all required fields                                                                              |
-| Gemini model unavailable       | Flash models fail over to backups automatically with a 15-minute cooldown per model                                                     |
+| Problem                                | Solution                                                                                                                                |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| JAVA_HOME is not set                   | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                                              |
+| Supabase url must not be blank         | Ensure `.env` exists with all Supabase variables filled in                                                                              |
+| Gemini prompt file not found           | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
+| Redis connection refused               | Verify Redis is running on the configured host/port; check `REDIS_HOST`, `REDIS_PORT` and `REDIS_PASSWORD`                              |
+| Facts not appearing in roasts          | Confirm `discord_user_id` matches the message author, `guild_id` matches the request, and the Supabase table relationship is configured |
+| JWT rejected / 401 errors              | Check `JWT_SECRET` matches across services and that `JWT_EXPIRATION` is set correctly                                                   |
+| Missing env variables                  | Run `cp .env.example .env` and fill in all required fields                                                                              |
+| Gemini model unavailable               | Flash models fail over to backups automatically with a 15-minute cooldown per model                                                     |
+| AI responses not parsing / JSON errors | You modified the "IMPORTANT: Output Format Specification" section in ai_prompt.txt. Restore it from the example file.                   |
 
 ---
 

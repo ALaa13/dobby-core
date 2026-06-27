@@ -4,7 +4,6 @@ import com.example.dobby.dto.fact.UserFactResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class UserProfileCreateRequest(
     @SerialName("discord_user_id")
@@ -14,9 +13,8 @@ data class UserProfileCreateRequest(
     @SerialName("display_name")
     val displayName: String?,
     @SerialName("avatar_hash")
-    val avatarHash: String?
+    val avatarHash: String?,
 )
-
 
 @Serializable
 data class UserProfileResponse(
@@ -35,6 +33,5 @@ data class UserProfileResponse(
     @SerialName("updated_at")
     val updatedAt: String?,
     @SerialName("user_facts")
-    val facts: List<UserFactResponse>? = emptyList()
+    val facts: List<UserFactResponse>? = emptyList(),
 )
-

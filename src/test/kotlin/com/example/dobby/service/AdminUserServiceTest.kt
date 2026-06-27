@@ -8,7 +8,16 @@ import com.example.dobby.dto.discord.DiscordDashboardResponse
 import com.example.dobby.queue.RedisKeyTimeout
 import com.example.dobby.queue.RedisKeys
 import com.example.dobby.repository.DiscordAccountRepository
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.Runs
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.BeforeEach
@@ -19,7 +28,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class AdminUserServiceTest {
-
     private val appProperties = mockk<AppProperties>()
     private val discordAccountRepository = mockk<DiscordAccountRepository>()
     private val discordApiService = mockk<DiscordApiService>()
@@ -38,83 +46,90 @@ class AdminUserServiceTest {
         // Mock the nested Redis structure Spring Template uses
         every { stringRedisTemplate.opsForValue() } returns valueOperations
 
-        adminUserService = AdminUserService(
-            appProperties,
-            discordAccountRepository,
-            discordApiService,
-            stringRedisTemplate
-        )
+        adminUserService =
+            AdminUserService(
+                appProperties,
+                discordAccountRepository,
+                discordApiService,
+                stringRedisTemplate,
+            )
 
         // Mock object we're using for encryption
         mockkObject(CryptoUtils)
     }
 
     @Test
-    fun `getCurrentUser should return cached profile immediately on cache hit`() = runTest {
-        val expectedResponse = DiscordDashboardResponse(
-            discordUserId = testUserId,
-            displayName = "CachedUser",
-            avatarUrl = "",
-            managedGuilds = emptyList()
-        )
-        val cachedJson = Json.encodeToString(expectedResponse)
+    fun `getCurrentUser should return cached profile immediately on cache hit`() =
+        runTest {
+            val expectedResponse =
+                DiscordDashboardResponse(
+                    discordUserId = testUserId,
+                    displayName = "CachedUser",
+                    avatarUrl = "",
+                    managedGuilds = emptyList(),
+                )
+            val cachedJson = Json.encodeToString(expectedResponse)
 
-        // Stub Redis hit
-        every { valueOperations.get(redisKey) } returns cachedJson
+            // Stub Redis hit
+            every { valueOperations.get(redisKey) } returns cachedJson
 
-        val result = adminUserService.getCurrentUser(testUserId)
+            val result = adminUserService.getCurrentUser(testUserId)
 
-        assertEquals(expectedResponse, result)
+            assertEquals(expectedResponse, result)
 
-        // Verify database and network were bypassed entirely
-        verify { discordAccountRepository wasNot Called }
-        coVerify { discordApiService wasNot Called }
-    }
+            // Verify database and network were bypassed entirely
+            verify { discordAccountRepository wasNot Called }
+            coVerify { discordApiService wasNot Called }
+        }
 
     @Test
-    fun `getCurrentUser should hit DB, decrypt, call API, and cache on cache miss`() = runTest {
-        val mockAccount = mockk<DiscordAccount> {
-            every { encryptedToken } returns "scrambled-crypto-string"
+    fun `getCurrentUser should hit DB, decrypt, call API, and cache on cache miss`() =
+        runTest {
+            val mockAccount =
+                mockk<DiscordAccount> {
+                    every { encryptedToken } returns "scrambled-crypto-string"
+                }
+            val expectedResponse =
+                DiscordDashboardResponse(
+                    discordUserId = testUserId,
+                    displayName = "FreshUser",
+                    avatarUrl = "",
+                    managedGuilds = emptyList(),
+                )
+
+            every { valueOperations.get(redisKey) } returns null // Cache miss
+            every { appProperties.encryption.secretKey } returns "mock-32-char-encryption-key-aaa"
+            every {
+                decryptToken(
+                    "scrambled-crypto-string",
+                    "mock-32-char-encryption-key-aaa",
+                )
+            } returns "decrypted-discord-token"
+
+            coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns mockAccount
+            coEvery { discordApiService.fetchCompleteUserProfile("decrypted-discord-token") } returns expectedResponse
+            every { valueOperations.set(redisKey, any(), RedisKeyTimeout.USER_PROFILE) } just Runs
+
+            val result = adminUserService.getCurrentUser(testUserId)
+
+            assertEquals(expectedResponse, result)
+
+            // Verify it backfilled the Redis cache with a 15 min TTL
+            verify(exactly = 1) {
+                valueOperations.set(redisKey, Json.encodeToString(expectedResponse), RedisKeyTimeout.USER_PROFILE)
+            }
         }
-        val expectedResponse = DiscordDashboardResponse(
-            discordUserId = testUserId,
-            displayName = "FreshUser",
-            avatarUrl = "",
-            managedGuilds = emptyList()
-        )
-
-        every { valueOperations.get(redisKey) } returns null // Cache miss
-        every { appProperties.encryption.secretKey } returns "mock-32-char-encryption-key-aaa"
-        every {
-            decryptToken(
-                "scrambled-crypto-string",
-                "mock-32-char-encryption-key-aaa"
-            )
-        } returns "decrypted-discord-token"
-
-        coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns mockAccount
-        coEvery { discordApiService.fetchCompleteUserProfile("decrypted-discord-token") } returns expectedResponse
-        every { valueOperations.set(redisKey, any(), RedisKeyTimeout.USER_PROFILE) } just Runs
-
-        val result = adminUserService.getCurrentUser(testUserId)
-
-        assertEquals(expectedResponse, result)
-
-        // Verify it backfilled the Redis cache with a 15 min TTL
-        verify(exactly = 1) {
-            valueOperations.set(redisKey, Json.encodeToString(expectedResponse), RedisKeyTimeout.USER_PROFILE)
-        }
-    }
 
     @Test
-    fun `getCurrentUser should throw NoSuchElementException when account missing from DB`() = runTest {
-        every { valueOperations.get(redisKey) } returns null // Cache miss
-        coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns null // Database empty
+    fun `getCurrentUser should throw NoSuchElementException when account missing from DB`() =
+        runTest {
+            every { valueOperations.get(redisKey) } returns null // Cache miss
+            coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns null // Database empty
 
-        assertFailsWith<NoSuchElementException> {
-            adminUserService.getCurrentUser(testUserId)
+            assertFailsWith<NoSuchElementException> {
+                adminUserService.getCurrentUser(testUserId)
+            }
+
+            coVerify(exactly = 0) { discordApiService.fetchCompleteUserProfile(any()) }
         }
-
-        coVerify(exactly = 0) { discordApiService.fetchCompleteUserProfile(any()) }
-    }
 }

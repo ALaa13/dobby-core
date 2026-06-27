@@ -31,10 +31,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'gradle' # Automatically caches gradle dependencies to speed up future builds!
+          cache: 'gradle' # Automatically caches Gradle dependencies to speed up future builds!
 
       - name: Grant Execute Permission to Gradle Wrapper
         run: chmod +x gradlew
+
+      - name: Verify Code Style Conventions (ktlint)
+        run: ./gradlew ktlintCheck
 
       - name: Run Build and Unit Tests
         # We pass dummy env values just so Spring Boot boots up cleanly during tests

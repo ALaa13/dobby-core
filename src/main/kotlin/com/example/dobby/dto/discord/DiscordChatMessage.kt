@@ -8,5 +8,5 @@ data class DiscordChatMessage(
     val discordUserId: String,
     val avatarHash: String,
     val content: String,
-    val timestamp: String
+    val timestamp: String,
 )

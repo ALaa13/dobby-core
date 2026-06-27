@@ -8,5 +8,5 @@ data class DiscordAccount(
     @SerialName("discord_user_id")
     val discordUserId: String,
     @SerialName("encrypted_token")
-    val encryptedToken: String
+    val encryptedToken: String,
 )

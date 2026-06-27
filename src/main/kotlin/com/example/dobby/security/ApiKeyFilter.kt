@@ -17,12 +17,12 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class ApiKeyFilter(
     private val appProperties: AppProperties,
-    private val rateLimitingService: RateLimitingService
+    private val rateLimitingService: RateLimitingService,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         val apiKeyHeader = appProperties.app.security.apiKeyHeader
         val apiKeySecret = appProperties.app.security.apiKeySecret
@@ -55,7 +55,7 @@ class ApiKeyFilter(
                 "error": "Too Many Requests",
                 "message": "API Key rate limit exceeded. Please throttle your requests."
             }
-        """.trimIndent()
+            """.trimIndent(),
         )
         response.writer.flush()
     }

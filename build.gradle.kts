@@ -4,6 +4,7 @@ plugins {
     kotlin("plugin.serialization") version "2.2.21"
     id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 group = "com.example"
@@ -21,7 +22,6 @@ repositories {
 }
 
 val mockitoAgent = configurations.create("mockitoAgent")
-
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -43,12 +43,10 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
-
     implementation("io.github.jan-tennert.supabase:postgrest-kt:$supabaseVersion")
     implementation("io.github.jan-tennert.supabase:auth-kt:$supabaseVersion")
     implementation("io.github.jan-tennert.supabase:storage-kt:$supabaseVersion")
     implementation("io.ktor:ktor-client-cio:3.0.0")
-
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -70,5 +68,20 @@ tasks.withType<Test> {
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true
+    }
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    version.set("1.5.0")
+    verbose.set(true)
+    outputToConsole.set(true)
+    coloredOutput.set(true)
+
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.HTML)
+    }
+
+    filter {
+        exclude { element -> element.file.path.contains("generated/") }
     }
 }

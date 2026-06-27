@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service
 @Service
 class RedisPublisher(
     private val redisTemplate: StringRedisTemplate,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) {
-
-    fun publishRoastDelivery(channel: String, request: DiscordRoastResult) {
+    fun publishRoastDelivery(
+        channel: String,
+        request: DiscordRoastResult,
+    ) {
         try {
             val jsonMessage = objectMapper.writeValueAsString(request)
             redisTemplate.convertAndSend(channel, jsonMessage)

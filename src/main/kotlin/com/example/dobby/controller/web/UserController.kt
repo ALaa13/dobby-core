@@ -10,9 +10,8 @@ import java.security.Principal
 @RestController
 @RequestMapping("/users")
 class UserController(
-    private val adminUserService: AdminUserService
+    private val adminUserService: AdminUserService,
 ) {
-
     @GetMapping("/me")
     suspend fun getCurrentUser(principal: Principal): DiscordDashboardResponse {
         val userIdFromJwt = principal.name

@@ -3,14 +3,16 @@ package com.example.dobby.crypto
 import com.example.dobby.config.log
 import com.example.dobby.exception.DobbyException
 import java.security.GeneralSecurityException
-import java.util.*
+import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
-
 object CryptoUtils {
-    fun encryptToken(plainTextToken: String, encryptionKey: String): String {
-        return try {
+    fun encryptToken(
+        plainTextToken: String,
+        encryptionKey: String,
+    ): String =
+        try {
             val keySpec = SecretKeySpec(encryptionKey.toByteArray(Charsets.UTF_8), "AES")
 
             val cipher = Cipher.getInstance("AES")
@@ -26,10 +28,12 @@ object CryptoUtils {
             log.error("Unexpected error during token encryption", e)
             throw e
         }
-    }
 
-    fun decryptToken(encryptedTokenBase64: String, encryptionKey: String): String {
-        return try {
+    fun decryptToken(
+        encryptedTokenBase64: String,
+        encryptionKey: String,
+    ): String =
+        try {
             val keySpec = SecretKeySpec(encryptionKey.toByteArray(Charsets.UTF_8), "AES")
 
             val cipher = Cipher.getInstance("AES")
@@ -46,5 +50,4 @@ object CryptoUtils {
             log.error("Unexpected error during token decryption", e)
             throw e
         }
-    }
 }
