@@ -43,3 +43,6 @@ out/
 *.txt
 git-cleanup
 logs
+
+.qodana
+qodana.yaml

@@ -1,5 +1,6 @@
 package com.example.dobby.service
 
+import com.example.dobby.config.SerializationConfig
 import com.example.dobby.config.configureDobbyJson
 import com.example.dobby.dto.discord.DiscordGuild
 import com.example.dobby.dto.discord.DiscordTokenResponse
@@ -20,6 +21,8 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class DiscordApiServiceTest {
+    val json = SerializationConfig().kotlinxSerializationJson()
+
     @Test
     fun `exchangeCodeForToken should return response on valid status`() =
         runTest {
@@ -39,7 +42,7 @@ class DiscordApiServiceTest {
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             val result = apiService.exchangeCodeForToken("code", "id", "secret", "uri")
@@ -57,7 +60,7 @@ class DiscordApiServiceTest {
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             assertFailsWith<DobbyException.AuthorizationException> {
@@ -76,7 +79,7 @@ class DiscordApiServiceTest {
                         headers = headersOf(HttpHeaders.ContentType, "application/json"),
                     )
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             assertFailsWith<DobbyException.AuthorizationException> {
@@ -132,7 +135,7 @@ class DiscordApiServiceTest {
                         else -> respondError(HttpStatusCode.NotFound)
                     }
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             val dashboardData = apiService.fetchCompleteUserProfile("valid-token")
@@ -166,7 +169,7 @@ class DiscordApiServiceTest {
                         else -> respondError(HttpStatusCode.NotFound)
                     }
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             val result = apiService.fetchCompleteUserProfile("valid-token")
@@ -210,7 +213,7 @@ class DiscordApiServiceTest {
                         else -> respondError(HttpStatusCode.NotFound)
                     }
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             val result = apiService.fetchCompleteUserProfile("valid-token")
@@ -253,7 +256,7 @@ class DiscordApiServiceTest {
                         else -> respondError(HttpStatusCode.NotFound)
                     }
                 }
-            val client = HttpClient(mockEngine) { configureDobbyJson() }
+            val client = HttpClient(mockEngine) { configureDobbyJson(json) }
             val apiService = DiscordApiService(client)
 
             val result = apiService.fetchCompleteUserProfile("valid-token")

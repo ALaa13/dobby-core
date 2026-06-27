@@ -1,20 +1,54 @@
 package com.example.dobby.exception
 
 import com.example.dobby.dto.ApiResponse
+import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    // @Valid DTO/Body validation failures
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationExceptions(e: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
-        val errors = e.bindingResult.fieldErrors.associate { it.field to it.defaultMessage }
-        return ResponseEntity.badRequest().body(errors)
+    fun handleValidationExceptions(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse> {
+        val details =
+            e.bindingResult.fieldErrors.joinToString(", ") {
+                "${it.field}: ${it.defaultMessage}"
+            }
+
+        return ResponseEntity.badRequest().body(
+            ApiResponse(success = false, message = "Validation failed: $details"),
+        )
     }
 
+    // Catches RequestParam / PathVariable validation failures (e.g., @Size, @NotBlank)
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintExceptions(e: ConstraintViolationException): ResponseEntity<ApiResponse> {
+        val details =
+            e.constraintViolations.joinToString(", ") { violation ->
+                val paramName = violation.propertyPath.toString().substringAfterLast(".")
+                "$paramName: ${violation.message}"
+            }
+
+        return ResponseEntity.badRequest().body(
+            ApiResponse(success = false, message = "Invalid parameters: $details"),
+        )
+    }
+
+    // Catches when a required @RequestParam is completely omitted from the URL
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingParams(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse> =
+        ResponseEntity.badRequest().body(
+            ApiResponse(
+                success = false,
+                message = "Required parameter '${e.parameterName}' is completely missing",
+            ),
+        )
+
+    // Dobby-specific exceptions
     @ExceptionHandler(DobbyException::class)
     fun handleDobbyExceptions(e: DobbyException): ResponseEntity<ApiResponse> {
         val (status, message) =
