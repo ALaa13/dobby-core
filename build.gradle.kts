@@ -73,7 +73,7 @@ tasks.withType<Test> {
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     version.set("1.5.0")
-    verbose.set(true) // Prints full error details and rules to the console log
+    verbose.set(true)
     outputToConsole.set(true)
     coloredOutput.set(true)
 

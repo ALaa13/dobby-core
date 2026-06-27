@@ -56,7 +56,7 @@ class RoastService(
                 )
             log.info("Roast generation completed successfully")
 
-            // Save to the datasbse
+            // Save to the database
             roastRepository.saveRoastResult(request.guildId, request.channelId, roastResult)
             log.info("Roast result saved to database")
 
