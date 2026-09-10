@@ -78,4 +78,24 @@ class UserFactPostgresStoreTest {
             verify(exactly = 1) { databaseClient.sql(any<String>()) }
             assertContains(sql.captured, "WHERE id = CAST(:factId AS uuid)")
         }
+
+    @Test
+    fun `deleteAllByGuildId deletes facts through profiles in one bound statement`() =
+        runTest {
+            val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
+            val fetchSpec = mockk<FetchSpec<Map<String, Any>>>()
+            val sql = slot<String>()
+            every { databaseClient.sql(capture(sql)) } returns executeSpec
+            every { executeSpec.bind("guildId", "guild-1") } returns executeSpec
+            every { executeSpec.fetch() } returns fetchSpec
+            every { fetchSpec.rowsUpdated() } returns Mono.just(2L)
+
+            val count = store.deleteAllByGuildId("guild-1")
+
+            assertEquals(2L, count)
+            verify(exactly = 1) { databaseClient.sql(any<String>()) }
+            assertContains(sql.captured, "DELETE FROM user_facts f")
+            assertContains(sql.captured, "USING user_profiles p")
+            assertFalse(sql.captured.contains("guild-1"))
+        }
 }

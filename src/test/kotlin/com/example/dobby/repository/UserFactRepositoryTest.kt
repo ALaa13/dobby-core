@@ -58,11 +58,14 @@ class UserFactRepositoryTest {
         runTest {
             coEvery { userFactStore.deleteById("fact-id") } returns 1
             coEvery { userFactStore.deleteAllByProfileId("profile-id") } returns 2
+            coEvery { userFactStore.deleteAllByGuildId("guild-id") } returns 3
 
             repository.deleteFactById("fact-id")
             repository.deleteFactsByProfileId("profile-id")
+            repository.deleteFactsByGuildId("guild-id")
 
             coVerify(exactly = 1) { userFactStore.deleteById("fact-id") }
             coVerify(exactly = 1) { userFactStore.deleteAllByProfileId("profile-id") }
+            coVerify(exactly = 1) { userFactStore.deleteAllByGuildId("guild-id") }
         }
 }

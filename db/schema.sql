@@ -73,3 +73,15 @@ CREATE TABLE roast_targets
             REFERENCES user_profiles (discord_user_id, guild_id)
             ON DELETE CASCADE
 );
+
+CREATE INDEX idx_user_profiles_guild_id
+    ON user_profiles (guild_id);
+
+CREATE INDEX idx_user_facts_profile_id
+    ON user_facts (profile_id);
+
+CREATE INDEX idx_roasts_guild_created_at
+    ON roasts (guild_id, created_at DESC);
+
+CREATE INDEX idx_roast_targets_roast_id
+    ON roast_targets (roast_id);

@@ -63,7 +63,7 @@ class DiscordAccountPostgresStore(
     private fun Row.toDiscordAccountEntity(): DiscordAccountEntity =
         DiscordAccountEntity(
             discordUserId = requireNotNull(get("discord_user_id", String::class.java)),
-            encryptedToken = requireNotNull(get("encrypted_token", String::class.java)),
+            encryptedToken = get("encrypted_token", String::class.java),
             createdAt = requireNotNull(get("created_at", OffsetDateTime::class.java)),
         )
 }

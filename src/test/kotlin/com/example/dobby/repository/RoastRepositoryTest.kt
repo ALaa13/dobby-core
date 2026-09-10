@@ -57,7 +57,13 @@ class RoastRepositoryTest {
 
             assertEquals(roastId.toString(), result.id)
             assertEquals("The reason", result.targets.single().reason)
-            assertEquals("Dobby", result.targets.single().userProfile?.displayName)
+            assertEquals(
+                "Dobby",
+                result.targets
+                    .single()
+                    .userProfile
+                    ?.displayName,
+            )
         }
 
     @Test

@@ -26,6 +26,10 @@ class UserFactRepository(
         userFactStore.deleteAllByProfileId(profileId)
     }
 
+    suspend fun deleteFactsByGuildId(guildId: String) {
+        userFactStore.deleteAllByGuildId(guildId)
+    }
+
     private fun UserFactEntity.toResponse(): UserFactResponse =
         UserFactResponse(
             id = requireNotNull(id).toString(),

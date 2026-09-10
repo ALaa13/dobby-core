@@ -223,4 +223,14 @@ class FactServiceTest {
 
             coVerify(exactly = 0) { userFactRepository.deleteFactsByProfileId(any()) }
         }
+
+    @Test
+    fun `resetGuildFacts deletes facts without deleting profiles`() =
+        runTest {
+            coEvery { userFactRepository.deleteFactsByGuildId("guild-456") } returns Unit
+
+            factService.resetGuildFacts("guild-456")
+
+            coVerify(exactly = 1) { userFactRepository.deleteFactsByGuildId("guild-456") }
+        }
 }

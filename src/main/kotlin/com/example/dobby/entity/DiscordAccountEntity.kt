@@ -12,7 +12,7 @@ data class DiscordAccountEntity(
     val discordUserId: String,
 
     @Column("encrypted_token")
-    val encryptedToken: String,
+    val encryptedToken: String?,
 
     @Column("created_at")
     val createdAt: OffsetDateTime,

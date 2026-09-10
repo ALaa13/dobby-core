@@ -63,4 +63,30 @@ class UserProfileRepositoryTest {
                 userProfileStore.upsertProfiles(any<List<UserProfileCreateRequest>>())
             }
         }
+
+    @Test
+    fun `findProfilesWithFacts maps all rows from the bulk store query`() =
+        runTest {
+            val profileId = UUID.fromString("10000000-0000-0000-0000-000000000002")
+            coEvery {
+                userProfileStore.findAllByDiscordUserIdsAndGuildId(listOf("user-2"), "guild-1")
+            } returns
+                listOf(
+                    UserProfileWithFactsRow(
+                        id = profileId,
+                        discordUserId = "user-2",
+                        guildId = "guild-1",
+                        displayName = "Winky",
+                        avatarHash = null,
+                        createdAt = OffsetDateTime.parse("2026-01-01T10:00:00Z"),
+                        updatedAt = null,
+                        factsJson = "[]",
+                    ),
+                )
+
+            val result = repository.findProfilesWithFacts(listOf("user-2"), "guild-1")
+
+            assertEquals(listOf("user-2"), result.map { it.discordUserId })
+            assertEquals(emptyList(), result.single().facts)
+        }
 }

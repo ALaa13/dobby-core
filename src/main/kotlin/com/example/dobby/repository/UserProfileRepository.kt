@@ -29,6 +29,14 @@ class UserProfileRepository(
             .findAllByGuildId(guildId)
             .map { it.toResponse() }
 
+    suspend fun findProfilesWithFacts(
+        discordUserIds: Collection<String>,
+        guildId: String,
+    ): List<UserProfileResponse> =
+        userProfileStore
+            .findAllByDiscordUserIdsAndGuildId(discordUserIds, guildId)
+            .map { it.toResponse() }
+
     suspend fun saveProfile(profile: UserProfileCreateRequest): UserProfileResponse =
         userProfileStore
             .insert(
@@ -38,10 +46,6 @@ class UserProfileRepository(
                 avatarHash = profile.avatarHash,
             )
             .toResponse()
-
-    suspend fun deleteAllByGuildId(guildId: String) {
-        userProfileStore.deleteAllByGuildId(guildId)
-    }
 
     suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
         if (profiles.isEmpty()) return

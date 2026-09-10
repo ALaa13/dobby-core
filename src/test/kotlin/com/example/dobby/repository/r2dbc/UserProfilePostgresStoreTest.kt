@@ -1,17 +1,24 @@
 package com.example.dobby.repository.r2dbc
 
 import com.example.dobby.dto.user.UserProfileCreateRequest
+import com.example.dobby.repository.r2dbc.projection.UserProfileWithFactsRow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.r2dbc.spi.Row
+import io.r2dbc.spi.RowMetadata
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.FetchSpec
+import org.springframework.r2dbc.core.RowsFetchSpec
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.function.BiFunction
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class UserProfilePostgresStoreTest {
@@ -73,5 +80,28 @@ class UserProfilePostgresStoreTest {
             assertContains(sql.captured, "updated_at = now()")
             assertFalse(sql.captured.contains("user-1"))
             assertFalse(sql.captured.contains("First"))
+        }
+
+    @Test
+    fun `bulk profile lookup uses one safely bound statement`() =
+        runTest {
+            val sql = slot<String>()
+            val rows = mockk<RowsFetchSpec<UserProfileWithFactsRow>>()
+            every { databaseClient.sql(capture(sql)) } returns executeSpec
+            every {
+                executeSpec.map(any<BiFunction<Row, RowMetadata, UserProfileWithFactsRow>>())
+            } returns rows
+            every { rows.all() } returns Flux.empty()
+
+            val result = store.findAllByDiscordUserIdsAndGuildId(listOf("user-1", "user-2"), "guild-1")
+
+            assertEquals(emptyList(), result)
+            verify(exactly = 1) { databaseClient.sql(any<String>()) }
+            verify { executeSpec.bind("guildId", "guild-1") }
+            verify { executeSpec.bind("discordUserId0", "user-1") }
+            verify { executeSpec.bind("discordUserId1", "user-2") }
+            assertContains(sql.captured, "p.discord_user_id IN (:discordUserId0, :discordUserId1)")
+            assertFalse(sql.captured.contains("user-1"))
+            assertFalse(sql.captured.contains("user-2"))
         }
 }

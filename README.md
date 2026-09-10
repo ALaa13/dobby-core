@@ -113,14 +113,18 @@ break the bot.
 You can customize: Personality, tone, style, rules
 DO NOT change: The output format specification or JSON structure
 
-### 4. Start Redis
+### 4. Start PostgreSQL and Redis
+
+When running Spring locally with `./gradlew bootRun`, set:
+
+```env
+POSTGRES_HOST=localhost
+```
+
+PostgreSQL and Redis must both be available locally. You can run local installations or start the Compose services:
 
 ```bash
-# Using Docker (recommended)
-docker run -d -p 6379:6379 redis:latest
-
-# macOS with Homebrew
-brew services start redis
+docker compose up -d postgres redis
 ```
 
 ### 5. Run the application
@@ -142,7 +146,8 @@ curl http://localhost:8080/api/v1/
 
 ## Running with Docker Compose (Recommended)
 
-Docker Compose spins up the Spring Boot service with pre-configured PostgreSQL and Redis instances.
+Docker Compose starts PostgreSQL, Redis, and the Spring Boot backend. The backend uses `POSTGRES_HOST=postgres`, where
+`postgres` is the Compose service name; this is already configured in `docker-compose.yml`.
 
 ### Prerequisites
 
@@ -158,8 +163,9 @@ docker compose up -d --build
 This command:
 
 - Builds the Kotlin application inside a secure multi-stage container
-- Fetches and starts Redis
-- Links both services on a shared virtual network
+- Starts PostgreSQL and initializes it from `db/schema.sql`
+- Starts Redis
+- Connects the backend to PostgreSQL at `postgres:5432` on the shared Docker network
 - Runs everything in the background
 
 ### Stop the stack

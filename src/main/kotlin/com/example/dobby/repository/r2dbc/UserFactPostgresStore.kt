@@ -56,6 +56,22 @@ class UserFactPostgresStore(
                 .awaitSingle()
         }
 
+    suspend fun deleteAllByGuildId(guildId: String): Long =
+        databaseCall("Deleting user facts by guild") {
+            databaseClient
+                .sql(
+                    """
+                    DELETE FROM user_facts f
+                    USING user_profiles p
+                    WHERE f.profile_id = p.id
+                      AND p.guild_id = :guildId
+                    """.trimIndent(),
+                ).bind("guildId", guildId)
+                .fetch()
+                .rowsUpdated()
+                .awaitSingle()
+        }
+
     suspend fun findAllByProfileId(profileId: UUID): List<UserFactEntity> =
         databaseCall("Finding user facts by profile") {
             databaseClient

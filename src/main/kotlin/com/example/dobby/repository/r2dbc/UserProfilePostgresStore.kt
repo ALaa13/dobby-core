@@ -53,6 +53,36 @@ class UserProfilePostgresStore(
                 .awaitSingle()
         }
 
+    suspend fun findAllByDiscordUserIdsAndGuildId(
+        discordUserIds: Collection<String>,
+        guildId: String,
+    ): List<UserProfileWithFactsRow> {
+        if (discordUserIds.isEmpty()) return emptyList()
+
+        return databaseCall("Finding user profiles by Discord IDs and guild") {
+            val placeholders = discordUserIds.indices.joinToString(", ") { index -> ":discordUserId$index" }
+            val sql =
+                USER_PROFILE_WITH_FACTS_SELECT +
+                    """
+                    WHERE p.guild_id = :guildId
+                      AND p.discord_user_id IN ($placeholders)
+                    GROUP BY p.id
+                    ORDER BY p.created_at ASC, p.id ASC
+                    """
+
+            var executeSpec = databaseClient.sql(sql).bind("guildId", guildId)
+            discordUserIds.forEachIndexed { index, discordUserId ->
+                executeSpec = executeSpec.bind("discordUserId$index", discordUserId)
+            }
+
+            executeSpec
+                .map { row, _ -> row.toUserProfileWithFactsRow() }
+                .all()
+                .collectList()
+                .awaitSingle()
+        }
+    }
+
     suspend fun insert(
         discordUserId: String,
         guildId: String,
@@ -68,20 +98,6 @@ class UserProfilePostgresStore(
                 .bindNullable("avatarHash", avatarHash)
                 .map { row, _ -> row.toUserProfileEntity() }
                 .one()
-                .awaitSingle()
-        }
-
-    suspend fun deleteAllByGuildId(guildId: String): Long =
-        databaseCall("Deleting user profiles by guild") {
-            databaseClient
-                .sql(
-                    """
-                    DELETE FROM user_profiles
-                    WHERE guild_id = :guildId
-                    """.trimIndent(),
-                ).bind("guildId", guildId)
-                .fetch()
-                .rowsUpdated()
                 .awaitSingle()
         }
 
