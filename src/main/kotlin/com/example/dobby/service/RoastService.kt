@@ -72,7 +72,7 @@ class RoastService(
                         "🤖 Memory vault locked out! I'm struggling to read the database right now."
 
                     is DobbyException.NetworkTimeoutException ->
-                        "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
+                        "⏳ The database did not respond in time. Try roaring at me again!"
 
                     is DobbyException.AiModelException ->
                         "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"

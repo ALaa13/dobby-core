@@ -4,7 +4,7 @@ info:
   title: Dobby Backend API
   description: |
     A Kotlin/Spring Boot backend service that generates AI-powered roasts for Discord and a Web Dashboard.
-    It accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini,
+    It accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via Google Gemini,
     and returns results to Discord or Web Dashboard via Redis Pub/Sub for real-time delivery.
   version: 1.0.0
   contact:
@@ -444,7 +444,7 @@ paths:
               example: |
                 data: {"timestamp":"2026-06-13T14:30:00Z","level":"INFO","message":"Roast generation started"}
                 
-                data: {"timestamp":"2026-06-13T14:30:05Z","level":"DEBUG","message":"Facts retrieved from Supabase"}
+                data: {"timestamp":"2026-06-13T14:30:05Z","level":"DEBUG","message":"Facts retrieved from PostgreSQL"}
         '403':
           description: Forbidden - Invalid or missing X-API-Key header.
           content:

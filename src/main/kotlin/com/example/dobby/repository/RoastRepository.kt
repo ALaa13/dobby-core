@@ -2,18 +2,51 @@ package com.example.dobby.repository
 
 import com.example.dobby.dto.roast.RoastLogDbResponse
 import com.example.dobby.dto.roast.RoastResult
-import com.example.dobby.supabase.SupabaseRoast
+import com.example.dobby.dto.roast.RoastTargetDbResponseDto
+import com.example.dobby.exception.DobbyException
+import com.example.dobby.repository.r2dbc.RoastPostgresStore
+import com.example.dobby.repository.r2dbc.projection.RoastWithTargetsRow
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Repository
 
 @Repository
 class RoastRepository(
-    private val supabaseRoast: SupabaseRoast,
+    private val roastStore: RoastPostgresStore,
+    private val json: Json,
 ) {
     suspend fun saveRoastResult(
         guildId: String,
         channelId: String,
         result: RoastResult,
-    ) = supabaseRoast.saveRoastResult(guildId, channelId, result)
+    ) {
+        roastStore.saveRoastResult(guildId, channelId, result)
+    }
 
-    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> = supabaseRoast.getAllRoastsByGuildId(guildId)
+    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> =
+        roastStore
+            .findAllByGuildId(guildId)
+            .map { it.toResponse() }
+
+    private fun RoastWithTargetsRow.toResponse(): RoastLogDbResponse =
+        RoastLogDbResponse(
+            id = id.toString(),
+            guildId = guildId,
+            channelId = channelId,
+            roastText = roastText,
+            personaUsed = personaUsed,
+            primaryTargetId = primaryTargetId,
+            clappedTheMostId = clappedTheMostId,
+            burnAccuracy = burnAccuracy,
+            severityScore = severityScore,
+            createdAt = createdAt.toString(),
+            targets = decodeTargets(targetsJson),
+        )
+
+    private fun decodeTargets(targetsJson: String): List<RoastTargetDbResponseDto> =
+        try {
+            json.decodeFromString(targetsJson)
+        } catch (exception: SerializationException) {
+            throw DobbyException.DataMappingException("Failed to map roast targets", exception)
+        }
 }

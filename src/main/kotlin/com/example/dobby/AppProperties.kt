@@ -5,7 +5,6 @@ import java.time.Duration
 
 @ConfigurationProperties
 data class AppProperties(
-    val supabase: Supabase = Supabase(),
     val gemini: Gemini = Gemini(),
     val discord: Discord = Discord(),
     val jwt: Jwt = Jwt(),
@@ -14,11 +13,6 @@ data class AppProperties(
     val encryption: Encryption = Encryption(),
     val app: App = App(),
 ) {
-    data class Supabase(
-        var url: String = "",
-        var key: String = "",
-    )
-
     data class Gemini(
         var apiKey: String = "",
         var promptFilePath: String = "ai_prompt.txt",

@@ -25,12 +25,12 @@ class AdminUserService(
         // Check Redis Cache First
         val cachedProfileJson = stringRedisTemplate.opsForValue().get(redisKey)
         if (cachedProfileJson != null) {
-            // Cache hit! Return the data instantly without hitting Supabase or Discord
+            // Cache hit! Return the data instantly without hitting PostgreSQL or Discord
             log.info("Cache hit for user profile: $userIdFromJwt")
             return Json.decodeFromString<DiscordDashboardResponse>(cachedProfileJson)
         }
 
-        // Cache Miss: Grab the encrypted account record from Supabase
+        // Cache Miss: Grab the encrypted account record from PostgreSQL
         val account =
             discordAccountRepository.findByDiscordUserId(userIdFromJwt)
                 ?: throw NoSuchElementException("No encrypted account record found for user $userIdFromJwt")
