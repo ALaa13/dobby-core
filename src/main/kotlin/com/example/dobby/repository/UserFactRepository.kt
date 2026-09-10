@@ -32,11 +32,11 @@ class UserFactRepository(
 
     private fun UserFactEntity.toResponse(): UserFactResponse =
         UserFactResponse(
-            id = requireNotNull(id).toString(),
+            id = id.toString(),
             profileId = profileId.toString(),
             factText = factText,
             source = source,
-            createdAt = requireNotNull(createdAt).toString(),
+            createdAt = createdAt.toString(),
             updatedAt = updatedAt?.toString(),
         )
 }

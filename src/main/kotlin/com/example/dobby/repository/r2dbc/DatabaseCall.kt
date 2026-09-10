@@ -20,7 +20,11 @@ internal suspend fun <T> databaseCall(
         throw exception
     } catch (exception: DataAccessException) {
         databaseLog.error("{} failed", contextMessage, exception)
-        throw DobbyException.DatabaseException(contextMessage, cause = exception)
+        throw DobbyException.DatabaseException(
+            contextMessage,
+            sqlState = (exception.cause as? R2dbcException)?.sqlState,
+            cause = exception,
+        )
     } catch (exception: R2dbcException) {
         databaseLog.error("{} failed", contextMessage, exception)
         throw DobbyException.DatabaseException(contextMessage, cause = exception)

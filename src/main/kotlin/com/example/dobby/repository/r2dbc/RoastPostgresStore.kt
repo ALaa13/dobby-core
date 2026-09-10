@@ -115,21 +115,11 @@ class RoastPostgresStore(
             personaUsed = get("personaUsed", String::class.java),
             primaryTargetId = requireNotNull(get("primaryTargetId", String::class.java)),
             clappedTheMostId = requireNotNull(get("clappedTheMostId", String::class.java)),
-            burnAccuracy = requireNotNull(get("burnAccuracy", Integer::class.java)).toInt(),
-            severityScore = requireNotNull(get("severityScore", Integer::class.java)).toInt(),
+            burnAccuracy = requireNotNull(get("burnAccuracy", Int::class.javaObjectType)),
+            severityScore = requireNotNull(get("severityScore", Int::class.javaObjectType)),
             createdAt = requireNotNull(get("createdAt", OffsetDateTime::class.java)),
             targetsJson = requireNotNull(get("targetsJson", String::class.java)),
         )
-
-    private inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindNullable(
-        name: String,
-        value: T?,
-    ): DatabaseClient.GenericExecuteSpec =
-        if (value == null) {
-            bindNull(name, T::class.java)
-        } else {
-            bind(name, value)
-        }
 
     private companion object {
         val INSERT_ROAST =

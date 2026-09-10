@@ -10,6 +10,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 
 class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
     private val profileStore by lazy { UserProfilePostgresStore(databaseClient) }
@@ -20,8 +21,7 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
         runTest {
             resetDatabase()
             val profile = profileStore.insert("user-1", "guild-1", "Dobby", "avatar-1")
-            val profileId = assertNotNull(profile.id)
-            assertNotNull(profile.createdAt)
+            val profileId = profile.id
             assertNull(profile.updatedAt)
 
             factStore.insert(profileId.toString(), "First fact", "USER_SUBMISSION")
@@ -46,7 +46,7 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             )
             val original = assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-1"))
 
-            delay(10)
+            delay(10.milliseconds)
             profileStore.upsertProfiles(listOf(profile("user-1", "guild-1", "Updated", "avatar-new")))
 
             val updated = assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-1"))
@@ -67,7 +67,7 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             val requested = profileStore.insert("user-1", "guild-1", "Dobby", null)
             profileStore.insert("user-2", "guild-1", "Other", null)
             profileStore.insert("user-1", "guild-2", "Other guild", null)
-            factStore.insert(assertNotNull(requested.id).toString(), "Remember me", "USER_SUBMISSION")
+            factStore.insert(requested.id.toString(), "Remember me", "USER_SUBMISSION")
 
             val results =
                 profileStore.findAllByDiscordUserIdsAndGuildId(

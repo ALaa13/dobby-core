@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -19,16 +20,19 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
         runTest {
             resetDatabase()
             val profile = profileStore.insert("user-1", "guild-1", null, null)
-            val profileId = assertNotNull(profile.id)
+            val profileId = profile.id
             val first = factStore.insert(profileId.toString(), "First", "USER_SUBMISSION")
             factStore.insert(profileId.toString(), "Second", null)
 
-            assertNotNull(first.id)
-            assertNotNull(first.createdAt)
-            assertEquals(1L, factStore.deleteById(assertNotNull(first.id).toString()))
-            assertEquals(listOf("Second"), factStore.findAllByProfileId(profileId).map { it.factText })
+            assertEquals(1L, factStore.deleteById(first.id.toString()))
+            val afterSingleDelete = assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-1"))
+            assertEquals(1, factsCount(afterSingleDelete.factsJson))
+            assertContains(afterSingleDelete.factsJson, "Second")
             assertEquals(1L, factStore.deleteAllByProfileId(profileId.toString()))
-            assertEquals(emptyList(), factStore.findAllByProfileId(profileId))
+            assertEquals(
+                0,
+                factsCount(assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-1")).factsJson),
+            )
         }
 
     @Test
@@ -38,9 +42,9 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             val first = profileStore.insert("user-1", "guild-1", null, null)
             val second = profileStore.insert("user-2", "guild-1", null, null)
             val otherGuild = profileStore.insert("user-1", "guild-2", null, null)
-            factStore.insert(assertNotNull(first.id).toString(), "First guild fact", null)
-            factStore.insert(assertNotNull(second.id).toString(), "Second guild fact", null)
-            factStore.insert(assertNotNull(otherGuild.id).toString(), "Other guild fact", null)
+            factStore.insert(first.id.toString(), "First guild fact", null)
+            factStore.insert(second.id.toString(), "Second guild fact", null)
+            factStore.insert(otherGuild.id.toString(), "Other guild fact", null)
             roastStore.saveRoastResult(
                 "guild-1",
                 "channel-1",

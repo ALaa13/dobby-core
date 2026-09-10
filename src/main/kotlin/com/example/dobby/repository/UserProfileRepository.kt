@@ -54,12 +54,12 @@ class UserProfileRepository(
 
     private fun UserProfileEntity.toResponse(): UserProfileResponse =
         UserProfileResponse(
-            id = requireNotNull(id).toString(),
+            id = id.toString(),
             discordUserId = discordUserId,
             guildId = guildId,
             displayName = displayName,
             avatarHash = avatarHash,
-            createdAt = requireNotNull(createdAt).toString(),
+            createdAt = createdAt.toString(),
             updatedAt = updatedAt?.toString(),
         )
 

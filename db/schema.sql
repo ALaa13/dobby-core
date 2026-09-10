@@ -30,7 +30,7 @@ CREATE TABLE user_facts
 CREATE TABLE discord_accounts
 (
     discord_user_id TEXT PRIMARY KEY,
-    encrypted_token TEXT,
+    encrypted_token TEXT        NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

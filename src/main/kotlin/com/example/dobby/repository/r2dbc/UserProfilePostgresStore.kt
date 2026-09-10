@@ -164,16 +164,6 @@ class UserProfilePostgresStore(
             updatedAt = get("updated_at", OffsetDateTime::class.java),
         )
 
-    private inline fun <reified T : Any> DatabaseClient.GenericExecuteSpec.bindNullable(
-        name: String,
-        value: T?,
-    ): DatabaseClient.GenericExecuteSpec =
-        if (value == null) {
-            bindNull(name, T::class.java)
-        } else {
-            bind(name, value)
-        }
-
     private companion object {
         val INSERT_USER_PROFILE =
             """

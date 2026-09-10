@@ -75,7 +75,7 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                 databaseClient
                     .sql("SELECT COUNT(*) AS count FROM roasts WHERE guild_id = :guildId")
                     .bind("guildId", "guild-1")
-                    .map { row, _ -> requireNotNull(row.get("count", java.lang.Long::class.java)).toLong() }
+                    .map { row, _ -> requireNotNull(row.get("count", Long::class.javaObjectType)) }
                     .one()
                     .awaitSingle()
             assertEquals(0L, roastCount)

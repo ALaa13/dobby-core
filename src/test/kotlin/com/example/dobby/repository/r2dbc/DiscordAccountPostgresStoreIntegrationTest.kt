@@ -4,7 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.milliseconds
 
 class DiscordAccountPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
     private val accountStore by lazy { DiscordAccountPostgresStore(databaseClient) }
@@ -14,10 +14,9 @@ class DiscordAccountPostgresStoreIntegrationTest : PostgresStoreIntegrationTest(
         runTest {
             resetDatabase()
             val inserted = accountStore.upsert("user-1", "encrypted-token-1")
-            assertNotNull(inserted.createdAt)
             assertEquals("encrypted-token-1", accountStore.findByDiscordUserId("user-1")?.encryptedToken)
 
-            delay(10)
+            delay(10.milliseconds)
             val updated = accountStore.upsert("user-1", "encrypted-token-2")
 
             assertEquals(inserted.createdAt, updated.createdAt)
