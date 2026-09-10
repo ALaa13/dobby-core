@@ -44,8 +44,7 @@ class UserProfileRepository(
                 guildId = profile.guildId,
                 displayName = profile.displayName,
                 avatarHash = profile.avatarHash,
-            )
-            .toResponse()
+            ).toResponse()
 
     suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
         if (profiles.isEmpty()) return

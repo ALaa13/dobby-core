@@ -10,22 +10,16 @@ import java.util.UUID
 data class UserProfileEntity(
     @Id
     val id: UUID? = null,
-
     @Column("discord_user_id")
     val discordUserId: String,
-
     @Column("guild_id")
     val guildId: String,
-
     @Column("display_name")
     val displayName: String? = null,
-
     @Column("avatar_hash")
     val avatarHash: String? = null,
-
     @Column("created_at")
     val createdAt: OffsetDateTime? = null,
-
     @Column("updated_at")
     val updatedAt: OffsetDateTime? = null,
 )

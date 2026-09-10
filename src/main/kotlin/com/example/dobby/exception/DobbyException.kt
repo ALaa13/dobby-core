@@ -10,14 +10,14 @@ sealed class DobbyException(
         sqlState: String? = null,
         cause: Throwable? = null,
     ) : DobbyException(
-        buildString {
-            append("Database Failure: $message")
-            if (sqlState != null) {
-                append("\n $sqlState")
-            }
-        },
-        cause,
-    )
+            buildString {
+                append("Database Failure: $message")
+                if (sqlState != null) {
+                    append("\n $sqlState")
+                }
+            },
+            cause,
+        )
 
     // Network timeouts (external service or database timeouts)
     class NetworkTimeoutException(

@@ -34,14 +34,31 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             assertEquals(2, targets.size)
             assertEquals(
                 setOf(roast.id.toString()),
-                targets.map { it.jsonObject.getValue("roast_id").jsonPrimitive.content }.toSet(),
+                targets
+                    .map {
+                        it.jsonObject
+                            .getValue("roast_id")
+                            .jsonPrimitive.content
+                    }.toSet(),
             )
             assertContains(roast.targetsJson, "First user")
             assertContains(roast.targetsJson, "Second user")
 
             val mapped = roastRepository.getGuildRoasts("guild-1").single()
-            assertEquals("First user", mapped.targets.first { it.discordUserId == "user-1" }.userProfile?.displayName)
-            assertEquals("Second user", mapped.targets.first { it.discordUserId == "user-2" }.userProfile?.displayName)
+            assertEquals(
+                "First user",
+                mapped.targets
+                    .first { it.discordUserId == "user-1" }
+                    .userProfile
+                    ?.displayName,
+            )
+            assertEquals(
+                "Second user",
+                mapped.targets
+                    .first { it.discordUserId == "user-2" }
+                    .userProfile
+                    ?.displayName,
+            )
         }
 
     @Test
