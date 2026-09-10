@@ -78,7 +78,9 @@ class RoastServiceTest {
             every { mockFact.factText } returns "Likes Fedora Linux"
             every { mockProfile.facts } returns listOf(mockFact)
 
-            coEvery { userRepository.findProfile("user1", "guild-777") } returns mockProfile
+            coEvery {
+                userRepository.findProfilesWithFacts(setOf("user1"), "guild-777")
+            } returns listOf(mockProfile)
 
             val expectedMemoryContext = "Facts about <@user1>:\n- Likes Fedora Linux\n\n"
 
@@ -98,7 +100,7 @@ class RoastServiceTest {
             advanceUntilIdle()
 
             coVerify(exactly = 1) {
-                userRepository.findProfile("user1", "guild-777")
+                userRepository.findProfilesWithFacts(setOf("user1"), "guild-777")
             }
             coVerify(exactly = 1) {
                 geminiService.generateRoast(any(), any(), any())
@@ -182,7 +184,9 @@ class RoastServiceTest {
                     channelId = "channel-123",
                 )
 
-            coEvery { userRepository.findProfile("user2", "guild-777") } returns null
+            coEvery {
+                userRepository.findProfilesWithFacts(setOf("user2"), "guild-777")
+            } returns emptyList()
 
             coEvery {
                 geminiService.generateRoast(

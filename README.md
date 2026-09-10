@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**. It
-accepts chat history, enriches requests with stored user facts from Supabase, generates roasts via Google Gemini, and
+accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via Google Gemini, and
 delivers results in real-time via **Redis Pub/Sub**.
 
 ![Dobby Dashboard Demo](./src/main/resources/assets/Demo.png)
@@ -31,7 +31,7 @@ Discord Bot / Web Dashboard
          │  POST /api/v1/roast
          ▼
 ┌─────────────────────┐
-│   Dobby Backend     │  ──── Fetch user facts ──▶  Supabase
+│   Dobby Backend     │  ──── Fetch user facts ──▶  PostgreSQL
 │   (Spring Boot)     │  ──── Generate roast  ──▶  Google Gemini
 └─────────────────────┘
          │
@@ -48,7 +48,7 @@ Discord Bot / Web Dashboard
 
 1. Client sends chat history to `POST /api/v1/roast`
 2. Backend responds immediately with `202 Accepted` (job is queued)
-3. Service fetches stored user facts from Supabase for context
+3. Service fetches stored user facts from PostgreSQL for context
 4. Gemini generates a personalized roast asynchronously
 5. Result is published to the `roast-delivery` Redis channel
 6. Discord bot (or other consumers) receive and deliver it in real-time
@@ -62,7 +62,7 @@ Discord Bot / Web Dashboard
 | Language      | Kotlin 2.2 on Java 21                               |
 | Framework     | Spring Boot 4.0 with virtual threads                |
 | AI            | Google Gemini API                                   |
-| Database      | Supabase (PostgREST)                                |
+| Database      | PostgreSQL via Spring Data R2DBC                    |
 | Messaging     | Redis Pub/Sub                                       |
 | Build         | Gradle (wrapper included — no local install needed) |
 | Rate Limiting | Bucket4j (Token Bucket, in-memory)                  |
@@ -72,8 +72,8 @@ Discord Bot / Web Dashboard
 ## Prerequisites
 
 - **Java 21** — verify with `java -version`
-- **Redis** — local or remote instance
-- **API credentials** — Supabase, Google Gemini, and Discord OAuth2 (see [Configuration](#configuration))
+- **PostgreSQL and Redis** — local or remote instances
+- **API credentials** — Google Gemini and Discord OAuth2 (see [Configuration](#configuration))
 
 > **Note:** Gradle is bundled via the wrapper (`./gradlew`). You do not need to install it separately.
 
@@ -113,14 +113,18 @@ break the bot.
 You can customize: Personality, tone, style, rules
 DO NOT change: The output format specification or JSON structure
 
-### 4. Start Redis
+### 4. Start PostgreSQL and Redis
+
+When running Spring locally with `./gradlew bootRun`, set:
+
+```env
+POSTGRES_HOST=localhost
+```
+
+PostgreSQL and Redis must both be available locally. You can run local installations or start the Compose services:
 
 ```bash
-# Using Docker (recommended)
-docker run -d -p 6379:6379 redis:latest
-
-# macOS with Homebrew
-brew services start redis
+docker compose up -d postgres redis
 ```
 
 ### 5. Run the application
@@ -142,8 +146,8 @@ curl http://localhost:8080/api/v1/
 
 ## Running with Docker Compose (Recommended)
 
-Docker Compose spins up both the Spring Boot service and a pre-configured Redis instance together, with no manual Redis
-setup required.
+Docker Compose starts PostgreSQL, Redis, and the Spring Boot backend. The backend uses `POSTGRES_HOST=postgres`, where
+`postgres` is the Compose service name; this is already configured in `docker-compose.yml`.
 
 ### Prerequisites
 
@@ -159,8 +163,9 @@ docker compose up -d --build
 This command:
 
 - Builds the Kotlin application inside a secure multi-stage container
-- Fetches and starts Redis
-- Links both services on a shared virtual network
+- Starts PostgreSQL and initializes it from `db/schema.sql`
+- Starts Redis
+- Connects the backend to PostgreSQL at `postgres:5432` on the shared Docker network
 - Runs everything in the background
 
 ### Stop the stack
@@ -225,8 +230,11 @@ When the limit is exceeded, the API returns:
 
 | Variable                | Required | Description                                                                  |
 |-------------------------|----------|------------------------------------------------------------------------------|
-| `SUPABASE_URL`          | Yes      | Your Supabase project URL                                                    |
-| `SUPABASE_KEY`          | Yes      | Supabase service key                                                         |
+| `POSTGRES_DB`           | Yes      | PostgreSQL database name                                                     |
+| `POSTGRES_USER`         | Yes      | PostgreSQL user                                                              |
+| `POSTGRES_PASSWORD`     | Yes      | PostgreSQL password                                                          |
+| `POSTGRES_HOST`         | Yes      | PostgreSQL hostname                                                          |
+| `POSTGRES_PORT`         | Yes      | PostgreSQL port (default: `5432`)                                           |
 | `GEMINI_API_KEY`        | Yes      | Google Gemini API key                                                        |
 | `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID                                                     |
 | `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret                                                 |
@@ -250,7 +258,7 @@ Full example: see `.env.example` in the repository root.
 
 ## Database Schema
 
-The project uses **Supabase** as the database.
+The project uses **PostgreSQL** through Spring Data R2DBC.
 All table definitions, columns, constraints, and foreign key relationships are defined in
 [`db/schema.sql`](db/schema.sql).
 
@@ -287,8 +295,8 @@ originating channel.
 |---------------------------------|-------------------------------|---------------------------------------------|
 | `discord:user:profile:{userId}` | User profile & server layouts | 15 minutes (`RedisKeyTimeout.USER_PROFILE`) |
 
-Uses a cache-aside strategy: the app checks Redis first. On a miss, it fetches from the Discord API or Supabase and
-populates the cache to avoid hitting Discord rate limits.
+Uses a cache-aside strategy: the app checks Redis first. On a miss, it fetches account data from PostgreSQL and calls
+the Discord API, then populates the cache to avoid hitting Discord rate limits.
 
 ---
 
@@ -321,16 +329,15 @@ Before pushing any branches, make sure your code style satisfies baseline static
 
 src/main/kotlin/com/example/dobby
 ├── DobbyApplication.kt # Spring Boot entry point
-├── config/ # Gemini, Supabase, Redis, HTTP clients
+├── config/ # Gemini, Redis, HTTP clients
 ├── controller/ # REST API controllers
 ├── crypto/ # Util functions for token en/decryption
 ├── dto/ # Request / response models
 ├── exception/ # Global error handling
 ├── queue/ # Redis Pub/Sub publishers & subscribers
 ├── llm/ # Gemini API adapter & port interface
-├── repository/ # Supabase data access wrappers
+├── repository/ # Application-facing and R2DBC data access
 ├── service/ # Business logic (RoastService, FactService…)
-├── supabase/ # Supabase client configuration
 └── logging/ # SSE log emitter
 
 ```
@@ -385,10 +392,10 @@ echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
 | Problem                                | Solution                                                                                                                                |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | JAVA_HOME is not set                   | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                                              |
-| Supabase url must not be blank         | Ensure `.env` exists with all Supabase variables filled in                                                                              |
+| PostgreSQL connection refused          | Verify PostgreSQL is running and check the `POSTGRES_*` variables                                                                         |
 | Gemini prompt file not found           | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
 | Redis connection refused               | Verify Redis is running on the configured host/port; check `REDIS_HOST`, `REDIS_PORT` and `REDIS_PASSWORD`                              |
-| Facts not appearing in roasts          | Confirm `discord_user_id` matches the message author, `guild_id` matches the request, and the Supabase table relationship is configured |
+| Facts not appearing in roasts          | Confirm `discord_user_id` and `guild_id` match the stored PostgreSQL profile                                                           |
 | JWT rejected / 401 errors              | Check `JWT_SECRET` matches across services and that `JWT_EXPIRATION` is set correctly                                                   |
 | Missing env variables                  | Run `cp .env.example .env` and fill in all required fields                                                                              |
 | Gemini model unavailable               | Flash models fail over to backups automatically with a 15-minute cooldown per model                                                     |

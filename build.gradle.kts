@@ -9,7 +9,6 @@ plugins {
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
-var supabaseVersion = "3.6.0"
 
 java {
     toolchain {
@@ -43,10 +42,12 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:$supabaseVersion")
-    implementation("io.github.jan-tennert.supabase:auth-kt:$supabaseVersion")
-    implementation("io.github.jan-tennert.supabase:storage-kt:$supabaseVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    runtimeOnly("org.postgresql:r2dbc-postgresql")
+
     implementation("io.ktor:ktor-client-cio:3.0.0")
+    implementation("io.ktor:ktor-client-content-negotiation:3.0.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -54,6 +55,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:3.0.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
     mockitoAgent("org.mockito:mockito-core:5.23.0") { isTransitive = false }
 }
 

@@ -18,6 +18,29 @@ services:
       start_period: 5s
     restart: unless-stopped
 
+
+  postgres:
+    image: postgres:17
+    container_name: dobby-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dobby-network
+    restart: unless-stopped
+
+
   backend:
     build:
       context: .
@@ -30,8 +53,11 @@ services:
     environment:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POSTGRES_HOST=postgres
     depends_on:
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/api/v1/" ]
@@ -43,9 +69,12 @@ services:
       - dobby-network
     restart: unless-stopped
 
+
 networks:
   dobby-network:
     driver: bridge
 
+
 volumes:
   redis_data:
+  postgres_data:

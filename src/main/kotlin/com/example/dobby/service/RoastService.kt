@@ -72,7 +72,7 @@ class RoastService(
                         "🤖 Memory vault locked out! I'm struggling to read the database right now."
 
                     is DobbyException.NetworkTimeoutException ->
-                        "⏳ Supabase was sleeping and didn't wake up in time. Try roaring at me again!"
+                        "⏳ The database did not respond in time. Try roaring at me again!"
 
                     is DobbyException.AiModelException ->
                         "🤖 My brain got scrambled while talking to the AI. The roast got lost in translation!"
@@ -137,12 +137,17 @@ class RoastService(
         guildId: String,
     ): Map<String, List<String>> {
         val userIds = extractUniqueUserIds(messages)
-        val facts = mutableMapOf<String, List<String>>()
-        for (userId in userIds) {
-            val userFacts = userRepository.findProfile(userId, guildId)
-            facts[userFacts?.discordUserId ?: userId] = userFacts?.facts?.map { it.factText } ?: emptyList()
+        val profilesByUserId =
+            userRepository
+                .findProfilesWithFacts(userIds, guildId)
+                .associateBy { it.discordUserId }
+
+        return userIds.associateWith { userId ->
+            profilesByUserId[userId]
+                ?.facts
+                ?.map { it.factText }
+                .orEmpty()
         }
-        return facts
     }
 
     private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> =

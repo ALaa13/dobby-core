@@ -4,14 +4,22 @@ sealed class DobbyException(
     message: String,
     cause: Throwable? = null,
 ) : RuntimeException(message, cause) {
-    // Database-specific errors (Supabase connection issues, pool exhaustion)
+    // Database-specific errors (connection issues, pool exhaustion)
     class DatabaseException(
         message: String,
         sqlState: String? = null,
         cause: Throwable? = null,
-    ) : DobbyException("Database Failure: $message\n $sqlState", cause)
+    ) : DobbyException(
+            buildString {
+                append("Database Failure: $message")
+                if (sqlState != null) {
+                    append("\n $sqlState")
+                }
+            },
+            cause,
+        )
 
-    // Network Timeouts (Supabase cold starts, API dropouts)
+    // Network timeouts (external service or database timeouts)
     class NetworkTimeoutException(
         message: String,
         targetService: String,

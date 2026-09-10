@@ -24,7 +24,7 @@ class DiscordAccountService(
                 discordUserId,
                 encryptedTokenBase64,
             )
-        log.info("Saving Discord account for user ID: $discordUserId with encrypted token: $encryptedTokenBase64")
+        log.info("Saving Discord account for user ID: $discordUserId")
         discordAccountRepository.saveDiscordUser(account)
     }
 }

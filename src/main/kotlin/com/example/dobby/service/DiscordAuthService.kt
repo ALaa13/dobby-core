@@ -85,7 +85,7 @@ class DiscordAuthService(
         val querySegment = if (queryValue.contains("=")) queryValue else "token=$queryValue"
         val delimiter = if (baseUrl.contains("?")) "&" else "?"
         val uri = URI.create("$baseUrl$delimiter$querySegment")
-        log.info("Generated redirect: $uri")
+        log.info("Generated authentication redirect")
         return uri
     }
 }

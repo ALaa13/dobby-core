@@ -75,6 +75,6 @@ class FactService(
 
     suspend fun resetGuildFacts(guildId: String) {
         log.info("Resetting all guild facts for guild $guildId")
-        userProfileRepository.deleteAllByGuildId(guildId)
+        userFactRepository.deleteFactsByGuildId(guildId)
     }
 }
