@@ -21,14 +21,14 @@ class PromptLoaderService(
         return try {
             val path = Paths.get(promptFilePath).toAbsolutePath()
             if (!Files.exists(path)) {
-                logger.error("Gemini prompt file not found at $path; using default prompt.")
+                logger.error("AI prompt file not found at $path; using default prompt.")
                 defaultPrompt
             } else {
-                logger.info("Loading Gemini prompt from $path")
+                logger.info("Loading AI prompt from $path")
                 Files.readString(path)
             }
         } catch (e: Exception) {
-            logger.error("Failed to load Gemini prompt from $promptFilePath: ${e.message}; using default.")
+            logger.error("Failed to load AI prompt from $promptFilePath: ${e.message}; using default.")
             defaultPrompt
         }
     }

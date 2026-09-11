@@ -26,7 +26,7 @@ sealed class DobbyException(
         cause: Throwable? = null,
     ) : DobbyException("Network timeout communicating with $targetService: $message", cause)
 
-    // AI model failures (Gemini API errors, response parsing issues)
+    // AI model failures (provider errors, response parsing issues)
     class AiModelException(
         message: String,
         targetService: String,

@@ -12,9 +12,9 @@ import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
 
 @Service
-class GeminiService(
+class AiRoastService(
     private val appProperties: AppProperties,
-    private val openApi: LlmApiPort,
+    private val llmApi: LlmApiPort,
     private val promptLoader: PromptLoaderService,
 ) {
     suspend fun generateRoast(
@@ -27,10 +27,14 @@ class GeminiService(
 
         val response =
             try {
-                log.info("Using ChatGPT model: $model for roasting")
-                openApi.generate(model, fullPrompt)
+                log.info("Using AI model: $model for roasting")
+                llmApi.generate(model, fullPrompt)
             } catch (e: Exception) {
-                throw DobbyException.AiModelException("AI model $ failed: ${e.message}", "Gemini Service", e)
+                throw DobbyException.AiModelException(
+                    message = "AI model $model failed: ${e.message}",
+                    targetService = "AiRoastService",
+                    cause = e,
+                )
             }
         return parseAndMapResponse(response, persona)
     }
@@ -41,8 +45,8 @@ class GeminiService(
     ): RoastResult {
         if (jsonText.isNullOrBlank()) {
             throw DobbyException.AiModelException(
-                message = "Received an empty or null payload response from Gemini.",
-                targetService = "GeminiRoastService",
+                message = "Received an empty or null payload from the AI model.",
+                targetService = "AiRoastService",
             )
         }
 
@@ -70,10 +74,10 @@ class GeminiService(
                     },
             )
         } catch (e: Exception) {
-            log.error("Failed to parse Gemini JSON output. Raw output was: $jsonText", e)
+            log.error("Failed to parse AI roast JSON output. Raw output was: $jsonText", e)
             throw DobbyException.AiModelException(
-                message = "Gemini returned invalid or malformed JSON structure.",
-                targetService = "GeminiRoastService",
+                message = "AI model returned invalid or malformed JSON structure.",
+                targetService = "AiRoastService",
                 cause = e,
             )
         }

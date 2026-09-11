@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 import kotlin.streams.asSequence
 
 @Component
-class OpenApiAdapter(
+class OpenAiApiAdapter(
     private val client: OpenAIClient,
 ) : LlmApiPort {
     override suspend fun generate(

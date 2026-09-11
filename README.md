@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
 A Kotlin/Spring Boot backend service that generates AI-powered roasts for **Discord** and a **Web Dashboard**. It
-accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via Google Gemini, and
+accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via OpenAI, and
 delivers results in real-time via **Redis Pub/Sub**.
 
 ![Dobby Dashboard Demo](./src/main/resources/assets/Demo.png)
@@ -32,7 +32,7 @@ Discord Bot / Web Dashboard
          ▼
 ┌─────────────────────┐
 │   Dobby Backend     │  ──── Fetch user facts ──▶  PostgreSQL
-│   (Spring Boot)     │  ──── Generate roast  ──▶  Google Gemini
+│   (Spring Boot)     │  ──── Generate roast  ──▶  OpenAI
 └─────────────────────┘
          │
          │  Publish to Redis channel: roast-delivery
@@ -49,7 +49,7 @@ Discord Bot / Web Dashboard
 1. Client sends chat history to `POST /api/v1/roast`
 2. Backend responds immediately with `202 Accepted` (job is queued)
 3. Service fetches stored user facts from PostgreSQL for context
-4. Gemini generates a personalized roast asynchronously
+4. OpenAI generates a personalized roast asynchronously
 5. Result is published to the `roast-delivery` Redis channel
 6. Discord bot (or other consumers) receive and deliver it in real-time
 
@@ -61,7 +61,7 @@ Discord Bot / Web Dashboard
 |---------------|-----------------------------------------------------|
 | Language      | Kotlin 2.2 on Java 21                               |
 | Framework     | Spring Boot 4.0 with virtual threads                |
-| AI            | Google Gemini API                                   |
+| AI            | OpenAI Responses API                                |
 | Database      | PostgreSQL via Spring Data R2DBC                    |
 | Messaging     | Redis Pub/Sub                                       |
 | Build         | Gradle (wrapper included — no local install needed) |
@@ -73,7 +73,7 @@ Discord Bot / Web Dashboard
 
 - **Java 21** — verify with `java -version`
 - **PostgreSQL and Redis** — local or remote instances
-- **API credentials** — Google Gemini and Discord OAuth2 (see [Configuration](#configuration))
+- **API credentials** — OpenAI and Discord OAuth2 (see [Configuration](#configuration))
 
 > **Note:** Gradle is bundled via the wrapper (`./gradlew`). You do not need to install it separately.
 
@@ -235,7 +235,8 @@ When the limit is exceeded, the API returns:
 | `POSTGRES_PASSWORD`     | Yes      | PostgreSQL password                                                          |
 | `POSTGRES_HOST`         | Yes      | PostgreSQL hostname                                                          |
 | `POSTGRES_PORT`         | Yes      | PostgreSQL port (default: `5432`)                                           |
-| `GEMINI_API_KEY`        | Yes      | Google Gemini API key                                                        |
+| `OPENAI_API_KEY`        | Yes      | OpenAI API key                                                               |
+| `OPENAI_MODEL`          | Yes      | OpenAI model used for roast generation                                       |
 | `DISCORD_CLIENT_ID`     | Yes      | Discord OAuth2 client ID                                                     |
 | `DISCORD_CLIENT_SECRET` | Yes      | Discord OAuth2 client secret                                                 |
 | `DISCORD_REDIRECT_URI`  | Yes      | OAuth2 redirect URI (e.g. `http://localhost:8080/login/oauth2/code/discord`) |
@@ -271,12 +272,12 @@ Channel constants, cache key patterns, and TTL values are defined in [
 
 ### Pub/Sub: `roast-delivery`
 
-`RoastService` publishes once Gemini returns a result; the Discord bot subscribes and delivers the message to the
+`RoastService` publishes once the AI model returns a result; the Discord bot subscribes and delivers the message to the
 originating channel.
 
 | Role       | Component      | Behavior                                                    |
 |------------|----------------|-------------------------------------------------------------|
-| Publisher  | `RoastService` | Publishes after Gemini returns the result                   |
+| Publisher  | `RoastService` | Publishes after the AI model returns the result             |
 | Subscriber | Discord Bot    | Receives the message and delivers it to the Discord channel |
 
 **Message format**
@@ -329,13 +330,13 @@ Before pushing any branches, make sure your code style satisfies baseline static
 
 src/main/kotlin/com/example/dobby
 ├── DobbyApplication.kt # Spring Boot entry point
-├── config/ # Gemini, Redis, HTTP clients
+├── config/ # OpenAI, Redis, HTTP clients
 ├── controller/ # REST API controllers
 ├── crypto/ # Util functions for token en/decryption
 ├── dto/ # Request / response models
 ├── exception/ # Global error handling
 ├── queue/ # Redis Pub/Sub publishers & subscribers
-├── llm/ # Gemini API adapter & port interface
+├── llm/ # OpenAI API adapter & provider-neutral port interface
 ├── repository/ # Application-facing and R2DBC data access
 ├── service/ # Business logic (RoastService, FactService…)
 └── logging/ # SSE log emitter
@@ -393,12 +394,12 @@ echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | JAVA_HOME is not set                   | Install Java 21 and set `export JAVA_HOME=/path/to/jdk-21`                                                                              |
 | PostgreSQL connection refused          | Verify PostgreSQL is running and check the `POSTGRES_*` variables                                                                         |
-| Gemini prompt file not found           | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
+| AI prompt file not found               | Create `ai_prompt.txt` in the repo root (copy from `ai_prompt.txt.example`)                                                             |
 | Redis connection refused               | Verify Redis is running on the configured host/port; check `REDIS_HOST`, `REDIS_PORT` and `REDIS_PASSWORD`                              |
 | Facts not appearing in roasts          | Confirm `discord_user_id` and `guild_id` match the stored PostgreSQL profile                                                           |
 | JWT rejected / 401 errors              | Check `JWT_SECRET` matches across services and that `JWT_EXPIRATION` is set correctly                                                   |
 | Missing env variables                  | Run `cp .env.example .env` and fill in all required fields                                                                              |
-| Gemini model unavailable               | Flash models fail over to backups automatically with a 15-minute cooldown per model                                                     |
+| OpenAI request fails                   | Verify `OPENAI_API_KEY` and `OPENAI_MODEL` are configured correctly                                                                     |
 | AI responses not parsing / JSON errors | You modified the "IMPORTANT: Output Format Specification" section in ai_prompt.txt. Restore it from the example file.                   |
 
 ---
