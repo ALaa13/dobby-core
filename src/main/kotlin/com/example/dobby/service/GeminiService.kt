@@ -1,20 +1,20 @@
 package com.example.dobby.service
 
+import com.example.dobby.AppProperties
 import com.example.dobby.config.log
 import com.example.dobby.dto.discord.DiscordChatMessage
-import com.example.dobby.dto.roast.GeminiRoastResponse
+import com.example.dobby.dto.roast.RoastGenerationResponse
 import com.example.dobby.dto.roast.RoastResult
 import com.example.dobby.dto.roast.TargetDamage
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.llm.GeminiApiPort
-import com.example.dobby.llm.GeminiModelManager
+import com.example.dobby.llm.LlmApiPort
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
 
 @Service
 class GeminiService(
-    private val geminiApi: GeminiApiPort,
-    private val geminiModelManager: GeminiModelManager,
+    private val appProperties: AppProperties,
+    private val openApi: LlmApiPort,
     private val promptLoader: PromptLoaderService,
 ) {
     suspend fun generateRoast(
@@ -23,17 +23,16 @@ class GeminiService(
         memoryContext: String,
     ): RoastResult {
         val fullPrompt = buildFullPrompt(messages, persona, memoryContext)
-        val aiModel = geminiModelManager.getBestModel()
+        val model = appProperties.llm.model
 
         val response =
             try {
-                log.info("Using Gemini model: $aiModel for roasting")
-                geminiApi.generateContent(aiModel, fullPrompt)
+                log.info("Using ChatGPT model: $model for roasting")
+                openApi.generate(model, fullPrompt)
             } catch (e: Exception) {
-                geminiModelManager.reportModelFailure(aiModel)
-                throw DobbyException.AiModelException("AI model $aiModel failed: ${e.message}", "Gemini Service", e)
+                throw DobbyException.AiModelException("AI model $ failed: ${e.message}", "Gemini Service", e)
             }
-        return parseAndMapResponse(response.text(), persona)
+        return parseAndMapResponse(response, persona)
     }
 
     private fun parseAndMapResponse(
@@ -56,7 +55,7 @@ class GeminiService(
                 .trim()
 
         try {
-            val parsedDto = Json.decodeFromString<GeminiRoastResponse>(cleanJson)
+            val parsedDto = Json.decodeFromString<RoastGenerationResponse>(cleanJson)
 
             return RoastResult(
                 text = parsedDto.roastText,

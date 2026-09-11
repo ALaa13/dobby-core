@@ -2,8 +2,7 @@ package com.example.dobby.service
 
 import com.example.dobby.dto.discord.DiscordChatMessage
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.llm.GeminiApiPort
-import com.example.dobby.llm.GeminiModelManager
+import com.example.dobby.llm.LlmApiPort
 import com.google.genai.types.GenerateContentResponse
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 
 class GeminiServiceTest {
-    private val geminiApi = mockk<GeminiApiPort>()
+    private val geminiApi = mockk<LlmApiPort>()
     private val geminiModelManager = mockk<GeminiModelManager>()
     private val promptLoader = mockk<PromptLoaderService>()
 

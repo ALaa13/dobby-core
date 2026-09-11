@@ -14,7 +14,7 @@ class PromptLoaderService(
     private val defaultPrompt = "You are a roast bot."
 
     fun loadPrompt(): String {
-        val promptFilePath = appProperties.gemini.promptFilePath
+        val promptFilePath = appProperties.llm.promptFilePath
 
         if (promptFilePath.isBlank()) return defaultPrompt
 

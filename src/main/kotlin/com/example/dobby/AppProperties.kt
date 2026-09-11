@@ -5,7 +5,7 @@ import java.time.Duration
 
 @ConfigurationProperties
 data class AppProperties(
-    val gemini: Gemini = Gemini(),
+    val llm: Llm = Llm(),
     val discord: Discord = Discord(),
     val jwt: Jwt = Jwt(),
     val dev: Dev = Dev(),
@@ -13,8 +13,9 @@ data class AppProperties(
     val encryption: Encryption = Encryption(),
     val app: App = App(),
 ) {
-    data class Gemini(
+    data class Llm(
         var apiKey: String = "",
+        var model: String = "",
         var promptFilePath: String = "ai_prompt.txt",
     )
 
