@@ -33,8 +33,8 @@ class DiscordApiService(
         clientId: String,
         clientSecret: String,
         redirectUri: String,
-    ): DiscordTokenResponse {
-        return try {
+    ): DiscordTokenResponse =
+        try {
             log.info("Exchanging authorization code for access token with Discord API Service")
             httpClient
                 .post(DISCORD_TOKEN_URL) {
@@ -57,10 +57,9 @@ class DiscordApiService(
             log.error("Failed to exchange authorization code with Discord", e)
             throw DobbyException.AuthorizationException("Failed to exchange authorization code with Discord", e)
         }
-    }
 
-    suspend fun getUserProfile(accessToken: String): DiscordUser {
-        return try {
+    suspend fun getUserProfile(accessToken: String): DiscordUser =
+        try {
             httpClient
                 .get("$BASE_URL/users/@me") {
                     header("Authorization", "Bearer $accessToken")
@@ -71,7 +70,6 @@ class DiscordApiService(
             log.error("Failed to fetch user profile data from Discord", e)
             throw DobbyException.AuthorizationException("Failed to fetch user profile data from Discord", e)
         }
-    }
 
     suspend fun fetchCompleteUserProfile(discordUserToken: String): DiscordDashboardResponse {
         val userDto = getUserProfile(discordUserToken)

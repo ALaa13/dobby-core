@@ -15,7 +15,5 @@ class CoroutineScopeConfig {
     }
 
     @Bean
-    fun defaultScope(): CoroutineScope {
-        return CoroutineScope(Dispatchers.Default + SupervisorJob())
-    }
+    fun defaultScope(): CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 }

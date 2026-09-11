@@ -19,8 +19,8 @@ class UserProfilePostgresStore(
     suspend fun findByDiscordUserIdAndGuildId(
         discordUserId: String,
         guildId: String,
-    ): UserProfileWithFactsRow? {
-        return databaseCall("Finding user profile") {
+    ): UserProfileWithFactsRow? =
+        databaseCall("Finding user profile") {
             databaseClient
                 .sql(
                     USER_PROFILE_WITH_FACTS_SELECT +
@@ -35,10 +35,9 @@ class UserProfilePostgresStore(
                 .one()
                 .awaitSingleOrNull()
         }
-    }
 
-    suspend fun findAllByGuildId(guildId: String): List<UserProfileWithFactsRow> {
-        return databaseCall("Finding user profiles by guild") {
+    suspend fun findAllByGuildId(guildId: String): List<UserProfileWithFactsRow> =
+        databaseCall("Finding user profiles by guild") {
             databaseClient
                 .sql(
                     USER_PROFILE_WITH_FACTS_SELECT +
@@ -53,7 +52,6 @@ class UserProfilePostgresStore(
                 .collectList()
                 .awaitSingle()
         }
-    }
 
     suspend fun findAllByDiscordUserIdsAndGuildId(
         discordUserIds: Collection<String>,
@@ -90,8 +88,8 @@ class UserProfilePostgresStore(
         guildId: String,
         displayName: String?,
         avatarHash: String?,
-    ): UserProfileEntity {
-        return databaseCall("Inserting user profile") {
+    ): UserProfileEntity =
+        databaseCall("Inserting user profile") {
             databaseClient
                 .sql(INSERT_USER_PROFILE)
                 .bind("discordUserId", discordUserId)
@@ -102,7 +100,6 @@ class UserProfilePostgresStore(
                 .one()
                 .awaitSingle()
         }
-    }
 
     suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
         if (profiles.isEmpty()) return
@@ -145,8 +142,8 @@ class UserProfilePostgresStore(
         }
     }
 
-    private fun Row.toUserProfileWithFactsRow(): UserProfileWithFactsRow {
-        return UserProfileWithFactsRow(
+    private fun Row.toUserProfileWithFactsRow(): UserProfileWithFactsRow =
+        UserProfileWithFactsRow(
             id = requireNotNull(get("id", UUID::class.java)),
             discordUserId = requireNotNull(get("discordUserId", String::class.java)),
             guildId = requireNotNull(get("guildId", String::class.java)),
@@ -156,10 +153,9 @@ class UserProfilePostgresStore(
             updatedAt = get("updatedAt", OffsetDateTime::class.java),
             factsJson = requireNotNull(get("factsJson", String::class.java)),
         )
-    }
 
-    private fun Row.toUserProfileEntity(): UserProfileEntity {
-        return UserProfileEntity(
+    private fun Row.toUserProfileEntity(): UserProfileEntity =
+        UserProfileEntity(
             id = requireNotNull(get("id", UUID::class.java)),
             discordUserId = requireNotNull(get("discord_user_id", String::class.java)),
             guildId = requireNotNull(get("guild_id", String::class.java)),
@@ -168,7 +164,6 @@ class UserProfilePostgresStore(
             createdAt = requireNotNull(get("created_at", OffsetDateTime::class.java)),
             updatedAt = get("updated_at", OffsetDateTime::class.java),
         )
-    }
 
     private companion object {
         val INSERT_USER_PROFILE =

@@ -77,21 +77,19 @@ class LogEmitter(
     private fun safeSend(
         emitter: SseEmitter,
         data: String,
-    ): Boolean {
-        return try {
+    ): Boolean =
+        try {
             emitter.send(SseEmitter.event().data(data))
             true
         } catch (_: IOException) {
             false
         }
-    }
 
-    private fun safeHeartbeat(emitter: SseEmitter): Boolean {
-        return try {
+    private fun safeHeartbeat(emitter: SseEmitter): Boolean =
+        try {
             emitter.send(SseEmitter.event().comment("heartbeat"))
             true
         } catch (_: IOException) {
             false
         }
-    }
 }

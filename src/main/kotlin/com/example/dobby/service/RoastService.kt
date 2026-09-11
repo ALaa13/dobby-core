@@ -150,10 +150,9 @@ class RoastService(
         }
     }
 
-    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> {
-        return messages
+    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> =
+        messages
             .map {
                 it.discordUserId
             }.toSet()
-    }
 }

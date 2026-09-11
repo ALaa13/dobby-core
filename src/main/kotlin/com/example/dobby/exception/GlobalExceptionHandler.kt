@@ -37,14 +37,13 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException::class)
-    fun handleMissingParams(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse> {
-        return ResponseEntity.badRequest().body(
+    fun handleMissingParams(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse> =
+        ResponseEntity.badRequest().body(
             ApiResponse(
                 success = false,
                 message = "Required parameter '${e.parameterName}' is completely missing",
             ),
         )
-    }
 
     @ExceptionHandler(DobbyException::class)
     fun handleDobbyExceptions(e: DobbyException): ResponseEntity<ApiResponse> {

@@ -13,7 +13,5 @@ class LogController(
     private val logService: LogEmitter,
 ) {
     @GetMapping("/stream", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun streamLogs(): SseEmitter {
-        return logService.emitLogs()
-    }
+    fun streamLogs(): SseEmitter = logService.emitLogs()
 }

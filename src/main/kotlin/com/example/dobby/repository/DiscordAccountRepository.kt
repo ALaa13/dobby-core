@@ -9,24 +9,21 @@ import org.springframework.stereotype.Repository
 class DiscordAccountRepository(
     private val discordAccountStore: DiscordAccountPostgresStore,
 ) {
-    suspend fun saveDiscordUser(discordUser: DiscordAccount): DiscordAccount {
-        return discordAccountStore
+    suspend fun saveDiscordUser(discordUser: DiscordAccount): DiscordAccount =
+        discordAccountStore
             .upsert(
                 discordUserId = discordUser.discordUserId,
                 encryptedToken = discordUser.encryptedToken,
             ).toDto()
-    }
 
-    suspend fun findByDiscordUserId(discordUserId: String): DiscordAccount? {
-        return discordAccountStore
+    suspend fun findByDiscordUserId(discordUserId: String): DiscordAccount? =
+        discordAccountStore
             .findByDiscordUserId(discordUserId)
             ?.toDto()
-    }
 
-    private fun DiscordAccountEntity.toDto(): DiscordAccount {
-        return DiscordAccount(
+    private fun DiscordAccountEntity.toDto(): DiscordAccount =
+        DiscordAccount(
             discordUserId = discordUserId,
             encryptedToken = encryptedToken,
         )
-    }
 }

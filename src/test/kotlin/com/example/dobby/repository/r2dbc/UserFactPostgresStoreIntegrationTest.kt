@@ -75,7 +75,5 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
         }
     }
 
-    private fun factsCount(factsJson: String): Int {
-        return "\"fact_text\"".toRegex().findAll(factsJson).count()
-    }
+    private fun factsCount(factsJson: String): Int = "\"fact_text\"".toRegex().findAll(factsJson).count()
 }

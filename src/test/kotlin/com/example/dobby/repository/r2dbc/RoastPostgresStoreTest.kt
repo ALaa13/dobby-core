@@ -86,8 +86,8 @@ class RoastPostgresStoreTest {
         }
     }
 
-    private fun roastResult(): RoastResult {
-        return RoastResult(
+    private fun roastResult(): RoastResult =
+        RoastResult(
             text = "Roast",
             persona = null,
             primaryTargetId = "user-1",
@@ -100,5 +100,4 @@ class RoastPostgresStoreTest {
                     TargetDamage("user-2", "Reason two"),
                 ),
         )
-    }
 }

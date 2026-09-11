@@ -18,14 +18,13 @@ class HttpClientConfig(
     private val json: Json,
 ) {
     @Bean
-    fun httpClient(): HttpClient {
-        return HttpClient(CIO) {
+    fun httpClient(): HttpClient =
+        HttpClient(CIO) {
             configureDobbyJson(json)
             install(HttpRequestRetry) {
                 applySharedRetrySettings(this)
             }
         }
-    }
 }
 
 fun KtorClientConfig<*>.configureDobbyJson(json: Json) {

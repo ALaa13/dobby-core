@@ -11,8 +11,8 @@ private val databaseLog = LoggerFactory.getLogger("DatabasePersistence")
 internal suspend fun <T> databaseCall(
     contextMessage: String,
     block: suspend () -> T,
-): T {
-    return try {
+): T =
+    try {
         block()
     } catch (exception: DobbyException) {
         throw exception
@@ -38,4 +38,3 @@ internal suspend fun <T> databaseCall(
         databaseLog.error("Unexpected failure during {}", contextMessage, exception)
         throw DobbyException.GeneralException("Unexpected failure during: $contextMessage", exception)
     }
-}

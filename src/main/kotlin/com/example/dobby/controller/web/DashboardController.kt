@@ -29,9 +29,7 @@ class DashboardController(
         @NotBlank
         @Pattern(regexp = DISCORD_ID_REGEX, message = DISCORD_ID_MSG)
         guildId: String,
-    ): List<UserProfileResponse> {
-        return dashboardService.getAllFactsByGuildId(guildId)
-    }
+    ): List<UserProfileResponse> = dashboardService.getAllFactsByGuildId(guildId)
 
     @DeleteMapping("facts/{factId}")
     suspend fun deleteGuildFact(
@@ -67,7 +65,5 @@ class DashboardController(
         @NotBlank
         @Pattern(regexp = DISCORD_ID_REGEX, message = DISCORD_ID_MSG)
         guildId: String,
-    ): List<RoastLogDbResponse> {
-        return dashboardService.getAllRoastByGuildId(guildId)
-    }
+    ): List<RoastLogDbResponse> = dashboardService.getAllRoastByGuildId(guildId)
 }
