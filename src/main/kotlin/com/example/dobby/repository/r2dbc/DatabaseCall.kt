@@ -17,8 +17,10 @@ internal suspend fun <T> databaseCall(
     } catch (exception: DobbyException) {
         throw exception
     } catch (exception: CancellationException) {
+        // Cancellation controls coroutine lifecycles and must never be translated into an application failure.
         throw exception
     } catch (exception: DataAccessException) {
+        // Spring wraps most driver failures; retain the nested SQLSTATE when the R2DBC cause exposes it.
         databaseLog.error("{} failed", contextMessage, exception)
         throw DobbyException.DatabaseException(
             contextMessage,
@@ -26,6 +28,7 @@ internal suspend fun <T> databaseCall(
             cause = exception,
         )
     } catch (exception: R2dbcException) {
+        // Translate unwrapped driver failures at the persistence boundary as well.
         databaseLog.error("{} failed", contextMessage, exception)
         throw DobbyException.DatabaseException(contextMessage, cause = exception)
     } catch (exception: IllegalArgumentException) {

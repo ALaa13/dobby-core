@@ -18,7 +18,7 @@ class UserFactRepositoryTest {
     private val repository = UserFactRepository(userFactStore)
 
     @Test
-    fun `saveFact delegates to PostgreSQL and maps the returned entity`() =
+    fun `saveFact delegates to PostgreSQL and maps the returned entity`() {
         runTest {
             val profileId = UUID.fromString("10000000-0000-0000-0000-000000000001")
             val factId = UUID.fromString("20000000-0000-0000-0000-000000000001")
@@ -52,9 +52,10 @@ class UserFactRepositoryTest {
             assertEquals("Likes socks", result.factText)
             assertEquals(createdAt.toString(), result.createdAt)
         }
+    }
 
     @Test
-    fun `delete methods delegate their string identifiers unchanged`() =
+    fun `delete methods delegate their string identifiers unchanged`() {
         runTest {
             coEvery { userFactStore.deleteById("fact-id") } returns 1
             coEvery { userFactStore.deleteAllByProfileId("profile-id") } returns 2
@@ -68,4 +69,5 @@ class UserFactRepositoryTest {
             coVerify(exactly = 1) { userFactStore.deleteAllByProfileId("profile-id") }
             coVerify(exactly = 1) { userFactStore.deleteAllByGuildId("guild-id") }
         }
+    }
 }

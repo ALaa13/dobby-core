@@ -17,7 +17,7 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
     private val factStore by lazy { UserFactPostgresStore(databaseClient) }
 
     @Test
-    fun `insert lets PostgreSQL generate identity and aggregates facts in profile reads`() =
+    fun `insert lets PostgreSQL generate identity and aggregates facts in profile reads`() {
         runTest {
             resetDatabase()
             val profile = profileStore.insert("user-1", "guild-1", "Dobby", "avatar-1")
@@ -32,9 +32,10 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             assertContains(found.factsJson, "Second fact")
             assertEquals(listOf(profileId), profileStore.findAllByGuildId("guild-1").map { it.id })
         }
+    }
 
     @Test
-    fun `batch upsert updates mutable fields and timestamp while preserving identity and creation time`() =
+    fun `batch upsert updates mutable fields and timestamp while preserving identity and creation time`() {
         runTest {
             resetDatabase()
             profileStore.upsertProfiles(
@@ -59,9 +60,10 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-2"))
             assertEquals(2, profileStore.findAllByGuildId("guild-1").size)
         }
+    }
 
     @Test
-    fun `bulk lookup returns requested guild profiles with aggregated facts`() =
+    fun `bulk lookup returns requested guild profiles with aggregated facts`() {
         runTest {
             resetDatabase()
             val requested = profileStore.insert("user-1", "guild-1", "Dobby", null)
@@ -78,11 +80,12 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
             assertEquals(listOf("user-1"), results.map { it.discordUserId })
             assertContains(results.single().factsJson, "Remember me")
         }
+    }
 
     private fun profile(
         userId: String,
         guildId: String,
         displayName: String?,
         avatarHash: String?,
-    ) = UserProfileCreateRequest(userId, guildId, displayName, avatarHash)
+    ): UserProfileCreateRequest = UserProfileCreateRequest(userId, guildId, displayName, avatarHash)
 }

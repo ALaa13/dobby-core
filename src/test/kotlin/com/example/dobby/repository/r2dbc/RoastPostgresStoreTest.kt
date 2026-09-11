@@ -54,7 +54,7 @@ class RoastPostgresStoreTest {
     }
 
     @Test
-    fun `saveRoastResult commits roast and targets together`() =
+    fun `saveRoastResult commits roast and targets together`() {
         runTest {
             every { targetFetchSpec.rowsUpdated() } returns Mono.just(2L)
 
@@ -68,9 +68,10 @@ class RoastPostgresStoreTest {
             verify { targetExecuteSpec.bind("roastId0", roastId) }
             verify { targetExecuteSpec.bind("roastId1", roastId) }
         }
+    }
 
     @Test
-    fun `saveRoastResult rolls back the roast when target insertion fails`() =
+    fun `saveRoastResult rolls back the roast when target insertion fails`() {
         runTest {
             every {
                 targetFetchSpec.rowsUpdated()
@@ -83,6 +84,7 @@ class RoastPostgresStoreTest {
             verify(exactly = 0) { transactionManager.commit(transaction) }
             verify(exactly = 1) { transactionManager.rollback(transaction) }
         }
+    }
 
     private fun roastResult(): RoastResult =
         RoastResult(

@@ -58,6 +58,7 @@ class UserFactPostgresStore(
 
     suspend fun deleteAllByGuildId(guildId: String): Long =
         databaseCall("Deleting user facts by guild") {
+            // Delete only fact rows; profiles remain because historical roast targets still reference their identities.
             databaseClient
                 .sql(
                     """

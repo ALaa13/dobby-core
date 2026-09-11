@@ -21,7 +21,6 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain,
     ) {
         val authHeader = request.getHeader("Authorization")
-        // Check if the header has a valid Bearer token format
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
             return
@@ -30,15 +29,14 @@ class JwtAuthenticationFilter(
         try {
             val discordUserId = jwtService.validateTokenAndGetSubject(token)
             if (SecurityContextHolder.getContext().authentication == null) {
-                // Create Spring Security authentication token
+                // Downstream controllers use authentication.name as the trusted Discord user ID.
                 val authToken =
                     UsernamePasswordAuthenticationToken(
-                        discordUserId, // This becomes authentication.name in your controller
+                        discordUserId,
                         null,
                         listOf(SimpleGrantedAuthority("ROLE_USER")),
                     )
                 authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-                // Inject it into the Security Context!
                 SecurityContextHolder.getContext().authentication = authToken
             }
         } catch (e: Exception) {

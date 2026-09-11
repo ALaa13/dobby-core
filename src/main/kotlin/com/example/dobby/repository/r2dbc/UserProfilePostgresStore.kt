@@ -105,6 +105,7 @@ class UserProfilePostgresStore(
         if (profiles.isEmpty()) return
 
         databaseCall("Batch upserting user profiles") {
+            // Sync the chat snapshot in one bound statement to avoid a database round-trip per profile.
             val valuesClause =
                 profiles.indices.joinToString(",\n") { index ->
                     "(:discordUserId$index, :guildId$index, :displayName$index, :avatarHash$index)"

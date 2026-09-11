@@ -29,10 +29,8 @@ class FactServiceTest {
         factService = FactService(userProfileRepository, userFactRepository)
     }
 
-    // saveFact() Tests
-
     @Test
-    fun `saveFact should create a new profile if one does not exist and then save the fact`() =
+    fun `saveFact should create a new profile if one does not exist and then save the fact`() {
         runTest {
             val request =
                 DiscordFactRequest(
@@ -90,9 +88,10 @@ class FactServiceTest {
                 )
             }
         }
+    }
 
     @Test
-    fun `saveFact should reuse existing profile if it exists and then save the fact`() =
+    fun `saveFact should reuse existing profile if it exists and then save the fact`() {
         runTest {
             val request =
                 DiscordFactRequest(
@@ -133,11 +132,10 @@ class FactServiceTest {
             coVerify(exactly = 0) { userProfileRepository.saveProfile(any()) }
             coVerify(exactly = 1) { userFactRepository.saveFact(any()) }
         }
-
-    // getFacts() Tests
+    }
 
     @Test
-    fun `getFacts should return list of facts when profile exists`() =
+    fun `getFacts should return list of facts when profile exists`() {
         runTest {
             val mockFacts =
                 listOf(
@@ -177,9 +175,10 @@ class FactServiceTest {
             assertEquals(2, result.size)
             assertEquals("Fact 1", result[0].factText)
         }
+    }
 
     @Test
-    fun `getFacts should return empty list when profile does not exist`() =
+    fun `getFacts should return empty list when profile does not exist`() {
         runTest {
             coEvery { userProfileRepository.findProfile("any-user", "any-guild") } returns null
 
@@ -187,11 +186,10 @@ class FactServiceTest {
 
             assertTrue(result.isEmpty())
         }
-
-    // resetFacts() Tests
+    }
 
     @Test
-    fun `resetFacts should delete facts when profile exists`() =
+    fun `resetFacts should delete facts when profile exists`() {
         runTest {
             val profile =
                 UserProfileResponse(
@@ -211,9 +209,10 @@ class FactServiceTest {
 
             coVerify(exactly = 1) { userFactRepository.deleteFactsByProfileId("1") }
         }
+    }
 
     @Test
-    fun `resetFacts should throw ProfileNotFoundException when profile does not exist`() =
+    fun `resetFacts should throw ProfileNotFoundException when profile does not exist`() {
         runTest {
             coEvery { userProfileRepository.findProfile("fake-user", "fake-guild") } returns null
 
@@ -223,9 +222,10 @@ class FactServiceTest {
 
             coVerify(exactly = 0) { userFactRepository.deleteFactsByProfileId(any()) }
         }
+    }
 
     @Test
-    fun `resetGuildFacts deletes facts without deleting profiles`() =
+    fun `resetGuildFacts deletes facts without deleting profiles`() {
         runTest {
             coEvery { userFactRepository.deleteFactsByGuildId("guild-456") } returns Unit
 
@@ -233,4 +233,5 @@ class FactServiceTest {
 
             coVerify(exactly = 1) { userFactRepository.deleteFactsByGuildId("guild-456") }
         }
+    }
 }

@@ -29,11 +29,10 @@ class LogEmitter(
                     val currentCount = activeConnections.incrementAndGet()
                     log.info("New client dashboard connected. Active stream counts: $currentCount")
 
-                    // send an immediate heartbeat to keep the connection alive while we wait for the first log line to arrive.
+                    // Prime the SSE connection so proxies do not close an idle stream before the first log line.
                     safeHeartbeat(emitter)
                     launch {
-                        // send a heartbeat every 15 seconds to keep the connection alive and detect if the client has disconnected.
-                        // If the client is gone, complete the emitter and cancel this coroutine.
+                        // A failed heartbeat is also the disconnect signal because SseEmitter has no reliable polling API.
                         while (isActive) {
                             delay(15_000.milliseconds)
 
@@ -43,7 +42,6 @@ class LogEmitter(
                             }
                         }
                     }
-                    // collect log lines from the LogAppender and send them to the client.
                     LogAppender.logFlow.collect { logLine ->
                         if (!safeSend(emitter, logLine)) {
                             emitter.complete()
@@ -51,7 +49,7 @@ class LogEmitter(
                         }
                     }
                 } catch (_: CancellationException) {
-                    // normal shutdown
+                    // Cancellation is the expected shutdown path when the client disconnects or the scope stops.
                 } catch (e: Exception) {
                     log.error("Unexpected error in log stream", e)
                     runCatching {

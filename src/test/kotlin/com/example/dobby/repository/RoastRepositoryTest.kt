@@ -21,7 +21,7 @@ class RoastRepositoryTest {
     private val repository = RoastRepository(roastStore, Json)
 
     @Test
-    fun `getGuildRoasts maps aggregated targets and nested profiles`() =
+    fun `getGuildRoasts maps aggregated targets and nested profiles`() {
         runTest {
             val roastId = UUID.fromString("30000000-0000-0000-0000-000000000001")
             coEvery { roastStore.findAllByGuildId("guild-1") } returns
@@ -65,9 +65,10 @@ class RoastRepositoryTest {
                     ?.displayName,
             )
         }
+    }
 
     @Test
-    fun `saveRoastResult delegates the unchanged service model`() =
+    fun `saveRoastResult delegates the unchanged service model`() {
         runTest {
             val result =
                 RoastResult(
@@ -87,4 +88,5 @@ class RoastRepositoryTest {
                 roastStore.saveRoastResult("guild-1", "channel-1", result)
             }
         }
+    }
 }

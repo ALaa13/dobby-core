@@ -17,6 +17,7 @@ class DiscordAccountPostgresStore(
         encryptedToken: String,
     ): DiscordAccountEntity =
         databaseCall("Saving Discord account") {
+            // Conflict updates rotate the encrypted credential without duplicating the Discord account identity.
             databaseClient
                 .sql(
                     """

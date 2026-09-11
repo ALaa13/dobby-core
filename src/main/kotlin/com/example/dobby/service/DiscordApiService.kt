@@ -87,7 +87,7 @@ class DiscordApiService(
                 throw DobbyException.AuthorizationException("Failed to fetch server listings from Discord", e)
             }
 
-        // Bitwise permission filtering for structural management context (0x8 = Admin)
+        // Discord encodes permissions as a decimal string; the admin bit is 0x8 even when other flags are present.
         val managedGuilds =
             guildsList.filter { guild ->
                 guild.owner || (guild.permissions.toLongOrNull()?.let { (it and 0x8L) != 0L } ?: false)

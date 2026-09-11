@@ -27,8 +27,10 @@ class RoastPostgresStore(
         result: RoastResult,
     ) {
         databaseCall("Saving roast log and targets") {
+            // The roast and every target row commit atomically so partial history cannot be persisted.
             transactionalOperator.executeAndAwait {
                 val roastId = insertRoast(guildId, channelId, result)
+                // Reuse the generated parent ID for every target in the same transaction.
                 insertTargets(roastId, guildId, result.targets)
             }
         }
@@ -77,6 +79,7 @@ class RoastPostgresStore(
     ) {
         if (targets.isEmpty()) return
 
+        // One bound multi-row statement avoids a database round-trip per target.
         val valuesClause =
             targets.indices.joinToString(",\n") { index ->
                 "(:roastId$index, :discordUserId$index, :guildId$index, :damageReason$index)"

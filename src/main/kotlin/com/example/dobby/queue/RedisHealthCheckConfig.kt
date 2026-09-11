@@ -14,7 +14,7 @@ import kotlin.system.exitProcess
 @Profile("!test")
 class RedisHealthCheckConfig {
     @Bean
-    fun checkRedisConnection(connectionFactory: RedisConnectionFactory) =
+    fun checkRedisConnection(connectionFactory: RedisConnectionFactory): CommandLineRunner =
         CommandLineRunner {
             try {
                 connectionFactory.connection.use { connection ->

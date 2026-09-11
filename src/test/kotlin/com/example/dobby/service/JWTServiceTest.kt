@@ -34,7 +34,7 @@ class JWTServiceTest {
     }
 
     @Test
-    fun `generateJWTToken should produce a valid, signed compact JWT string`() =
+    fun `generateJWTToken should produce a valid, signed compact JWT string`() {
         runTest {
             val subject = "user-123"
             val claim = "SomeUser"
@@ -43,7 +43,7 @@ class JWTServiceTest {
 
             assertNotNull(token)
 
-            // Let's decode it manually to prove the service packed everything inside correctly
+            // Verify the signed claims independently instead of trusting the service's own parsing path.
             val verifier =
                 JWT
                     .require(Algorithm.HMAC256(testSecret))
@@ -54,11 +54,11 @@ class JWTServiceTest {
             assertEquals("user-123", decoded.subject)
             assertEquals("SomeUser", decoded.getClaim("username").asString())
         }
+    }
 
     @Test
-    fun `validateTokenAndGetSubject should return correct subject when token is valid`() =
+    fun `validateTokenAndGetSubject should return correct subject when token is valid`() {
         runTest {
-            // Create a real signed token using our test parameters to feed into the validator
             val expectedSubject = "kernel-panic-master"
             val algorithm = Algorithm.HMAC256(testSecret)
             val validToken =
@@ -73,11 +73,11 @@ class JWTServiceTest {
 
             assertEquals(expectedSubject, extractedSubject)
         }
+    }
 
     @Test
-    fun `validateTokenAndGetSubject should throw JWTException when signature is invalid`() =
+    fun `validateTokenAndGetSubject should throw JWTException when signature is invalid`() {
         runTest {
-            // Sign a token using a completely wrong rogue secret key
             val rogueAlgorithm = Algorithm.HMAC256("wrong-and-fraudulent-secret-key-123")
             val maliciousToken =
                 JWT
@@ -90,9 +90,10 @@ class JWTServiceTest {
                 jwtService.validateTokenAndGetSubject(maliciousToken)
             }
         }
+    }
 
     @Test
-    fun `validateTokenAndGetSubject should throw JWTException when issuer mismatches`() =
+    fun `validateTokenAndGetSubject should throw JWTException when issuer mismatches`() {
         runTest {
             val algorithm = Algorithm.HMAC256(testSecret)
             val badIssuerToken =
@@ -106,4 +107,5 @@ class JWTServiceTest {
                 jwtService.validateTokenAndGetSubject(badIssuerToken)
             }
         }
+    }
 }

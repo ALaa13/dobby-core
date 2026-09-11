@@ -24,7 +24,7 @@ class DiscordApiServiceTest {
     val json = SerializationConfig().kotlinxSerializationJson()
 
     @Test
-    fun `exchangeCodeForToken should return response on valid status`() =
+    fun `exchangeCodeForToken should return response on valid status`() {
         runTest {
             val mockEngine =
                 MockEngine { _ ->
@@ -48,9 +48,10 @@ class DiscordApiServiceTest {
             val result = apiService.exchangeCodeForToken("code", "id", "secret", "uri")
             assertEquals("mock-token-123", result.accessToken)
         }
+    }
 
     @Test
-    fun `exchangeCodeForToken should throw AuthorizationException when Discord returns HTTP error`() =
+    fun `exchangeCodeForToken should throw AuthorizationException when Discord returns HTTP error`() {
         runTest {
             val mockEngine =
                 MockEngine { _ ->
@@ -67,9 +68,10 @@ class DiscordApiServiceTest {
                 apiService.exchangeCodeForToken("bad-code", "id", "secret", "uri")
             }
         }
+    }
 
     @Test
-    fun `getUserProfile should throw AuthorizationException when token is expired or invalid`() =
+    fun `getUserProfile should throw AuthorizationException when token is expired or invalid`() {
         runTest {
             val mockEngine =
                 MockEngine { _ ->
@@ -86,9 +88,10 @@ class DiscordApiServiceTest {
                 apiService.getUserProfile("expired-token")
             }
         }
+    }
 
     @Test
-    fun `fetchCompleteUserProfile should filter guilds using bitwise admin flags`() =
+    fun `fetchCompleteUserProfile should filter guilds using bitwise admin flags`() {
         runTest {
             val mockEngine =
                 MockEngine { request ->
@@ -109,7 +112,7 @@ class DiscordApiServiceTest {
                                         icon = null,
                                         owner = false,
                                         permissions = "8",
-                                    ), // 0x8 Admin
+                                    ),
                                     DiscordGuild(
                                         id = "2",
                                         name = "Regular Guild",
@@ -140,20 +143,20 @@ class DiscordApiServiceTest {
 
             val dashboardData = apiService.fetchCompleteUserProfile("valid-token")
 
-            assertEquals(2, dashboardData.managedGuilds.size) // Admin and Owner
+            assertEquals(2, dashboardData.managedGuilds.size)
             assertTrue(dashboardData.managedGuilds.any { it.name == "Admin Guild" })
             assertTrue(dashboardData.managedGuilds.any { it.name == "Owner Guild" })
         }
+    }
 
     @Test
-    fun `fetchCompleteUserProfile should use default embed avatar when avatar hash is null`() =
+    fun `fetchCompleteUserProfile should use default embed avatar when avatar hash is null`() {
         runTest {
             val mockEngine =
                 MockEngine { request ->
                     when (request.url.encodedPath) {
                         "/api/v10/users/@me" ->
                             respond(
-                                // User has NO avatar hash set
                                 content = Json.encodeToString(DiscordUser("123456", "NoAvatarUser", avatar = null)),
                                 status = HttpStatusCode.OK,
                                 headers = headersOf(HttpHeaders.ContentType, "application/json"),
@@ -174,12 +177,12 @@ class DiscordApiServiceTest {
 
             val result = apiService.fetchCompleteUserProfile("valid-token")
 
-            // Asserts fallback avatar URL mapping logic works smoothly
             assertEquals("https://cdn.discordapp.com/embed/avatars/0.png", result.avatarUrl)
         }
+    }
 
     @Test
-    fun `fetchCompleteUserProfile should include complex bitwise combinations containing admin permissions`() =
+    fun `fetchCompleteUserProfile should include complex bitwise combinations containing admin permissions`() {
         runTest {
             val mockEngine =
                 MockEngine { request ->
@@ -221,9 +224,10 @@ class DiscordApiServiceTest {
             assertEquals(1, result.managedGuilds.size)
             assertEquals("Complex Permissions Guild", result.managedGuilds.first().name)
         }
+    }
 
     @Test
-    fun `fetchCompleteUserProfile should handle unparseable or null permissions string gracefully without crashing`() =
+    fun `fetchCompleteUserProfile should handle unparseable or null permissions string gracefully without crashing`() {
         runTest {
             val mockEngine =
                 MockEngine { request ->
@@ -261,7 +265,7 @@ class DiscordApiServiceTest {
 
             val result = apiService.fetchCompleteUserProfile("valid-token")
 
-            // It shouldn't crash with a NumberFormatException; it should handle it and filter out the broken guild cleanly
             assertTrue(result.managedGuilds.isEmpty())
         }
+    }
 }

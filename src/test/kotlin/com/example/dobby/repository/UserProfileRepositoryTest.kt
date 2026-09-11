@@ -18,7 +18,7 @@ class UserProfileRepositoryTest {
     private val repository = UserProfileRepository(userProfileStore, Json)
 
     @Test
-    fun `findProfile maps the profile and aggregated facts`() =
+    fun `findProfile maps the profile and aggregated facts`() {
         runTest {
             val profileId = UUID.fromString("10000000-0000-0000-0000-000000000001")
             val factId = UUID.fromString("20000000-0000-0000-0000-000000000001")
@@ -53,9 +53,10 @@ class UserProfileRepositoryTest {
             assertEquals(1, result?.facts?.size)
             assertEquals("Likes socks", result?.facts?.single()?.factText)
         }
+    }
 
     @Test
-    fun `upsertProfiles returns without calling persistence for an empty list`() =
+    fun `upsertProfiles returns without calling persistence for an empty list`() {
         runTest {
             repository.upsertProfiles(emptyList())
 
@@ -63,9 +64,10 @@ class UserProfileRepositoryTest {
                 userProfileStore.upsertProfiles(any<List<UserProfileCreateRequest>>())
             }
         }
+    }
 
     @Test
-    fun `findProfilesWithFacts maps all rows from the bulk store query`() =
+    fun `findProfilesWithFacts maps all rows from the bulk store query`() {
         runTest {
             val profileId = UUID.fromString("10000000-0000-0000-0000-000000000002")
             coEvery {
@@ -89,4 +91,5 @@ class UserProfileRepositoryTest {
             assertEquals(listOf("user-2"), result.map { it.discordUserId })
             assertEquals(emptyList(), result.single().facts)
         }
+    }
 }

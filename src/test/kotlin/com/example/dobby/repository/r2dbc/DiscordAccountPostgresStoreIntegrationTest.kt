@@ -10,7 +10,7 @@ class DiscordAccountPostgresStoreIntegrationTest : PostgresStoreIntegrationTest(
     private val accountStore by lazy { DiscordAccountPostgresStore(databaseClient) }
 
     @Test
-    fun `upsert supports lookup and preserves the original creation time`() =
+    fun `upsert supports lookup and preserves the original creation time`() {
         runTest {
             resetDatabase()
             val inserted = accountStore.upsert("user-1", "encrypted-token-1")
@@ -23,4 +23,5 @@ class DiscordAccountPostgresStoreIntegrationTest : PostgresStoreIntegrationTest(
             assertEquals("encrypted-token-2", updated.encryptedToken)
             assertEquals(updated, accountStore.findByDiscordUserId("user-1"))
         }
+    }
 }

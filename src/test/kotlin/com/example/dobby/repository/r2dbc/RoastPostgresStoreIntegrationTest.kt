@@ -21,7 +21,7 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
     private val roastRepository by lazy { RoastRepository(roastStore, Json) }
 
     @Test
-    fun `roast and targets use the generated roast id and nested profile data is mapped`() =
+    fun `roast and targets use the generated roast id and nested profile data is mapped`() {
         runTest {
             resetDatabase()
             profileStore.insert("user-1", "guild-1", "First user", "avatar-1")
@@ -60,9 +60,10 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                     ?.displayName,
             )
         }
+    }
 
     @Test
-    fun `target failure rolls back the roast insert`() =
+    fun `target failure rolls back the roast insert`() {
         runTest {
             resetDatabase()
             profileStore.insert("user-1", "guild-1", "First user", null)
@@ -80,6 +81,7 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                     .awaitSingle()
             assertEquals(0L, roastCount)
         }
+    }
 
     private fun roastResult(): RoastResult =
         RoastResult(

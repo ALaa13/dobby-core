@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    // @Valid DTO/Body validation failures
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse> {
         val details =
@@ -24,7 +23,6 @@ class GlobalExceptionHandler {
         )
     }
 
-    // Catches RequestParam / PathVariable validation failures (e.g., @Size, @NotBlank)
     @ExceptionHandler(ConstraintViolationException::class)
     fun handleConstraintExceptions(e: ConstraintViolationException): ResponseEntity<ApiResponse> {
         val details =
@@ -38,7 +36,6 @@ class GlobalExceptionHandler {
         )
     }
 
-    // Catches when a required @RequestParam is completely omitted from the URL
     @ExceptionHandler(MissingServletRequestParameterException::class)
     fun handleMissingParams(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse> =
         ResponseEntity.badRequest().body(
@@ -48,7 +45,6 @@ class GlobalExceptionHandler {
             ),
         )
 
-    // Dobby-specific exceptions
     @ExceptionHandler(DobbyException::class)
     fun handleDobbyExceptions(e: DobbyException): ResponseEntity<ApiResponse> {
         val (status, message) =

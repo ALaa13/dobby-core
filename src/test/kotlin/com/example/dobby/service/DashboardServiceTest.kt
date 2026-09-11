@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DashboardServiceTest {
-    // 1. Mock the actual dependencies required by DashboardService
     private val factService = mockk<FactService>()
     private val roastService = mockk<RoastService>()
 
@@ -24,12 +23,11 @@ class DashboardServiceTest {
     fun setUp() {
         clearAllMocks()
 
-        // 2. Initialize the correct service instance
         dashboardService = DashboardService(factService, roastService)
     }
 
     @Test
-    fun `getAllFactsByGuildId should fetch and return profiles from factService`() =
+    fun `getAllFactsByGuildId should fetch and return profiles from factService`() {
         runTest {
             val guildId = "guild-123"
             val mockProfiles = listOf(mockk<UserProfileResponse>())
@@ -41,9 +39,10 @@ class DashboardServiceTest {
             assertEquals(mockProfiles, result)
             coVerify(exactly = 1) { factService.getAllFactsByGuild(guildId) }
         }
+    }
 
     @Test
-    fun `getAllRoastByGuildId should fetch and return roast logs from roastService`() =
+    fun `getAllRoastByGuildId should fetch and return roast logs from roastService`() {
         runTest {
             val guildId = "guild-123"
             val mockRoasts = listOf(mockk<RoastLogDbResponse>())
@@ -55,9 +54,10 @@ class DashboardServiceTest {
             assertEquals(mockRoasts, result)
             coVerify(exactly = 1) { roastService.getGuildRoasts(guildId) }
         }
+    }
 
     @Test
-    fun `deleteFact should invoke factService removal exactly once`() =
+    fun `deleteFact should invoke factService removal exactly once`() {
         runTest {
             val factId = "fact-999"
 
@@ -67,9 +67,10 @@ class DashboardServiceTest {
 
             coVerify(exactly = 1) { factService.deleteUserFact(factId) }
         }
+    }
 
     @Test
-    fun `purgeGuildFacts should invoke factService reset exactly once`() =
+    fun `purgeGuildFacts should invoke factService reset exactly once`() {
         runTest {
             val guildId = "guild-777"
 
@@ -79,4 +80,5 @@ class DashboardServiceTest {
 
             coVerify(exactly = 1) { factService.resetGuildFacts(guildId) }
         }
+    }
 }

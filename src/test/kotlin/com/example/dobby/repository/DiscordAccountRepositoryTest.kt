@@ -16,7 +16,7 @@ class DiscordAccountRepositoryTest {
     private val repository = DiscordAccountRepository(discordAccountStore)
 
     @Test
-    fun `saveDiscordUser stores and returns the encrypted token unchanged`() =
+    fun `saveDiscordUser stores and returns the encrypted token unchanged`() {
         runTest {
             val account = DiscordAccount("user-1", "encrypted-token")
             coEvery {
@@ -35,9 +35,10 @@ class DiscordAccountRepositoryTest {
                 discordAccountStore.upsert("user-1", "encrypted-token")
             }
         }
+    }
 
     @Test
-    fun `findByDiscordUserId returns null when the account does not exist`() =
+    fun `findByDiscordUserId returns null when the account does not exist`() {
         runTest {
             coEvery { discordAccountStore.findByDiscordUserId("missing-user") } returns null
 
@@ -45,4 +46,5 @@ class DiscordAccountRepositoryTest {
 
             assertEquals(null, result)
         }
+    }
 }
