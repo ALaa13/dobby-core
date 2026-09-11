@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test
 class RoastServiceTest {
     private val userRepository = mockk<UserProfileRepository>()
     private val roastRepository = mockk<RoastRepository>(relaxed = true)
-    private val geminiService = mockk<GeminiService>()
+    private val aiRoastService = mockk<AiRoastService>()
     private val redisPublisher = mockk<RedisPublisher>(relaxed = true)
 
     private lateinit var roastService: RoastService
@@ -42,13 +42,13 @@ class RoastServiceTest {
     }
 
     @Test
-    fun `processRoastAsync should gather facts, call Gemini, and publish success to Redis`() =
+    fun `processRoastAsync should gather facts, generate roast, save it, and publish success to Redis`() =
         runTest {
             roastService =
                 RoastService(
                     userRepository,
                     roastRepository,
-                    geminiService,
+                    aiRoastService,
                     redisPublisher,
                     CoroutineScope(StandardTestDispatcher(testScheduler)),
                 )
@@ -84,12 +84,11 @@ class RoastServiceTest {
 
             val expectedMemoryContext = "Facts about <@user1>:\n- Likes Fedora Linux\n\n"
 
-            // Fix: Mock standard RoastResult instead of returning raw String
             val mockRoastResult = mockk<RoastResult>()
             every { mockRoastResult.text } returns "Nice OS choice, grandpas use it too."
 
             coEvery {
-                geminiService.generateRoast(
+                aiRoastService.generateRoast(
                     messages,
                     "Sarcastic",
                     expectedMemoryContext,
@@ -103,7 +102,13 @@ class RoastServiceTest {
                 userRepository.findProfilesWithFacts(setOf("user1"), "guild-777")
             }
             coVerify(exactly = 1) {
-                geminiService.generateRoast(any(), any(), any())
+                userRepository.upsertProfiles(any())
+            }
+            coVerify(exactly = 1) {
+                aiRoastService.generateRoast(any(), any(), any())
+            }
+            coVerify(exactly = 1) {
+                roastRepository.saveRoastResult("guild-777", "channel-123", mockRoastResult)
             }
             verify(exactly = 1) {
                 redisPublisher.publishRoastDelivery(any(), any())
@@ -117,7 +122,7 @@ class RoastServiceTest {
                 RoastService(
                     userRepository,
                     roastRepository,
-                    geminiService,
+                    aiRoastService,
                     redisPublisher,
                     CoroutineScope(StandardTestDispatcher(testScheduler)),
                 )
@@ -151,7 +156,7 @@ class RoastServiceTest {
             val expectedErrorResult = request.toResult(expectedFriendlyMessage, false)
 
             verify { redisPublisher.publishRoastDelivery(RedisChannels.ROAST_DELIVERY, expectedErrorResult) }
-            coVerify(exactly = 0) { geminiService.generateRoast(any(), any(), any()) }
+            coVerify(exactly = 0) { aiRoastService.generateRoast(any(), any(), any()) }
         }
 
     @Test
@@ -161,7 +166,7 @@ class RoastServiceTest {
                 RoastService(
                     userRepository,
                     roastRepository,
-                    geminiService,
+                    aiRoastService,
                     redisPublisher,
                     CoroutineScope(StandardTestDispatcher(testScheduler)),
                 )
@@ -189,12 +194,12 @@ class RoastServiceTest {
             } returns emptyList()
 
             coEvery {
-                geminiService.generateRoast(
+                aiRoastService.generateRoast(
                     messages,
                     "Mean",
                     "",
                 )
-            } throws DobbyException.AiModelException("Model Timeout Error", "Gemini Core Engine", null)
+            } throws DobbyException.AiModelException("Model Timeout Error", "AiRoastService", null)
 
             roastService.processRoastAsync(request)
             advanceUntilIdle()

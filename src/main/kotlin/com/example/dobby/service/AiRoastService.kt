@@ -1,20 +1,20 @@
 package com.example.dobby.service
 
+import com.example.dobby.AppProperties
 import com.example.dobby.config.log
 import com.example.dobby.dto.discord.DiscordChatMessage
-import com.example.dobby.dto.roast.GeminiRoastResponse
+import com.example.dobby.dto.roast.RoastGenerationResponse
 import com.example.dobby.dto.roast.RoastResult
 import com.example.dobby.dto.roast.TargetDamage
 import com.example.dobby.exception.DobbyException
-import com.example.dobby.llm.GeminiApiPort
-import com.example.dobby.llm.GeminiModelManager
+import com.example.dobby.llm.LlmApiPort
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
 
 @Service
-class GeminiService(
-    private val geminiApi: GeminiApiPort,
-    private val geminiModelManager: GeminiModelManager,
+class AiRoastService(
+    private val appProperties: AppProperties,
+    private val llmApi: LlmApiPort,
     private val promptLoader: PromptLoaderService,
 ) {
     suspend fun generateRoast(
@@ -23,17 +23,20 @@ class GeminiService(
         memoryContext: String,
     ): RoastResult {
         val fullPrompt = buildFullPrompt(messages, persona, memoryContext)
-        val aiModel = geminiModelManager.getBestModel()
+        val model = appProperties.llm.model
 
         val response =
             try {
-                log.info("Using Gemini model: $aiModel for roasting")
-                geminiApi.generateContent(aiModel, fullPrompt)
+                log.info("Using AI model: $model for roasting")
+                llmApi.generate(model, fullPrompt)
             } catch (e: Exception) {
-                geminiModelManager.reportModelFailure(aiModel)
-                throw DobbyException.AiModelException("AI model $aiModel failed: ${e.message}", "Gemini Service", e)
+                throw DobbyException.AiModelException(
+                    message = "AI model $model failed: ${e.message}",
+                    targetService = "AiRoastService",
+                    cause = e,
+                )
             }
-        return parseAndMapResponse(response.text(), persona)
+        return parseAndMapResponse(response, persona)
     }
 
     private fun parseAndMapResponse(
@@ -42,8 +45,8 @@ class GeminiService(
     ): RoastResult {
         if (jsonText.isNullOrBlank()) {
             throw DobbyException.AiModelException(
-                message = "Received an empty or null payload response from Gemini.",
-                targetService = "GeminiRoastService",
+                message = "Received an empty or null payload from the AI model.",
+                targetService = "AiRoastService",
             )
         }
 
@@ -56,7 +59,7 @@ class GeminiService(
                 .trim()
 
         try {
-            val parsedDto = Json.decodeFromString<GeminiRoastResponse>(cleanJson)
+            val parsedDto = Json.decodeFromString<RoastGenerationResponse>(cleanJson)
 
             return RoastResult(
                 text = parsedDto.roastText,
@@ -71,10 +74,10 @@ class GeminiService(
                     },
             )
         } catch (e: Exception) {
-            log.error("Failed to parse Gemini JSON output. Raw output was: $jsonText", e)
+            log.error("Failed to parse AI roast JSON output. Raw output was: $jsonText", e)
             throw DobbyException.AiModelException(
-                message = "Gemini returned invalid or malformed JSON structure.",
-                targetService = "GeminiRoastService",
+                message = "AI model returned invalid or malformed JSON structure.",
+                targetService = "AiRoastService",
                 cause = e,
             )
         }

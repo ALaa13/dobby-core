@@ -18,7 +18,7 @@ class PromptLoaderServiceTest {
 
     @Test
     fun `should return default prompt when path is blank`() {
-        testProperties.gemini.promptFilePath = ""
+        testProperties.llm.promptFilePath = ""
 
         val result = promptLoaderService.loadPrompt()
         assertEquals("You are a roast bot.", result)
@@ -26,7 +26,7 @@ class PromptLoaderServiceTest {
 
     @Test
     fun `should return default prompt when file does not exist`() {
-        testProperties.gemini.promptFilePath = "this_file_definitely_does_not_exist.txt"
+        testProperties.llm.promptFilePath = "this_file_definitely_does_not_exist.txt"
 
         val result = promptLoaderService.loadPrompt()
         assertEquals("You are a roast bot.", result)
@@ -37,7 +37,7 @@ class PromptLoaderServiceTest {
         val testFile = File.createTempFile("test_prompt", ".txt")
         testFile.writeText("You are an elite Arch Linux hacker.")
 
-        testProperties.gemini.promptFilePath = testFile.absolutePath
+        testProperties.llm.promptFilePath = testFile.absolutePath
 
         try {
             val result = promptLoaderService.loadPrompt()

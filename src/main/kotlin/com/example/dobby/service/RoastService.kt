@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service
 class RoastService(
     private val userRepository: UserProfileRepository,
     private val roastRepository: RoastRepository,
-    private val geminiService: GeminiService,
+    private val aiRoastService: AiRoastService,
     private val redisPublisher: RedisPublisher,
     @Qualifier("ioScope") private val serviceScope: CoroutineScope,
 ) {
@@ -49,7 +49,7 @@ class RoastService(
 
             val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
             val roastResult =
-                geminiService.generateRoast(
+                aiRoastService.generateRoast(
                     request.messages,
                     request.persona,
                     memoryContext,

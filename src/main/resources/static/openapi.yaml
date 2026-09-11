@@ -4,7 +4,7 @@ info:
   title: Dobby Backend API
   description: |
     A Kotlin/Spring Boot backend service that generates AI-powered roasts for Discord and a Web Dashboard.
-    It accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via Google Gemini,
+    It accepts chat history, enriches requests with user facts stored in PostgreSQL, generates roasts via OpenAI,
     and returns results to Discord or Web Dashboard via Redis Pub/Sub for real-time delivery.
   version: 1.0.0
   contact:
