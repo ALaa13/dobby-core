@@ -87,5 +87,7 @@ class UserProfilePostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
         guildId: String,
         displayName: String?,
         avatarHash: String?,
-    ): UserProfileCreateRequest = UserProfileCreateRequest(userId, guildId, displayName, avatarHash)
+    ): UserProfileCreateRequest {
+        return UserProfileCreateRequest(userId, guildId, displayName, avatarHash)
+    }
 }

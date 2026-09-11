@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Configuration
 class CoroutineScopeConfig {
     @Bean
     fun ioScope(): CoroutineScope {
-        // This application-owned scope isolates blocking I/O work from request coroutine lifecycles.
+        // Application-owned scope keeps background work independent from the HTTP request lifecycle.
         return CoroutineScope(Dispatchers.IO + SupervisorJob())
     }
 
     @Bean
-    fun defaultScope(): CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    fun defaultScope(): CoroutineScope {
+        return CoroutineScope(Dispatchers.Default + SupervisorJob())
+    }
 }

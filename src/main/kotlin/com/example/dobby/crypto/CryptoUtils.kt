@@ -11,8 +11,8 @@ object CryptoUtils {
     fun encryptToken(
         plainTextToken: String,
         encryptionKey: String,
-    ): String =
-        try {
+    ): String {
+        return try {
             val keySpec = SecretKeySpec(encryptionKey.toByteArray(Charsets.UTF_8), "AES")
 
             val cipher = Cipher.getInstance("AES")
@@ -28,12 +28,13 @@ object CryptoUtils {
             log.error("Unexpected error during token encryption", e)
             throw e
         }
+    }
 
     fun decryptToken(
         encryptedTokenBase64: String,
         encryptionKey: String,
-    ): String =
-        try {
+    ): String {
+        return try {
             val keySpec = SecretKeySpec(encryptionKey.toByteArray(Charsets.UTF_8), "AES")
 
             val cipher = Cipher.getInstance("AES")
@@ -50,4 +51,5 @@ object CryptoUtils {
             log.error("Unexpected error during token decryption", e)
             throw e
         }
+    }
 }

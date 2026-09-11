@@ -10,13 +10,14 @@ import org.springframework.stereotype.Repository
 class UserFactRepository(
     private val userFactStore: UserFactPostgresStore,
 ) {
-    suspend fun saveFact(fact: UserFactCreateRequest): UserFactResponse =
-        userFactStore
+    suspend fun saveFact(fact: UserFactCreateRequest): UserFactResponse {
+        return userFactStore
             .insert(
                 profileId = fact.profileId,
                 factText = fact.factText,
                 source = fact.source.name,
             ).toResponse()
+    }
 
     suspend fun deleteFactById(factId: String) {
         userFactStore.deleteById(factId)
@@ -30,8 +31,8 @@ class UserFactRepository(
         userFactStore.deleteAllByGuildId(guildId)
     }
 
-    private fun UserFactEntity.toResponse(): UserFactResponse =
-        UserFactResponse(
+    private fun UserFactEntity.toResponse(): UserFactResponse {
+        return UserFactResponse(
             id = id.toString(),
             profileId = profileId.toString(),
             factText = factText,
@@ -39,4 +40,5 @@ class UserFactRepository(
             createdAt = createdAt.toString(),
             updatedAt = updatedAt?.toString(),
         )
+    }
 }

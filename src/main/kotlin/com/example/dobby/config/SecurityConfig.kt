@@ -30,7 +30,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
-            // Suspend controllers can resume on async dispatch and still need the authenticated security context.
+            // Allow Spring Security to persist the SecurityContext automatically during request processing.
             .securityContext { it.requireExplicitSave(false) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .cors { it.configurationSource(corsConfigurationSource()) }
