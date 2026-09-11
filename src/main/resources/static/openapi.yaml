@@ -262,7 +262,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: dashboard_id
+        - name: guild_id
           in: query
           required: true
           schema:
@@ -284,7 +284,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "Validation failed: Required query parameter 'discord_user_id' or 'dashboard_id' is missing."
+                message: "Validation failed: Required query parameter 'discord_user_id' or 'guild_id' is missing."
                 timestamp: 1781354405000
         '403':
           description: Forbidden - Security validation credentials insufficient.
@@ -353,7 +353,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: dashboard_id
+        - name: guild_id
           in: query
           required: true
           schema:
@@ -377,7 +377,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 success: false
-                message: "Validation failed: dashboard_id parameter must be a numeric string."
+                message: "Validation failed: guild_id parameter must be a numeric string."
                 timestamp: 1781354405000
         '404':
           description: Not Found - Target user metadata workspace mapping absent.
@@ -634,7 +634,7 @@ components:
         discord_user_id:
           type: string
           example: "111111111111111111"
-        dashboard_id:
+        guild_id:
           type: string
           example: "987654321098765432"
         display_name:
@@ -684,7 +684,7 @@ components:
       required:
         - roast_id
         - discord_user_id
-        - dashboard_id
+        - guild_id
         - damage_reason
       properties:
         roast_id:
@@ -693,7 +693,7 @@ components:
         discord_user_id:
           type: string
           example: "111111111111111111"
-        dashboard_id:
+        guild_id:
           type: string
           example: "987654321098765432"
         damage_reason:
@@ -706,7 +706,7 @@ components:
     RoastLogDbResponse:
       type: object
       required:
-        - dashboard_id
+        - guild_id
         - channel_id
         - roast_text
         - primary_target_id
@@ -720,7 +720,7 @@ components:
           format: uuid
           nullable: true
           example: "c73a2512-ece6-4dfd-b0a3-23df41f237ef"
-        dashboard_id:
+        guild_id:
           type: string
           example: "987654321098765432"
         channel_id:
