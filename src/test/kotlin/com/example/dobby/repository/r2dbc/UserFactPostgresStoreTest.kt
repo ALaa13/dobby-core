@@ -25,7 +25,7 @@ class UserFactPostgresStoreTest {
     private val store = UserFactPostgresStore(databaseClient)
 
     @Test
-    fun `insert binds fact values and uses explicit returning columns`() =
+    fun `insert binds fact values and uses explicit returning columns`() {
         runTest {
             val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
             val rows = mockk<RowsFetchSpec<UserFactEntity>>()
@@ -60,9 +60,10 @@ class UserFactPostgresStoreTest {
             assertContains(sql.captured, "updated_at")
             assertFalse(sql.captured.contains("Likes socks"))
         }
+    }
 
     @Test
-    fun `deleteById executes one bound delete statement`() =
+    fun `deleteById executes one bound delete statement`() {
         runTest {
             val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
             val fetchSpec = mockk<FetchSpec<Map<String, Any>>>()
@@ -78,9 +79,10 @@ class UserFactPostgresStoreTest {
             verify(exactly = 1) { databaseClient.sql(any<String>()) }
             assertContains(sql.captured, "WHERE id = CAST(:factId AS uuid)")
         }
+    }
 
     @Test
-    fun `deleteAllByGuildId deletes facts through profiles in one bound statement`() =
+    fun `deleteAllByGuildId deletes facts through profiles in one bound statement`() {
         runTest {
             val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
             val fetchSpec = mockk<FetchSpec<Map<String, Any>>>()
@@ -98,4 +100,5 @@ class UserFactPostgresStoreTest {
             assertContains(sql.captured, "USING user_profiles p")
             assertFalse(sql.captured.contains("guild-1"))
         }
+    }
 }

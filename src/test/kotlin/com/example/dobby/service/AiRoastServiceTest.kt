@@ -43,7 +43,7 @@ class AiRoastServiceTest {
     }
 
     @Test
-    fun `generateRoast builds prompt, invokes configured model, and maps response`() =
+    fun `generateRoast builds prompt, invokes configured model, and maps response`() {
         runTest {
             val messages =
                 listOf(
@@ -99,9 +99,10 @@ class AiRoastServiceTest {
                 )
             }
         }
+    }
 
     @Test
-    fun `generateRoast throws AiModelException when AI output is blank`() =
+    fun `generateRoast throws AiModelException when AI output is blank`() {
         runTest {
             every { promptLoader.loadPrompt() } returns "System Prompt"
             coEvery { llmApi.generate("test-model", any()) } returns "  "
@@ -114,9 +115,10 @@ class AiRoastServiceTest {
             assertTrue(exception.message.orEmpty().contains("Received an empty or null payload from the AI model."))
             assertTrue(exception.message.orEmpty().contains("AiRoastService"))
         }
+    }
 
     @Test
-    fun `generateRoast throws AiModelException when AI output is malformed JSON`() =
+    fun `generateRoast throws AiModelException when AI output is malformed JSON`() {
         runTest {
             every { promptLoader.loadPrompt() } returns "System Prompt"
             coEvery { llmApi.generate("test-model", any()) } returns "not-json"
@@ -129,9 +131,10 @@ class AiRoastServiceTest {
             assertTrue(exception.message.orEmpty().contains("AI model returned invalid or malformed JSON structure."))
             assertTrue(exception.message.orEmpty().contains("AiRoastService"))
         }
+    }
 
     @Test
-    fun `generateRoast converts provider failure into AiModelException`() =
+    fun `generateRoast converts provider failure into AiModelException`() {
         runTest {
             every { promptLoader.loadPrompt() } returns "System Prompt"
             coEvery {
@@ -146,4 +149,5 @@ class AiRoastServiceTest {
             assertTrue(exception.message.orEmpty().contains("AI model test-model failed: provider failure"))
             assertTrue(exception.message.orEmpty().contains("AiRoastService"))
         }
+    }
 }

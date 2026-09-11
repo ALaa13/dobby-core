@@ -37,18 +37,16 @@ class DiscordAccountServiceTest {
 
         accountService = DiscordAccountService(appProperties, discordAccountRepository)
 
-        // Mock the object we're using for encryption
         mockkObject(CryptoUtils)
     }
 
     @AfterEach
     fun tearDown() {
-        // Clean up static mocks
         unmockkObject(CryptoUtils)
     }
 
     @Test
-    fun `saveDiscordAccount should encrypt token and persist record successfully`() =
+    fun `saveDiscordAccount should encrypt token and persist record successfully`() {
         runTest {
             val mockSavedEntity =
                 DiscordAccount(
@@ -59,7 +57,6 @@ class DiscordAccountServiceTest {
             every { appProperties.encryption.secretKey } returns testSecretKey
             every { encryptToken(testRawToken, testSecretKey) } returns mockedEncryptedBase64
 
-            // Slot to capture the exact entity sent to the repository
             val accountSlot = slot<DiscordAccount>()
             coEvery { discordAccountRepository.saveDiscordUser(capture(accountSlot)) } returns mockSavedEntity
 
@@ -73,9 +70,10 @@ class DiscordAccountServiceTest {
 
             coVerify(exactly = 1) { discordAccountRepository.saveDiscordUser(any()) }
         }
+    }
 
     @Test
-    fun `saveDiscordAccount should bubble up encryption runtime exceptions and skip DB updates`() =
+    fun `saveDiscordAccount should bubble up encryption runtime exceptions and skip DB updates`() {
         runTest {
             every { appProperties.encryption.secretKey } returns testSecretKey
             every { encryptToken(any(), any()) } throws IllegalArgumentException("Invalid key block size")
@@ -83,11 +81,11 @@ class DiscordAccountServiceTest {
             try {
                 accountService.saveDiscordAccount(testUserId, testRawToken)
             } catch (e: Exception) {
-                // Verify it was our specific exception that bubbled up
                 assertEquals("Invalid key block size", e.message)
             }
 
-            // Critically assert that the database save step was completely skipped/aborted!
+            // Encryption failure must prevent the raw token from reaching persistence.
             coVerify(exactly = 0) { discordAccountRepository.saveDiscordUser(any()) }
         }
+    }
 }

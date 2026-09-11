@@ -16,8 +16,8 @@ class UserFactPostgresStore(
         profileId: String,
         factText: String,
         source: String?,
-    ): UserFactEntity =
-        databaseCall("Inserting new user fact") {
+    ): UserFactEntity {
+        return databaseCall("Inserting new user fact") {
             databaseClient
                 .sql(INSERT_USER_FACT)
                 .bind("profileId", profileId)
@@ -27,9 +27,10 @@ class UserFactPostgresStore(
                 .one()
                 .awaitSingle()
         }
+    }
 
-    suspend fun deleteById(factId: String): Long =
-        databaseCall("Deleting user fact") {
+    suspend fun deleteById(factId: String): Long {
+        return databaseCall("Deleting user fact") {
             databaseClient
                 .sql(
                     """
@@ -41,9 +42,10 @@ class UserFactPostgresStore(
                 .rowsUpdated()
                 .awaitSingle()
         }
+    }
 
-    suspend fun deleteAllByProfileId(profileId: String): Long =
-        databaseCall("Deleting user facts by profile") {
+    suspend fun deleteAllByProfileId(profileId: String): Long {
+        return databaseCall("Deleting user facts by profile") {
             databaseClient
                 .sql(
                     """
@@ -55,9 +57,11 @@ class UserFactPostgresStore(
                 .rowsUpdated()
                 .awaitSingle()
         }
+    }
 
-    suspend fun deleteAllByGuildId(guildId: String): Long =
-        databaseCall("Deleting user facts by guild") {
+    suspend fun deleteAllByGuildId(guildId: String): Long {
+        return databaseCall("Deleting user facts by guild") {
+            // Delete only fact rows; profiles remain because historical roast targets still reference their identities.
             databaseClient
                 .sql(
                     """
@@ -71,9 +75,10 @@ class UserFactPostgresStore(
                 .rowsUpdated()
                 .awaitSingle()
         }
+    }
 
-    private fun Row.toUserFactEntity(): UserFactEntity =
-        UserFactEntity(
+    private fun Row.toUserFactEntity(): UserFactEntity {
+        return UserFactEntity(
             id = requireNotNull(get("id", UUID::class.java)),
             profileId = requireNotNull(get("profile_id", UUID::class.java)),
             factText = requireNotNull(get("fact_text", String::class.java)),
@@ -81,6 +86,7 @@ class UserFactPostgresStore(
             createdAt = requireNotNull(get("created_at", OffsetDateTime::class.java)),
             updatedAt = get("updated_at", OffsetDateTime::class.java),
         )
+    }
 
     private companion object {
         val INSERT_USER_FACT =

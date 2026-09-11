@@ -36,15 +36,16 @@ class UserProfilePostgresStoreTest {
     }
 
     @Test
-    fun `upsertProfiles does not create a statement for an empty list`() =
+    fun `upsertProfiles does not create a statement for an empty list`() {
         runTest {
             store.upsertProfiles(emptyList())
 
             verify(exactly = 0) { databaseClient.sql(any<String>()) }
         }
+    }
 
     @Test
-    fun `upsertProfiles sends all profiles in one safely bound statement`() =
+    fun `upsertProfiles sends all profiles in one safely bound statement`() {
         runTest {
             val sql = slot<String>()
             every { databaseClient.sql(capture(sql)) } returns executeSpec
@@ -81,9 +82,10 @@ class UserProfilePostgresStoreTest {
             assertFalse(sql.captured.contains("user-1"))
             assertFalse(sql.captured.contains("First"))
         }
+    }
 
     @Test
-    fun `bulk profile lookup uses one safely bound statement`() =
+    fun `bulk profile lookup uses one safely bound statement`() {
         runTest {
             val sql = slot<String>()
             val rows = mockk<RowsFetchSpec<UserProfileWithFactsRow>>()
@@ -104,4 +106,5 @@ class UserProfilePostgresStoreTest {
             assertFalse(sql.captured.contains("user-1"))
             assertFalse(sql.captured.contains("user-2"))
         }
+    }
 }

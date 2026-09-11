@@ -16,7 +16,7 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
     private val roastStore by lazy { RoastPostgresStore(databaseClient, transactionManager) }
 
     @Test
-    fun `insert and delete operations use PostgreSQL identifiers`() =
+    fun `insert and delete operations use PostgreSQL identifiers`() {
         runTest {
             resetDatabase()
             val profile = profileStore.insert("user-1", "guild-1", null, null)
@@ -34,9 +34,10 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                 factsCount(assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-1")).factsJson),
             )
         }
+    }
 
     @Test
-    fun `deleting guild facts preserves profiles and facts from other guilds`() =
+    fun `deleting guild facts preserves profiles and facts from other guilds`() {
         runTest {
             resetDatabase()
             val first = profileStore.insert("user-1", "guild-1", null, null)
@@ -72,6 +73,9 @@ class UserFactPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                 factsCount(assertNotNull(profileStore.findByDiscordUserIdAndGuildId("user-1", "guild-2")).factsJson),
             )
         }
+    }
 
-    private fun factsCount(factsJson: String): Int = "\"fact_text\"".toRegex().findAll(factsJson).count()
+    private fun factsCount(factsJson: String): Int {
+        return "\"fact_text\"".toRegex().findAll(factsJson).count()
+    }
 }

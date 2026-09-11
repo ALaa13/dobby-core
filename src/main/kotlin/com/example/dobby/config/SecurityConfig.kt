@@ -26,17 +26,16 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            // Complete strip tracking
+            // The API is stateless, so browser-oriented authentication mechanisms must remain disabled.
             .csrf { it.disable() }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
-            // Enable security context propagation for Kotlin Coroutines (suspend functions)
+            // Allow Spring Security to persist the SecurityContext automatically during request processing.
             .securityContext { it.requireExplicitSave(false) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .cors { it.configurationSource(corsConfigurationSource()) }
             .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-            // Allow only authenticated users to access the API, except for specific endpoints
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(
@@ -59,11 +58,11 @@ class SecurityConfig(
         return http.build()
     }
 
-    // Keep frontend URL allowed to communicate with the API
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val frontendUrl = appProperties.frontend.url
 
+        // Credentialed browser requests are restricted to the configured frontend origin.
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf(frontendUrl)
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")

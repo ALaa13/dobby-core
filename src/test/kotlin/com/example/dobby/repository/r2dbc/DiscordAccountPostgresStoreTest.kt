@@ -23,7 +23,7 @@ class DiscordAccountPostgresStoreTest {
     private val store = DiscordAccountPostgresStore(databaseClient)
 
     @Test
-    fun `upsert binds the already encrypted token and preserves created at`() =
+    fun `upsert binds the already encrypted token and preserves created at`() {
         runTest {
             val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
             val rows = mockk<RowsFetchSpec<DiscordAccountEntity>>()
@@ -50,9 +50,10 @@ class DiscordAccountPostgresStoreTest {
             assertContains(sql.captured, "encrypted_token = EXCLUDED.encrypted_token")
             assertFalse(sql.captured.contains("encrypted-token"))
         }
+    }
 
     @Test
-    fun `findByDiscordUserId returns null when no row is emitted`() =
+    fun `findByDiscordUserId returns null when no row is emitted`() {
         runTest {
             val executeSpec = mockk<DatabaseClient.GenericExecuteSpec>()
             val rows = mockk<RowsFetchSpec<DiscordAccountEntity>>()
@@ -68,4 +69,5 @@ class DiscordAccountPostgresStoreTest {
             assertEquals(null, result)
             verify(exactly = 1) { databaseClient.sql(any<String>()) }
         }
+    }
 }

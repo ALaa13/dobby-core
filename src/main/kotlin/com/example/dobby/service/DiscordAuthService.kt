@@ -20,7 +20,6 @@ class DiscordAuthService(
         private const val FRONT_END_LOGIN_PAGE = "/login"
     }
 
-    // Generates the clean URI for the controller to redirect to
     fun getDiscordLoginUri(): URI {
         val uri =
             UriComponentsBuilder
@@ -36,7 +35,6 @@ class DiscordAuthService(
         return uri
     }
 
-    // Handles the heavy exchange logic and returns the final destination URI
     suspend fun handleCallbackAndGenerateRedirect(code: String?): URI {
         val frontendUrl = appProperties.frontend.url
         return try {
@@ -46,7 +44,6 @@ class DiscordAuthService(
                 )
             }
 
-            // 1. Delegate Token Exchange to the API Service
             val tokenResponse =
                 discordApiService.exchangeCodeForToken(
                     code,
@@ -59,12 +56,11 @@ class DiscordAuthService(
                 tokenResponse.accessToken
                     ?: throw DobbyException.AuthorizationException("Failed to retrieve access token from Discord")
 
-            // 2. Delegate Identity Discovery to the API Service
             val userResponse = discordApiService.getUserProfile(accessToken)
             val discordUserId = userResponse.id
             val username = userResponse.username
 
-            // Save the user credentials securely to your DB layer
+            // Keep raw OAuth credentials out of the repository; the account service encrypts before persistence.
             discordAccountService.saveDiscordAccount(discordUserId, accessToken)
 
             val jwtToken = jwtService.generateJWTToken(discordUserId, username)

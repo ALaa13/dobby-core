@@ -23,7 +23,6 @@ class RateLimitingServiceTest {
             )
         }
 
-        // The 11th request must hit the rate limit barrier instantly
         assertFalse(
             rateLimitingService.tryConsume(testApiKey),
             "The 11th request should be blocked",
@@ -35,7 +34,6 @@ class RateLimitingServiceTest {
         val dangerousSpammerKey = "spammer-key"
         val goodClientKey = "good-client-key"
 
-        // Exhaust the spammer's entire bucket capacity
         for (i in 1..10) {
             rateLimitingService.tryConsume(dangerousSpammerKey)
         }

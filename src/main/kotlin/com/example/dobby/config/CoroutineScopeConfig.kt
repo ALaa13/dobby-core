@@ -9,8 +9,13 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class CoroutineScopeConfig {
     @Bean
-    fun ioScope(): CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    fun ioScope(): CoroutineScope {
+        // Application-owned scope keeps background work independent from the HTTP request lifecycle.
+        return CoroutineScope(Dispatchers.IO + SupervisorJob())
+    }
 
     @Bean
-    fun defaultScope(): CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    fun defaultScope(): CoroutineScope {
+        return CoroutineScope(Dispatchers.Default + SupervisorJob())
+    }
 }

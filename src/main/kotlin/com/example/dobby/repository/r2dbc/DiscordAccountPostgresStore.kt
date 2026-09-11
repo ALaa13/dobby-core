@@ -15,8 +15,9 @@ class DiscordAccountPostgresStore(
     suspend fun upsert(
         discordUserId: String,
         encryptedToken: String,
-    ): DiscordAccountEntity =
-        databaseCall("Saving Discord account") {
+    ): DiscordAccountEntity {
+        return databaseCall("Saving Discord account") {
+            // Conflict updates rotate the encrypted credential without duplicating the Discord account identity.
             databaseClient
                 .sql(
                     """
@@ -41,9 +42,10 @@ class DiscordAccountPostgresStore(
                 .one()
                 .awaitSingle()
         }
+    }
 
-    suspend fun findByDiscordUserId(discordUserId: String): DiscordAccountEntity? =
-        databaseCall("Finding Discord account") {
+    suspend fun findByDiscordUserId(discordUserId: String): DiscordAccountEntity? {
+        return databaseCall("Finding Discord account") {
             databaseClient
                 .sql(
                     """
@@ -59,9 +61,10 @@ class DiscordAccountPostgresStore(
                 .one()
                 .awaitSingleOrNull()
         }
+    }
 
-    private fun Row.toDiscordAccountEntity(): DiscordAccountEntity =
-        DiscordAccountEntity(
+    private fun Row.toDiscordAccountEntity(): DiscordAccountEntity {
+        return DiscordAccountEntity(
             discordUserId = requireNotNull(get("discord_user_id", String::class.java)),
             encryptedToken =
                 requireNotNull(
@@ -69,4 +72,5 @@ class DiscordAccountPostgresStore(
                 ),
             createdAt = requireNotNull(get("created_at", OffsetDateTime::class.java)),
         )
+    }
 }

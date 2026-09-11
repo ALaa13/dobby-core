@@ -27,15 +27,17 @@ class RoastPostgresStore(
         result: RoastResult,
     ) {
         databaseCall("Saving roast log and targets") {
+            // The roast and every target row commit atomically so partial history cannot be persisted.
             transactionalOperator.executeAndAwait {
                 val roastId = insertRoast(guildId, channelId, result)
+                // Reuse the generated parent ID for every target in the same transaction.
                 insertTargets(roastId, guildId, result.targets)
             }
         }
     }
 
-    suspend fun findAllByGuildId(guildId: String): List<RoastWithTargetsRow> =
-        databaseCall("Fetching roasts and targets by guild") {
+    suspend fun findAllByGuildId(guildId: String): List<RoastWithTargetsRow> {
+        return databaseCall("Fetching roasts and targets by guild") {
             databaseClient
                 .sql(
                     ROAST_WITH_TARGETS_SELECT +
@@ -50,13 +52,14 @@ class RoastPostgresStore(
                 .collectList()
                 .awaitSingle()
         }
+    }
 
     private suspend fun insertRoast(
         guildId: String,
         channelId: String,
         result: RoastResult,
-    ): UUID =
-        databaseClient
+    ): UUID {
+        return databaseClient
             .sql(INSERT_ROAST)
             .bind("guildId", guildId)
             .bind("channelId", channelId)
@@ -69,6 +72,7 @@ class RoastPostgresStore(
             .map { row, _ -> requireNotNull(row.get("id", UUID::class.java)) }
             .one()
             .awaitSingle()
+    }
 
     private suspend fun insertTargets(
         roastId: UUID,
@@ -77,6 +81,7 @@ class RoastPostgresStore(
     ) {
         if (targets.isEmpty()) return
 
+        // One bound multi-row statement avoids a database round-trip per target.
         val valuesClause =
             targets.indices.joinToString(",\n") { index ->
                 "(:roastId$index, :discordUserId$index, :guildId$index, :damageReason$index)"
@@ -106,8 +111,8 @@ class RoastPostgresStore(
         executeSpec.fetch().rowsUpdated().awaitSingle()
     }
 
-    private fun Row.toRoastWithTargetsRow(): RoastWithTargetsRow =
-        RoastWithTargetsRow(
+    private fun Row.toRoastWithTargetsRow(): RoastWithTargetsRow {
+        return RoastWithTargetsRow(
             id = requireNotNull(get("id", UUID::class.java)),
             guildId = requireNotNull(get("guildId", String::class.java)),
             channelId = requireNotNull(get("channelId", String::class.java)),
@@ -120,6 +125,7 @@ class RoastPostgresStore(
             createdAt = requireNotNull(get("createdAt", OffsetDateTime::class.java)),
             targetsJson = requireNotNull(get("targetsJson", String::class.java)),
         )
+    }
 
     private companion object {
         val INSERT_ROAST =

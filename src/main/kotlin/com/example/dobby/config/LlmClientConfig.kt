@@ -11,9 +11,11 @@ class LlmClientConfig(
     private val appProperties: AppProperties,
 ) {
     @Bean
-    fun openAIClient(): OpenAIClient =
-        OpenAIOkHttpClient
+    fun openAIClient(): OpenAIClient {
+        // Provider construction stays at the infrastructure edge so application services only see LlmApiPort.
+        return OpenAIOkHttpClient
             .builder()
             .apiKey(appProperties.llm.apiKey)
             .build()
+    }
 }

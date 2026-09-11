@@ -42,7 +42,7 @@ class RoastServiceTest {
     }
 
     @Test
-    fun `processRoastAsync should gather facts, generate roast, save it, and publish success to Redis`() =
+    fun `processRoastAsync should gather facts, generate roast, save it, and publish success to Redis`() {
         runTest {
             roastService =
                 RoastService(
@@ -114,9 +114,10 @@ class RoastServiceTest {
                 redisPublisher.publishRoastDelivery(any(), any())
             }
         }
+    }
 
     @Test
-    fun `processRoastAsync should catch DatabaseException and publish friendly bot error message`() =
+    fun `processRoastAsync should catch DatabaseException and publish friendly bot error message`() {
         runTest {
             roastService =
                 RoastService(
@@ -158,9 +159,10 @@ class RoastServiceTest {
             verify { redisPublisher.publishRoastDelivery(RedisChannels.ROAST_DELIVERY, expectedErrorResult) }
             coVerify(exactly = 0) { aiRoastService.generateRoast(any(), any(), any()) }
         }
+    }
 
     @Test
-    fun `processRoastAsync should catch AiModelException and publish friendly AI error message`() =
+    fun `processRoastAsync should catch AiModelException and publish friendly AI error message`() {
         runTest {
             roastService =
                 RoastService(
@@ -212,4 +214,5 @@ class RoastServiceTest {
                 redisPublisher.publishRoastDelivery(RedisChannels.ROAST_DELIVERY, expectedErrorResult)
             }
         }
+    }
 }

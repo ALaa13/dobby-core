@@ -27,6 +27,7 @@ class AiRoastService(
 
         val response =
             try {
+                // The configured model keeps deployments deterministic while LlmApiPort hides provider SDK details.
                 log.info("Using AI model: $model for roasting")
                 llmApi.generate(model, fullPrompt)
             } catch (e: Exception) {

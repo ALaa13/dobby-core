@@ -20,10 +20,10 @@ class OpenAiApiAdapter(
                 .input(prompt)
                 .build()
 
-        // The official SDK uses client.responses().create()
+        // Keep SDK request and response types inside this adapter so callers remain provider-neutral.
         val response = client.responses().create(params)
 
-        // Extract and return the generated text
+        // Collapse all text output items into the single String promised by LlmApiPort.
         return response
             .output()
             .stream()

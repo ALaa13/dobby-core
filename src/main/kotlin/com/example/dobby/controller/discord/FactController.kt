@@ -37,7 +37,9 @@ class FactController(
         @NotBlank
         @Pattern(regexp = DISCORD_ID_REGEX, message = DISCORD_ID_MSG)
         guildId: String,
-    ): List<UserFactResponse> = factService.getUserFacts(discordUserId, guildId)
+    ): List<UserFactResponse> {
+        return factService.getUserFacts(discordUserId, guildId)
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

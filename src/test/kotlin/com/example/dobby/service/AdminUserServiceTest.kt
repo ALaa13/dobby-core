@@ -43,7 +43,6 @@ class AdminUserServiceTest {
     fun setUp() {
         clearAllMocks()
 
-        // Mock the nested Redis structure Spring Template uses
         every { stringRedisTemplate.opsForValue() } returns valueOperations
 
         adminUserService =
@@ -54,12 +53,11 @@ class AdminUserServiceTest {
                 stringRedisTemplate,
             )
 
-        // Mock object we're using for encryption
         mockkObject(CryptoUtils)
     }
 
     @Test
-    fun `getCurrentUser should return cached profile immediately on cache hit`() =
+    fun `getCurrentUser should return cached profile immediately on cache hit`() {
         runTest {
             val expectedResponse =
                 DiscordDashboardResponse(
@@ -70,20 +68,20 @@ class AdminUserServiceTest {
                 )
             val cachedJson = Json.encodeToString(expectedResponse)
 
-            // Stub Redis hit
             every { valueOperations.get(redisKey) } returns cachedJson
 
             val result = adminUserService.getCurrentUser(testUserId)
 
             assertEquals(expectedResponse, result)
 
-            // Verify database and network were bypassed entirely
+            // A cache hit must not expose the stored token or trigger an external Discord request.
             verify { discordAccountRepository wasNot Called }
             coVerify { discordApiService wasNot Called }
         }
+    }
 
     @Test
-    fun `getCurrentUser should hit DB, decrypt, call API, and cache on cache miss`() =
+    fun `getCurrentUser should hit DB, decrypt, call API, and cache on cache miss`() {
         runTest {
             val mockAccount =
                 mockk<DiscordAccount> {
@@ -97,7 +95,7 @@ class AdminUserServiceTest {
                     managedGuilds = emptyList(),
                 )
 
-            every { valueOperations.get(redisKey) } returns null // Cache miss
+            every { valueOperations.get(redisKey) } returns null
             every { appProperties.encryption.secretKey } returns "mock-32-char-encryption-key-aaa"
             every {
                 decryptToken(
@@ -114,17 +112,17 @@ class AdminUserServiceTest {
 
             assertEquals(expectedResponse, result)
 
-            // Verify it backfilled the Redis cache with a 15 min TTL
             verify(exactly = 1) {
                 valueOperations.set(redisKey, Json.encodeToString(expectedResponse), RedisKeyTimeout.USER_PROFILE)
             }
         }
+    }
 
     @Test
-    fun `getCurrentUser should throw NoSuchElementException when account missing from DB`() =
+    fun `getCurrentUser should throw NoSuchElementException when account missing from DB`() {
         runTest {
-            every { valueOperations.get(redisKey) } returns null // Cache miss
-            coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns null // Database empty
+            every { valueOperations.get(redisKey) } returns null
+            coEvery { discordAccountRepository.findByDiscordUserId(testUserId) } returns null
 
             assertFailsWith<NoSuchElementException> {
                 adminUserService.getCurrentUser(testUserId)
@@ -132,4 +130,5 @@ class AdminUserServiceTest {
 
             coVerify(exactly = 0) { discordApiService.fetchCompleteUserProfile(any()) }
         }
+    }
 }

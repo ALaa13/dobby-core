@@ -27,6 +27,7 @@ class RoastService(
     @Qualifier("ioScope") private val serviceScope: CoroutineScope,
 ) {
     fun processRoastAsync(request: DiscordRoastRequest) {
+        // Roast generation outlives the initiating HTTP request and runs on the injected service scope.
         serviceScope.launch {
             processRoast(request)
         }
@@ -44,7 +45,6 @@ class RoastService(
 
     private suspend fun processRoast(request: DiscordRoastRequest) {
         try {
-            // Sync user profiles
             syncUserProfiles(request)
 
             val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
@@ -56,7 +56,7 @@ class RoastService(
                 )
             log.info("Roast generation completed successfully")
 
-            // Save to the database
+            // Persist before publishing so consumers never receive a successful roast that has no durable history.
             roastRepository.saveRoastResult(request.guildId, request.channelId, roastResult)
             log.info("Roast result saved to database")
 
@@ -109,7 +109,7 @@ class RoastService(
                     )
                 }
 
-        // Fire the batch upsert to lock down their identities
+        // Refresh all identities from the same chat snapshot before facts are resolved for the roast.
         userRepository.upsertProfiles(profilesToSync)
         log.info("Successfully synced ${profilesToSync.size} user profiles from chat history")
     }
@@ -150,9 +150,10 @@ class RoastService(
         }
     }
 
-    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> =
-        messages
+    private fun extractUniqueUserIds(messages: List<DiscordChatMessage>): Set<String> {
+        return messages
             .map {
                 it.discordUserId
             }.toSet()
+    }
 }
