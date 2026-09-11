@@ -83,8 +83,8 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
         }
     }
 
-    private fun roastResult(): RoastResult =
-        RoastResult(
+    private fun roastResult(): RoastResult {
+        return RoastResult(
             text = "Roast",
             persona = "Dobby",
             primaryTargetId = "user-1",
@@ -97,4 +97,5 @@ class RoastPostgresStoreIntegrationTest : PostgresStoreIntegrationTest() {
                     TargetDamage("user-2", "Reason two"),
                 ),
         )
+    }
 }

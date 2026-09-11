@@ -7,6 +7,9 @@ insert_final_newline = true
 max_line_length = 120
 ij_kotlin_imports_layout = *, java.**, javax.**, kotlin.**
 
+# Dobby convention: all functions use block bodies.
+ktlint_standard_function-expression-body = disabled
+
 
 # Disable wildcard imports
 ij_kotlin_name_count_to_use_star_import = 2147483647

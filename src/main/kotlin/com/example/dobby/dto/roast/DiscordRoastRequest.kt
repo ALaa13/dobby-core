@@ -26,4 +26,6 @@ data class DiscordRoastRequest(
 fun DiscordRoastRequest.toResult(
     content: String,
     success: Boolean,
-): DiscordRoastResult = DiscordRoastResult(channelId, content, success)
+): DiscordRoastResult {
+    return DiscordRoastResult(channelId, content, success)
+}

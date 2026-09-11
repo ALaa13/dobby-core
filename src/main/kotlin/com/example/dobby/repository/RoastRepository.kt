@@ -23,13 +23,14 @@ class RoastRepository(
         roastStore.saveRoastResult(guildId, channelId, result)
     }
 
-    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> =
-        roastStore
+    suspend fun getGuildRoasts(guildId: String): List<RoastLogDbResponse> {
+        return roastStore
             .findAllByGuildId(guildId)
             .map { it.toResponse() }
+    }
 
-    private fun RoastWithTargetsRow.toResponse(): RoastLogDbResponse =
-        RoastLogDbResponse(
+    private fun RoastWithTargetsRow.toResponse(): RoastLogDbResponse {
+        return RoastLogDbResponse(
             id = id.toString(),
             guildId = guildId,
             channelId = channelId,
@@ -42,11 +43,13 @@ class RoastRepository(
             createdAt = createdAt.toString(),
             targets = decodeTargets(targetsJson),
         )
+    }
 
-    private fun decodeTargets(targetsJson: String): List<RoastTargetDbResponseDto> =
-        try {
+    private fun decodeTargets(targetsJson: String): List<RoastTargetDbResponseDto> {
+        return try {
             json.decodeFromString(targetsJson)
         } catch (exception: SerializationException) {
             throw DobbyException.DataMappingException("Failed to map roast targets", exception)
         }
+    }
 }

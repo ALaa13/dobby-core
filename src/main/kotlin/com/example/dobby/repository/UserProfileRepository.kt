@@ -19,32 +19,36 @@ class UserProfileRepository(
     suspend fun findProfile(
         discordUserId: String,
         guildId: String,
-    ): UserProfileResponse? =
-        userProfileStore
+    ): UserProfileResponse? {
+        return userProfileStore
             .findByDiscordUserIdAndGuildId(discordUserId, guildId)
             ?.toResponse()
+    }
 
-    suspend fun findAllByGuildId(guildId: String): List<UserProfileResponse> =
-        userProfileStore
+    suspend fun findAllByGuildId(guildId: String): List<UserProfileResponse> {
+        return userProfileStore
             .findAllByGuildId(guildId)
             .map { it.toResponse() }
+    }
 
     suspend fun findProfilesWithFacts(
         discordUserIds: Collection<String>,
         guildId: String,
-    ): List<UserProfileResponse> =
-        userProfileStore
+    ): List<UserProfileResponse> {
+        return userProfileStore
             .findAllByDiscordUserIdsAndGuildId(discordUserIds, guildId)
             .map { it.toResponse() }
+    }
 
-    suspend fun saveProfile(profile: UserProfileCreateRequest): UserProfileResponse =
-        userProfileStore
+    suspend fun saveProfile(profile: UserProfileCreateRequest): UserProfileResponse {
+        return userProfileStore
             .insert(
                 discordUserId = profile.discordUserId,
                 guildId = profile.guildId,
                 displayName = profile.displayName,
                 avatarHash = profile.avatarHash,
             ).toResponse()
+    }
 
     suspend fun upsertProfiles(profiles: List<UserProfileCreateRequest>) {
         if (profiles.isEmpty()) return
@@ -52,8 +56,8 @@ class UserProfileRepository(
         userProfileStore.upsertProfiles(profiles)
     }
 
-    private fun UserProfileEntity.toResponse(): UserProfileResponse =
-        UserProfileResponse(
+    private fun UserProfileEntity.toResponse(): UserProfileResponse {
+        return UserProfileResponse(
             id = id.toString(),
             discordUserId = discordUserId,
             guildId = guildId,
@@ -62,9 +66,10 @@ class UserProfileRepository(
             createdAt = createdAt.toString(),
             updatedAt = updatedAt?.toString(),
         )
+    }
 
-    private fun UserProfileWithFactsRow.toResponse(): UserProfileResponse =
-        UserProfileResponse(
+    private fun UserProfileWithFactsRow.toResponse(): UserProfileResponse {
+        return UserProfileResponse(
             id = id.toString(),
             discordUserId = discordUserId,
             guildId = guildId,
@@ -74,11 +79,13 @@ class UserProfileRepository(
             updatedAt = updatedAt?.toString(),
             facts = decodeFacts(factsJson),
         )
+    }
 
-    private fun decodeFacts(factsJson: String): List<UserFactResponse> =
-        try {
+    private fun decodeFacts(factsJson: String): List<UserFactResponse> {
+        return try {
             json.decodeFromString(factsJson)
         } catch (exception: SerializationException) {
             throw DobbyException.DataMappingException("Failed to map user profile facts", exception)
         }
+    }
 }
