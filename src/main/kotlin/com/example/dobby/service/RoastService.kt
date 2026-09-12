@@ -15,8 +15,11 @@ import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+
 
 @Service
 class RoastService(
@@ -24,11 +27,14 @@ class RoastService(
     private val roastRepository: RoastRepository,
     private val aiRoastService: AiRoastService,
     private val redisPublisher: RedisPublisher,
-    @Qualifier("ioScope") private val serviceScope: CoroutineScope,
+    @Qualifier("ioScope") private val backgroundScope: CoroutineScope,
 ) {
+
+    private val roastSemaphore = Semaphore(5)
+
     fun processRoastAsync(request: DiscordRoastRequest) {
         // Roast generation outlives the initiating HTTP request and runs on the injected service scope.
-        serviceScope.launch {
+        backgroundScope.launch {
             processRoast(request)
         }
     }
@@ -40,7 +46,7 @@ class RoastService(
 
     @PreDestroy
     private fun cleanup() {
-        serviceScope.cancel()
+        backgroundScope.cancel()
     }
 
     private suspend fun processRoast(request: DiscordRoastRequest) {
@@ -48,12 +54,16 @@ class RoastService(
             syncUserProfiles(request)
 
             val memoryContext = buildFactsMemoryContext(request.messages, request.guildId)
+
+            // Bound concurrent OpenAI generations to reduce rate-limit pressure during request bursts.
             val roastResult =
-                aiRoastService.generateRoast(
-                    request.messages,
-                    request.persona,
-                    memoryContext,
-                )
+                roastSemaphore.withPermit {
+                    aiRoastService.generateRoast(
+                        request.messages,
+                        request.persona,
+                        memoryContext,
+                    )
+                }
             log.info("Roast generation completed successfully")
 
             // Persist before publishing so consumers never receive a successful roast that has no durable history.

@@ -1,8 +1,8 @@
 package com.example.dobby.config
 
 import com.example.dobby.AppProperties
-import com.openai.client.OpenAIClient
-import com.openai.client.okhttp.OpenAIOkHttpClient
+import com.openai.client.OpenAIClientAsync
+import com.openai.client.okhttp.OpenAIOkHttpClientAsync
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -11,9 +11,9 @@ class LlmClientConfig(
     private val appProperties: AppProperties,
 ) {
     @Bean
-    fun openAIClient(): OpenAIClient {
+    fun openAIClient(): OpenAIClientAsync {
         // Provider construction stays at the infrastructure edge so application services only see LlmApiPort.
-        return OpenAIOkHttpClient
+        return OpenAIOkHttpClientAsync
             .builder()
             .apiKey(appProperties.llm.apiKey)
             .build()
