@@ -105,7 +105,11 @@ class RoastServiceTest {
                 userRepository.upsertProfiles(any())
             }
             coVerify(exactly = 1) {
-                aiRoastService.generateRoast(any(), any(), any())
+                aiRoastService.generateRoast(
+                    messages,
+                    "Sarcastic",
+                    expectedMemoryContext,
+                )
             }
             coVerify(exactly = 1) {
                 roastRepository.saveRoastResult("guild-777", "channel-123", mockRoastResult)
