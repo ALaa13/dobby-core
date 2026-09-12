@@ -22,7 +22,7 @@ class OpenAiApiAdapterTest {
     private val adapter = OpenAiApiAdapter(client)
 
     @Test
-    fun `generate awaits the asynchronous response and returns all output text`() =
+    fun `generate awaits the asynchronous response and returns all output text`() {
         runTest {
             val params = slot<ResponseCreateParams>()
             val response = mockk<Response>()
@@ -65,4 +65,5 @@ class OpenAiApiAdapterTest {
                     .asText(),
             )
         }
+    }
 }
