@@ -20,7 +20,6 @@ import kotlinx.coroutines.sync.withPermit
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
-
 @Service
 class RoastService(
     private val userRepository: UserProfileRepository,
@@ -29,7 +28,6 @@ class RoastService(
     private val redisPublisher: RedisPublisher,
     @Qualifier("ioScope") private val backgroundScope: CoroutineScope,
 ) {
-
     private val roastSemaphore = Semaphore(5)
 
     fun processRoastAsync(request: DiscordRoastRequest) {

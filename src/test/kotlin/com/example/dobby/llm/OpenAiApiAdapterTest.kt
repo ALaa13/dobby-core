@@ -22,34 +22,47 @@ class OpenAiApiAdapterTest {
     private val adapter = OpenAiApiAdapter(client)
 
     @Test
-    fun `generate awaits the asynchronous response and returns all output text`() = runTest {
-        val params = slot<ResponseCreateParams>()
-        val response = mockk<Response>()
-        val firstItem = mockk<ResponseOutputItem>()
-        val secondItem = mockk<ResponseOutputItem>()
-        val firstMessage = mockk<ResponseOutputMessage>()
-        val secondMessage = mockk<ResponseOutputMessage>()
-        val firstContent = mockk<ResponseOutputMessage.Content>()
-        val secondContent = mockk<ResponseOutputMessage.Content>()
-        val firstText = mockk<ResponseOutputText>()
-        val secondText = mockk<ResponseOutputText>()
+    fun `generate awaits the asynchronous response and returns all output text`() =
+        runTest {
+            val params = slot<ResponseCreateParams>()
+            val response = mockk<Response>()
+            val firstItem = mockk<ResponseOutputItem>()
+            val secondItem = mockk<ResponseOutputItem>()
+            val firstMessage = mockk<ResponseOutputMessage>()
+            val secondMessage = mockk<ResponseOutputMessage>()
+            val firstContent = mockk<ResponseOutputMessage.Content>()
+            val secondContent = mockk<ResponseOutputMessage.Content>()
+            val firstText = mockk<ResponseOutputText>()
+            val secondText = mockk<ResponseOutputText>()
 
-        every { client.responses() } returns responses
-        every { responses.create(capture(params)) } returns CompletableFuture.completedFuture(response)
-        every { response.output() } returns listOf(firstItem, secondItem)
-        every { firstItem.message() } returns Optional.of(firstMessage)
-        every { secondItem.message() } returns Optional.of(secondMessage)
-        every { firstMessage.content() } returns listOf(firstContent)
-        every { secondMessage.content() } returns listOf(secondContent)
-        every { firstContent.outputText() } returns Optional.of(firstText)
-        every { secondContent.outputText() } returns Optional.of(secondText)
-        every { firstText.text() } returns "first "
-        every { secondText.text() } returns "second"
+            every { client.responses() } returns responses
+            every { responses.create(capture(params)) } returns CompletableFuture.completedFuture(response)
+            every { response.output() } returns listOf(firstItem, secondItem)
+            every { firstItem.message() } returns Optional.of(firstMessage)
+            every { secondItem.message() } returns Optional.of(secondMessage)
+            every { firstMessage.content() } returns listOf(firstContent)
+            every { secondMessage.content() } returns listOf(secondContent)
+            every { firstContent.outputText() } returns Optional.of(firstText)
+            every { secondContent.outputText() } returns Optional.of(secondText)
+            every { firstText.text() } returns "first "
+            every { secondText.text() } returns "second"
 
-        val result = adapter.generate("gpt-5", "Write a roast")
+            val result = adapter.generate("gpt-5", "Write a roast")
 
-        assertEquals("first second", result)
-        assertEquals("gpt-5", params.captured.model().get().asString())
-        assertEquals("Write a roast", params.captured.input().get().asText())
-    }
+            assertEquals("first second", result)
+            assertEquals(
+                "gpt-5",
+                params.captured
+                    .model()
+                    .get()
+                    .asString(),
+            )
+            assertEquals(
+                "Write a roast",
+                params.captured
+                    .input()
+                    .get()
+                    .asText(),
+            )
+        }
 }
